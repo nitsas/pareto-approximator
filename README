@@ -1,0 +1,7 @@
+Approximate the Pareto set of a  multiobjective optimization problem 
+using the Chord Algorithm. 
+
+Please read "How Good is the Chord Algorithm?" by C. Daskalakis, 
+I. Diakonikolas and M. Yannakakis [SODA 2010] for more info on the 
+Chord Algorithm.
+
