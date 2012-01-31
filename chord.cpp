@@ -1,4 +1,4 @@
-/* chord.h */
+/* chord.cpp */
 
 
 #include "chord.h"
