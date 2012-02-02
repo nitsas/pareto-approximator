@@ -36,17 +36,21 @@ class Point {
 
     // Operators
     // operator= : use the default (copies all members)
-    bool operator== (const Point& p);
-    bool operator!= (const Point& p);
-
+    bool operator== (const Point& p) const;
+    bool operator!= (const Point& p) const;
     // Input/Output stream operators
-    friend std::ostream& operator<< (std::ostream& ostr, Point& p);
+    friend std::ostream& operator<< (std::ostream& ostr, const Point& p);
     friend std::istream& operator>> (std::istream& istr, Point& p);
 
+    // Attribute accessors
     // Get the point's dimension. (1D, 2D or 3D point)
     int dimension() const;
     // Set the point's dimension. (1D, 2D or 3D point)
     bool dimension(int dim);
+
+    // Methods
+    double ratioDistance(const Point& q) const 
+                               throw(DifferentDimensionsException);
 
   private:
     // The point's dimension. (1D, 2D or 3D point)

@@ -4,6 +4,9 @@
 #include "Point.h"
 
 
+using std::max;
+
+
 namespace pareto_approximator {
 
 
@@ -106,7 +109,7 @@ Point::dimension(int dimension)
 
 // --- Operators ---
 bool 
-Point::operator== (const Point& p)
+Point::operator== (const Point& p) const
 {
   if (dimension_ != p.dimension())
     return false;
@@ -128,7 +131,7 @@ Point::operator== (const Point& p)
 
 
 bool 
-Point::operator!= (const Point& p)
+Point::operator!= (const Point& p) const
 {
   if (dimension_ != p.dimension())
     return true;
@@ -151,7 +154,7 @@ Point::operator!= (const Point& p)
 
 // Convert Point to a string with format: "(%f)", "(%f, %f)" or "(%f, %f, %f)".
 std::ostream& 
-operator<< (std::ostream& ostr, Point& p)
+operator<< (std::ostream& ostr, const Point& p)
 {
   switch (p.dimension()) {
     case 1 :
@@ -197,6 +200,32 @@ operator>> (std::istream& istr, Point& p)
   p.dimension(3);     // 3-dimensional point
   istr >> c;
   return istr;
+}
+
+
+// --- Methods ---
+double 
+Point::ratioDistance(const Point& q) const throw(DifferentDimensionsException)
+{
+  if (q.dimension() != dimension_)
+    throw DifferentDimensionsException(dimension_, q.dimension());
+  // else
+  switch (dimension_) {
+    case 1 :
+      return max( (q.x - x)/x, 0.0 );
+      break;
+
+    case 2 :
+      return max( (q.x - x)/x, max( (q.y - y)/y, 0.0 ) );
+      break;
+      
+    case 3 :
+      return max( (q.x - x)/x, max( (q.y - y)/y, max( (q.z - z)/z, 0.0) ) );
+      break;
+
+    default :
+      return max( (q.x - x)/x, max( (q.y - y)/y, max( (q.z - z)/z, 0.0) ) );
+  }
 }
 
 

@@ -14,11 +14,9 @@ namespace {
 // The fixture for testing class Point.
 class PointTest : public ::testing::Test {
   protected:
-    PointTest() {
-      
-    }
+    PointTest() { }
     
-    ~PointTest() {}
+    ~PointTest() { }
 
 };
 
@@ -90,7 +88,7 @@ TEST_F(PointTest, PointOperatorsWorkCorrectly) {
 }
 
 
-//Test that Point::dimension() and Point::dimension(int) work as expected.
+// Test that Point::dimension() and Point::dimension(int) work as expected.
 TEST_F(PointTest, PointGetDimensionAndSetDimensionWork) {
   Point p1(3.9);
   Point p2(0.3, 1.0);
@@ -106,6 +104,19 @@ TEST_F(PointTest, PointGetDimensionAndSetDimensionWork) {
   p3.dimension(1);
   EXPECT_EQ(1, p3.dimension());
   EXPECT_EQ(0, p3.y);
+}
+
+
+// Test that Point::ratioDistance() works as expected.
+TEST_F(PointTest, PointRatioDistanceWorks) {
+  Point p1(2, 100);
+  Point p2(4, 900);
+  EXPECT_EQ(8, p1.ratioDistance(p2));
+  Point p3(4, 110);
+  EXPECT_EQ(1, p1.ratioDistance(p3));
+  Point p4(1, 100);
+  EXPECT_EQ(0, p1.ratioDistance(p4));
+  EXPECT_EQ(0, p1.ratioDistance(p1));
 }
 
 
