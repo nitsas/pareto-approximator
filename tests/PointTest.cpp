@@ -67,8 +67,8 @@ TEST_F(PointTest, PointConstructorsWorkForDoubles) {
 
 // Test that Point's operators work as expected.
 TEST_F(PointTest, PointOperatorsWorkCorrectly) {
-  Point p1( 4.0, 3.5, -2.7);
-  Point p2(-1.8, 2.1,  8.2);
+  Point p1(4.0, 3.5, -2.7);
+  Point p2(1.8, 2.1,  8.2);
   
   // test operator=
   Point p3 = p1;
@@ -85,6 +85,19 @@ TEST_F(PointTest, PointOperatorsWorkCorrectly) {
   // test operator!=
   EXPECT_EQ(false, p1 != p4);
   EXPECT_EQ(true,  p1 != p2);
+
+  // test operator<
+  EXPECT_EQ(true, p2 < p1);
+  EXPECT_EQ(false, p1 < p2);
+  EXPECT_EQ(false, p1 < p1);
+  Point p5(4.0, 3.5, -2.8);
+  EXPECT_EQ(true, p5 < p1);
+  Point p6(1.8, 2.0, 17.5);
+  EXPECT_EQ(true, p6 < p2);
+  Point p7(17.1, 15.4);
+  Point p8(17.1, 13.1);
+  EXPECT_EQ(true, p8 < p7);
+  EXPECT_EQ(false, p7 < p8);
 }
 
 
@@ -117,6 +130,17 @@ TEST_F(PointTest, PointRatioDistanceWorks) {
   Point p4(1, 100);
   EXPECT_EQ(0, p1.ratioDistance(p4));
   EXPECT_EQ(0, p1.ratioDistance(p1));
+}
+
+
+// Test that Point::str() works as expected.
+TEST_F(PointTest, PointStrWorks) {
+  Point p1(1, 1000);
+  EXPECT_EQ("(1, 1000)", p1.str());
+  Point p2(49.75, 5000000.2);
+  EXPECT_EQ("(49.75, 5e+06)", p2.str());
+  Point p3(-4.9, 0.0);
+  EXPECT_EQ("(-4.9, 0)", p3.str());
 }
 
 

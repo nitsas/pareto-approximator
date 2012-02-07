@@ -5,6 +5,7 @@
 #define SIMPLE_POINT_H
 
 #include <iostream>
+#include <string>
 
 #include "DifferentDimensionsException.h"
 
@@ -38,6 +39,8 @@ class Point {
     // operator= : use the default (copies all members)
     bool operator== (const Point& p) const;
     bool operator!= (const Point& p) const;
+    bool operator<  (const Point& p) const throw(DifferentDimensionsException);
+    // will need it for the map
     // Input/Output stream operators
     friend std::ostream& operator<< (std::ostream& ostr, const Point& p);
     friend std::istream& operator>> (std::istream& istr, Point& p);
@@ -49,6 +52,7 @@ class Point {
     bool dimension(int dim);
 
     // Methods
+    std::string str() const;
     double ratioDistance(const Point& q) const 
                                throw(DifferentDimensionsException);
 
@@ -56,8 +60,6 @@ class Point {
     // The point's dimension. (1D, 2D or 3D point)
     int dimension_;
 };
-
-
 
 
 }  // namespace pareto_approximator

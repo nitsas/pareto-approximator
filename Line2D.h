@@ -26,14 +26,13 @@ class Line2D
     Line2D();
     Line2D(int m, int b);
     Line2D(double m, double b);
-    Line2D(const Point& p1, const Point& p2) throw(Not2DPointsException, 
-                                                   SamePointsException);
+    Line2D(const Point& p1, const Point& p2);
     // Vertical line constructors (line equation: x = c)
     Line2D(int c);
     Line2D(double c);
 
     // Attribute getters
-    double m() const throw(VerticalLineException);
+    double m() const;
     double b() const;
     bool   isVertical() const;
 
@@ -45,7 +44,7 @@ class Line2D
     friend std::ostream& operator<< (std::ostream& ostr, const Line2D& line);
 
     // Methods
-    Point  intersection(const Line2D& line) const throw(ParallelLinesException);
+    Point  intersection(const Line2D& line) const;
     double ratioDistance(const Point& p) const;
     Line2D parallelThrough(const Point& p) const;
 

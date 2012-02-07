@@ -1,10 +1,14 @@
 /* Line2DTest.cpp */
 
 
+#include <string>
+
 #include "gtest/gtest.h"
 #include "../Line2D.h"
 #include "../Point.h"
 
+
+using std::string;
 
 using namespace pareto_approximator;
 
@@ -41,6 +45,80 @@ TEST_F(Line2DTest, Line2DConstructorsAndAccessorsWork) {
   Line2D l3(p1, p2);
   EXPECT_EQ(1, l3.m());
   EXPECT_EQ(0, l3.b());
+}
+
+
+// Test that Line2D::isVertical() works correctly (and that we correctly 
+// identify vertical lines).
+TEST_F(Line2DTest, Line2DIsVerticalWorks) {
+  Line2D l1(5);
+  EXPECT_EQ(true, l1.isVertical());
+  string willChange = "this will change";
+  try {
+    // this should throw a VerticalLineException
+    l1.m();
+  }
+  catch (VerticalLineException) {
+    // this should be executed
+    willChange = "VerticalLineException thrown and caught!";
+  }
+  EXPECT_EQ("VerticalLineException thrown and caught!", willChange);
+
+  Line2D l2(4.7);
+  EXPECT_EQ(true, l2.isVertical());
+  willChange = "this will change";
+  try {
+    // this should throw a VerticalLineException
+    l2.m();
+  }
+  catch (VerticalLineException) {
+    // this should be executed
+    willChange = "VerticalLineException thrown and caught!";
+  }
+
+  Point p1(4.0, 3.0);
+  Point p2(4.0, 2.0);
+  Line2D l3(p1, p2);
+  EXPECT_EQ(true, l3.isVertical());
+  willChange = "this will change";
+  try {
+    // this should throw a VerticalLineException
+    l3.m();
+  }
+  catch (VerticalLineException) {
+    // this should be executed
+    willChange = "VerticalLineException thrown and caught!";
+  }
+
+  // now a non-vertical line
+  Line2D l4(2.0, 4.1);
+  EXPECT_EQ(false, l4.isVertical());
+  string willNotChange;
+  willNotChange = "no VerticalLineException, as expected!";
+  try {
+    // this shouldn't throw a VerticalLineException
+    l4.m();
+  }
+  catch (VerticalLineException) {
+    // this shouldn't be executed
+    willNotChange = "VerticalLineException was thrown when it shouldn't have!";
+  }
+  EXPECT_EQ("no VerticalLineException, as expected!", willNotChange);
+
+  // and another non-vertical one
+  Point p3(5.0, 5.0);
+  Line2D l5(p1, p3);
+  EXPECT_EQ(false, l5.isVertical());
+  willNotChange = "no VerticalLineException, as expected!";
+  try {
+    // this shouldn't throw a VerticalLineException
+    l5.m();
+  }
+  catch (VerticalLineException) {
+    // this shouldn't be executed
+    willNotChange = "VerticalLineException was thrown when it shouldn't have!";
+  }
+  EXPECT_EQ("no VerticalLineException, as expected!", willNotChange);
 }
 
 

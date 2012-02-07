@@ -1,6 +1,8 @@
 /* Point.cpp */
 
 
+#include <sstream>
+
 #include "Point.h"
 
 
@@ -152,27 +154,33 @@ Point::operator!= (const Point& p) const
 }
 
 
+bool 
+Point::operator< (const Point& p) const throw(DifferentDimensionsException)
+{
+  if (dimension_ != p.dimension())
+    throw DifferentDimensionsException(dimension_, p.dimension());
+  // else
+  switch (dimension_) {
+    case 1 :
+      return x < p.x;
+
+    case 2 :
+      return (x < p.x) || (x == p.x && y < p.y);
+
+    case 3 :
+      return (x < p.x) || (x == p.x && ( y < p.y || (y == p.y && z < p.z) ) );
+
+    default :
+      return (x < p.x) || (x == p.x && ( y < p.y || (y == p.y && z < p.z) ) );
+  }
+}
+
+
 // Convert Point to a string with format: "(%f)", "(%f, %f)" or "(%f, %f, %f)".
 std::ostream& 
 operator<< (std::ostream& ostr, const Point& p)
 {
-  switch (p.dimension()) {
-    case 1 :
-      ostr << "(" << p.x << ")";
-      break;
-
-    case 2 :
-      ostr << "(" << p.x << ", " << p.y << ")";
-      break;
-      
-    case 3 :
-      // Fallthrough
-
-    default :
-      ostr << "(" << p.x << ", " << p.y << ", " << p.z << ")";
-      break;
-  }
-  return ostr;
+  return ostr << p.str();
 }
 
 
@@ -204,6 +212,32 @@ operator>> (std::istream& istr, Point& p)
 
 
 // --- Methods ---
+std::string 
+Point::str() const
+{
+  std::stringstream ss;
+
+  switch (dimension_) {
+    case 1 :
+      ss << "(" << x << ")";
+      break;
+
+    case 2 :
+      ss << "(" << x << ", " << y << ")";
+      break;
+      
+    case 3 :
+      // Fallthrough
+
+    default :
+      ss << "(" << x << ", " << y << ", " << z << ")";
+      break;
+  }
+
+  return ss.str();
+}
+
+
 double 
 Point::ratioDistance(const Point& q) const throw(DifferentDimensionsException)
 {

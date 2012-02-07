@@ -21,8 +21,7 @@ Line2D::Line2D(int m, int b) : m_(m), b_(b), isVertical_(false) { }
 Line2D::Line2D(double m, double b) : m_(m), b_(b), isVertical_(false) { }
 
 
-Line2D::Line2D(const Point& p1, const Point& p2) throw(Not2DPointsException, 
-                                                       SamePointsException)
+Line2D::Line2D(const Point& p1, const Point& p2) 
 {
   if (p1 == p2)
     throw SamePointsException();
@@ -53,7 +52,7 @@ Line2D::Line2D(double c) : m_(1), b_(-c), isVertical_(true) { }
 
 // --- Attribute getters ---
 double 
-Line2D::m() const throw(VerticalLineException)
+Line2D::m() const 
 {
   if (isVertical_)
     throw VerticalLineException();
@@ -132,10 +131,10 @@ operator<< (std::ostream& ostr, const Line2D& line)
 
 // --- Methods ---
 Point 
-Line2D::intersection(const Line2D& line) const throw(ParallelLinesException)
+Line2D::intersection(const Line2D& line) const 
 {
-  // If the lines are parallel:
-  if ( (isVertical_ && line.isVertical()) || m_ == line.m() )
+  if (isVertical_ && line.isVertical())
+    // both lines are vertical (parallel lines)
     throw ParallelLinesException();
   // else
   if (isVertical_) 
@@ -144,10 +143,16 @@ Line2D::intersection(const Line2D& line) const throw(ParallelLinesException)
   else if (line.isVertical()) 
     // "line" is vertical
     return Point(-line.b(), m_ * (-line.b()) + b_);
-  else 
+  else { 
     // neither line is vertical
-    return Point( (b_ - line.b()) / (line.m() - m_), 
-                  (b_ - line.b()) / (line.m() - m_) * m_ + b_ );
+    if (m_ != line.m())
+      // the lines intersect
+      return Point( (b_ - line.b()) / (line.m() - m_), 
+                    (b_ - line.b()) / (line.m() - m_) * m_ + b_ );
+    else
+      // the lines are parallel
+      throw ParallelLinesException();
+  }
 }
 
 
