@@ -92,7 +92,7 @@ MyGraphProblem::makeGraph()
 
 
 PointAndSolution<PredecessorMap> 
-MyGraphProblem::myComb(double xWeight, double yWeight)
+MyGraphProblem::comb(double xWeight, double yWeight)
 {
   boost::property_map<Graph, double EdgeProperty::*>::type   w_map   = boost::get(&EdgeProperty::weight,  g_);
   boost::property_map<Graph, boost::vertex_distance_t>::type d_map = boost::get(boost::vertex_distance, g_);
@@ -119,10 +119,4 @@ MyGraphProblem::myComb(double xWeight, double yWeight)
   return PointAndSolution<PredecessorMap>(Point(xDistance, yDistance), p_map);
 }
 
-
-PointAndSolution<PredecessorMap> 
-MyGraphProblem::operator()(double xWeight, double yWeight)
-{
-  return this->myComb(xWeight, yWeight);
-}
 
