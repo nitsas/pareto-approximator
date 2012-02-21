@@ -5,3 +5,11 @@ Please read "How Good is the Chord Algorithm?" by C. Daskalakis,
 I. Diakonikolas and M. Yannakakis [SODA 2010] for more info on the 
 Chord Algorithm.
 
+
+In-code comments follow the Doxygen QT style so if you don't understand some
+symbol in the comments (comments contain symbols/commands similar to Latex) or 
+are just curious about Doxygen please check here:
+http://www.stack.nl/~dimitri/doxygen/docblocks.html
+and here:
+http://www.stack.nl/~dimitri/doxygen/manual.html
+

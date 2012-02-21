@@ -1,4 +1,7 @@
-/* VerticalLineException.h */
+/*! \file VerticalLineException.h
+ *  \brief A file containing the declaration and definition of the 
+ *         VerticalLineException exception class.
+ */
 
 
 #ifndef VERTICAL_LINE_EXCEPTION_H
@@ -7,13 +10,20 @@
 #include <exception>
 
 
+//! The namespace containing everything needed for the chord algorithm.
 namespace pareto_approximator {
 
 
+//! Exception thrown by Line2D::m().
+/*! 
+ *  An exception thrown when a Line2D instance's slope was requested but 
+ *  the line is vertical (infinite slope).
+ */
 class VerticalLineException : public std::exception
 {
   public:
-    const char* what() const throw()
+    //! Return a simple char* message.
+    const char* what() const 
     {
       return "The line is vertical (slope is infinite).";
     }
