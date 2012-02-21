@@ -23,7 +23,7 @@ class SamePointsException : public std::exception
 {
   public:
     //! Return a simple char* message.
-    const char* what() const 
+    const char* what() const throw() 
     {
       return "The points given are the same point.";
     }

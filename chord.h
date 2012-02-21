@@ -40,18 +40,18 @@ namespace pareto_approximator {
  *          combinations of objectives comb optimizes.
  *  
  *  How to use:
- *  Users should create a class (let's call it Problem), inheriting from 
- *  SimpleProblem<S> with all the data needed for the user's problem and 
+ *  Users should create a class (let's call it Problem), deriving from 
+ *  BaseProblem<S> with all the data needed for the user's problem and 
  *  they should implement its comb() method. All the comb() method needs to 
  *  do is optimize linear combinations of the problem's objectives and return 
  *  the resulting problem solution and the corresponding point in objective 
- *  space (see SimpleProblem for more). The Problem class's instances will 
- *  be functors since we have defined SimpleProblem<S>'s operator()() (it 
- *  just calls comb() which is declared virtual in SimpleProblem<S>). 
+ *  space (see BaseProblem for more). The Problem class's instances will 
+ *  be functors since we have defined BaseProblem<S>'s operator()() (it 
+ *  just calls comb() which is declared virtual in BaseProblem<S>). 
  *  After all the above the user can call chordAlgorithm() with a Problem 
  *  instance and the eps they want.
  *
- *  \sa SimpleProblem, PointAndSolution and Point
+ *  \sa BaseProblem, PointAndSolution and Point
  */
 template <class S>
 list< PointAndSolution<S> > 
@@ -87,7 +87,7 @@ chordAlgorithm(function<PointAndSolution<S> (double, double)> comb, double eps);
  *  Ilias Diakonikolas and Mihalis Yannakakis for in-depth info on how the 
  *  chord algorithm works.
  *  
- *  \sa chordAlgorithm(), SimpleProblem, PointAndSolution and Point
+ *  \sa chordAlgorithm(), BaseProblem, PointAndSolution and Point
  */
 template <class S> 
 list< PointAndSolution<S> > 

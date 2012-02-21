@@ -6,13 +6,13 @@
 #include <boost/graph/adjacency_list.hpp>
 
 #include "../PointAndSolution.h"
-#include "../SimpleProblem.h"
+#include "../BaseProblem.h"
 
 
 using std::string;
 
 using pareto_approximator::PointAndSolution;
-using pareto_approximator::SimpleProblem;
+using pareto_approximator::BaseProblem;
 
 
 class EdgeProperty 
@@ -36,7 +36,7 @@ typedef Graph::edge_descriptor   Edge;
 typedef std::vector<Vertex>      PredecessorMap;
 
 
-class MyGraphProblem : public SimpleProblem<PredecessorMap>
+class MyGraphProblem : public BaseProblem<PredecessorMap>
 {
   public:
     MyGraphProblem();

@@ -24,9 +24,9 @@ class Not2DPointsException : public std::exception
 {
   public:
     //! Return a simple char* message.
-    const char* what() const 
+    const char* what() const throw() 
     {
-      return "Expected 2-dimensional points."
+      return "Expected 2-dimensional points.";
     }
 };
 

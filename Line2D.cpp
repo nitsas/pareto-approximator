@@ -207,14 +207,14 @@ Line2D::str() const
 {
   std::stringstream ss;
 
-  if (line.isVertical()) 
-    ss << "( x = " << -line.b() << " )";
+  if (isVertical_) 
+    ss << "( x = " << -b_ << " )";
   else {
-    ss << "( y = " << line.m() << " x ";
-    if (line.b() >= 0.0)
-      ss << "+ " << line.b() << " )";
+    ss << "( y = " << m_ << " x ";
+    if (b_ >= 0.0)
+      ss << "+ " << b_ << " )";
     else 
-      ss << "- " << -line.b() << " )";
+      ss << "- " << -b_ << " )";
   }
   return ss.str();
 }

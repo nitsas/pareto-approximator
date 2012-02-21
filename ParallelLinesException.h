@@ -24,7 +24,7 @@ class ParallelLinesException : public std::exception
 {
   public:
     //! Return a simple char* message.
-    const char* what() const 
+    const char* what() const throw() 
     {
       return "The lines are parallel or the same line.";
     }

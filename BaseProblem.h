@@ -1,6 +1,6 @@
-/*! \file SimpleProblem.h
+/*! \file BaseProblem.h
  *  \brief A file containing the declaration and definition of the 
- *         SimpleProblem<S> class template.
+ *         BaseProblem<S> class template.
  */
 
 
@@ -20,11 +20,11 @@ namespace pareto_approximator {
 
 //! A template for a problem wrapper class.
 /*!
- *  SimpleProblem is a wrapper parent class for user problems. Users should 
- *  create a child class containing problem-specific methods and attributes 
+ *  BaseProblem is a wrapper base class for user problems. Users should 
+ *  create a derived class containing problem-specific methods and attributes 
  *  and implement its comb method. 
  *  
- *  Instances of the user-created child class will represent bi-objective 
+ *  Instances of the user-created derived class will represent bi-objective 
  *  problems. Examples of problems: 
  *  - A graph with two "costs" for each edge and the problem of finding a 
  *    minimum spanning tree.
@@ -33,25 +33,25 @@ namespace pareto_approximator {
  *  - A linear optimization problem with two objective functions.
  *  - etc
  *  
- *  SimpleProblem is a class template. The template argument is the 
+ *  BaseProblem is a class template. The template argument is the 
  *  representation of a problem solution (it depends on the problem). 
  *  e.g. a list of edges forming a minimum spanning tree of a graph.
  *
- *  Users can then pass an instance of the child class to chordAlgorithm() 
+ *  Users can then pass an instance of the derived class to chordAlgorithm() 
  *  to find an approximation to the problem's Pareto set (or, depending on 
  *  the problem and the approximation parameter, the actual Pareto set).
  *
- *  \sa SimpleProblem(), ~SimpleProblem(), comb() and operator()()
+ *  \sa BaseProblem(), ~BaseProblem(), comb() and operator()()
  */
 
 template <class S>
-class SimpleProblem 
+class BaseProblem 
 {
   public:
-    //! SimpleProblem's default constructor. (empty)
-    SimpleProblem() { }
-    //! SimpleProblem's default destructor. (empty)
-    virtual ~SimpleProblem() { }
+    //! BaseProblem's default constructor. (empty)
+    BaseProblem() { }
+    //! BaseProblem's default destructor. (empty)
+    virtual ~BaseProblem() { }
 
     //! Optimize a linear combination of the objectives.
     /*! 
@@ -67,11 +67,11 @@ class SimpleProblem
      *  combinations of the objectives in order to come up with an 
      *  approximation of the Pareto curve.
      *  
-     *  SimpleProblem's comb() is declared virtual (and doesn't do anything).
-     *  The user is supposed to make a child of the SimpleProblem class and 
-     *  implement its comb() method.
+     *  BaseProblem's comb() is declared virtual (and doesn't do anything).
+     *  The user is supposed to derive a class from the BaseProblem class 
+     *  and implement its comb() method.
      *  
-     *  /sa SimpleProblem(), ~SimpleProblem() and operator()()
+     *  /sa BaseProblem(), ~BaseProblem() and operator()()
      */
     virtual PointAndSolution<S> 
     comb(double xWeight, double yWeight)
@@ -89,7 +89,7 @@ class SimpleProblem
      *            objectives and
      *          - the corresponding point in objective space.
      *
-     *  /sa SimpleProblem(), ~SimpleProblem, comb()
+     *  /sa BaseProblem(), ~BaseProblem, comb()
      */
     PointAndSolution<S> 
     operator() (double xWeight, double yWeight)
