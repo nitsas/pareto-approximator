@@ -1,20 +1,26 @@
+/* SmallGraphProblem.cpp */
+
+
 #include <boost/graph/dag_shortest_paths.hpp>
 
-#include "MyGraphProblem.h"
+#include "SmallGraphProblem.h"
 #include "../Point.h"
 
 
 using pareto_approximator::Point;
 
 
-MyGraphProblem::MyGraphProblem() 
+SmallGraphProblem::SmallGraphProblem() 
 {
   makeGraph();
 }
 
 
+SmallGraphProblem::~SmallGraphProblem() { }
+
+
 void 
-MyGraphProblem::makeGraph()
+SmallGraphProblem::makeGraph()
 {
   s_ = boost::add_vertex(g_);
   Vertex u = boost::add_vertex(g_);
@@ -92,7 +98,7 @@ MyGraphProblem::makeGraph()
 
 
 PointAndSolution<PredecessorMap> 
-MyGraphProblem::comb(double xWeight, double yWeight)
+SmallGraphProblem::comb(double xWeight, double yWeight)
 {
   boost::property_map<Graph, double EdgeProperty::*>::type   w_map   = boost::get(&EdgeProperty::weight,  g_);
   boost::property_map<Graph, boost::vertex_distance_t>::type d_map = boost::get(boost::vertex_distance, g_);

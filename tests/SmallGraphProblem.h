@@ -1,5 +1,8 @@
-#ifndef EXAMPLE_CLASS_MY_GRAPH_PROBLEM_H
-#define EXAMPLE_CLASS_MY_GRAPH_PROBLEM_H
+/* SmallGraphProblem.h */
+
+
+#ifndef EXAMPLE_CLASS_SMALL_GRAPH_PROBLEM_H
+#define EXAMPLE_CLASS_SMALL_GRAPH_PROBLEM_H
 
 
 #include <string>
@@ -36,10 +39,11 @@ typedef Graph::edge_descriptor   Edge;
 typedef std::vector<Vertex>      PredecessorMap;
 
 
-class MyGraphProblem : public BaseProblem<PredecessorMap>
+class SmallGraphProblem : public BaseProblem<PredecessorMap>
 {
   public:
-    MyGraphProblem();
+    SmallGraphProblem();
+    ~SmallGraphProblem();
 
     PointAndSolution<PredecessorMap> comb(double xWeight, double yWeight);
 
@@ -53,4 +57,4 @@ class MyGraphProblem : public BaseProblem<PredecessorMap>
 };
 
 
-#endif  // EXAMPLE_CLASS_MY_GRAPH_PROBLEM_H
+#endif  // EXAMPLE_CLASS_SMALL_GRAPH_PROBLEM_H

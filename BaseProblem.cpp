@@ -1,10 +1,10 @@
-/*! \file chord.cpp
- *  \brief A file containing the definition of the chord algorithm 
- *         function templates.
- *
- *  Won't #include "chord.h". In fact "chord.h" will #include "chord.cpp" 
- *  because it describes function templates (which don't allow us to split 
- *  declaration from definition).
+/*! \file BaseProblem.cpp
+ *  \brief A file containing the definition of the BaseProblem<S> 
+ *         class template.
+ *  
+ *  Won't <tt>#include</tt> "BaseProblem.h". In fact "BaseProblem.h" will 
+ *  <tt>#include</tt> "BaseProblem.cpp" because it describes a class 
+ *  template (which doesn't allow us to split declaration from definition).
  */
 
 
@@ -15,33 +15,41 @@ using std::min;
 namespace pareto_approximator {
 
 
-//! The main chord algorithm function.
+//! BaseProblem's default constructor. (empty)
+template <class S> 
+BaseProblem<S>::BaseProblem() { }
+
+
+//! BaseProblem's default destructor. (virtual and empty)
+template <class S>
+BaseProblem<S>::~BaseProblem() { }
+
+
+//! Compute an (1+eps)-convex Pareto set of the problem.
 /*! 
- *  \param comb A std::tr1::function object with arguments (double, double) 
- *              that returns a PointAndSolution<S> instance (where S is a 
- *              type of an instance representing a problem solution).  
- *  \param eps The degree of approximation. chordAlgorithm() will find an 
- *             (1+eps)-convex Pareto set of the problem.
+ *  \param eps The degree of approximation. approximateParetoSet() will 
+ *             find an (1+eps)-convex Pareto set of the problem.
  *  \return An (1+eps)-convex Pareto set of the problem whose linear 
  *          combinations of objectives comb optimizes.
  *  
  *  How to use:
  *  Users should create a class (let's call it Problem), deriving from 
  *  BaseProblem<S> with all the data needed for the user's problem and 
- *  they should implement its comb() method. All the comb() method needs to 
- *  do is optimize linear combinations of the problem's objectives and return 
- *  the resulting problem solution and the corresponding point in objective 
- *  space (see BaseProblem for more). The Problem class's instances will 
- *  be functors since we have defined BaseProblem<S>'s operator()() (it 
- *  just calls comb() which is declared virtual in BaseProblem<S>). 
- *  After all the above the user can call chordAlgorithm() with a Problem 
- *  instance and the eps they want.
+ *  they should implement its comb() method. All the comb() method needs 
+ *  to do is optimize linear combinations of the problem's objectives and 
+ *  return the resulting problem solution and the corresponding point in 
+ *  objective space. After all the above users can make a Problem 
+ *  instance and call its approximateParetoSet() method with the eps 
+ *  they want.
+ *
+ *  approximateParetoSet() will use the comb() method the user 
+ *  implemented. That is why comb() is declared virtual.
  *
  *  \sa BaseProblem, PointAndSolution and Point
  */
 template <class S> 
 list< PointAndSolution<S> > 
-chordAlgorithm(function<PointAndSolution<S> (double, double)> comb, double eps)
+BaseProblem<S>::approximateParetoSet(double eps)
 {
   // reminder: comb's arguments are x objective's weight and y's weight
 
@@ -56,46 +64,45 @@ chordAlgorithm(function<PointAndSolution<S> (double, double)> comb, double eps)
   Point tip(min(west.point.x, south.point.x), min(west.point.y, south.point.y));
 
   // let doChord do all the work (it's recursive)
-  return doChord<S>(comb, west, south, tip, eps);
+  return doChord(west, south, tip, eps);
 }
 
 
-//! A recursive function called by chordAlgorithm() to do the bulk of the work.
-/*! 
- *  \param comb A std::tr1::function object with arguments (double, double) 
- *              that returns a PointAndSolution<S> instance (where S is a 
- *              type of an instance representing a problem solution).  
- *  \param west A PointAndSolution<S> instance (where S is the type of the 
- *              problem solutions). 
- *  \param south A PointAndSolution<S> instance (where S is the type of the 
- *               problem solutions).
+/*! \brief A recursive function called by approximateParetoSet() to do 
+ *         the bulk of the work.
+ * 
+ *  \param west A PointAndSolution<S> instance (where S is the type of 
+ *              the problem solutions). 
+ *  \param south A PointAndSolution<S> instance (where S is the type of 
+ *               the problem solutions).
  *  \param tip A Point instance which, together with the points in "west" 
  *             and "south" forms the triangle inside which doChord() will 
  *             search for points of the (1+eps)-convex Pareto set.
  *  \param eps The degree of approximation. doChord() will find a subset 
  *             of an (1+eps)-convex Pareto set of the problem.
- *  \return The part of the problem's (1+eps)-convex Pareto set between the 
- *          point "tip", the point in "west" and the one in "south".
+ *  \return The part of the problem's (1+eps)-convex Pareto set between 
+ *          the point "tip", the point in "west" and the one in "south".
  *  
- *  Users don't need to use doChord(). It's just a recursive routine the 
- *  chordAlgorithm() function uses to do the bulk of the work.
+ *  Users don't need to use doChord() - that is why it's declared private. 
+ *  It's just a recursive routine the approximateParetoSet() method uses 
+ *  to do the bulk of the work.
  *  
  *  Each time it's called doChord() finds at most one new (1+eps)-convex 
  *  Pareto set point, splits the problem into two subproblems and calls 
  *  itself recursivelly on the subproblems until the requested degree of 
  *  approximation is met.
  *  
- *  Please read "How good is the Chord lgorithm?" by Constantinos Daskalakis, 
- *  Ilias Diakonikolas and Mihalis Yannakakis for in-depth info on how the 
- *  chord algorithm works.
+ *  Please read "How good is the Chord lgorithm?" by Constantinos 
+ *  Daskalakis, Ilias Diakonikolas and Mihalis Yannakakis for in-depth 
+ *  info on how the chord algorithm works.
  *  
- *  \sa chordAlgorithm(), BaseProblem, PointAndSolution and Point
+ *  \sa approximateParetoSet(), BaseProblem, PointAndSolution and Point
  */
 template <class S> 
 list< PointAndSolution<S> > 
-doChord(function<PointAndSolution<S> (double, double)> comb, 
-        const PointAndSolution<S>& west, const PointAndSolution<S>& south, 
-        const Point& tip, double eps)
+BaseProblem<S>::doChord(const PointAndSolution<S>& west, 
+                        const PointAndSolution<S>& south, 
+                        const Point& tip, double eps)
 {
   // reminder: comb's arguments are x objective's weight and y's weight
 
@@ -136,8 +143,8 @@ doChord(function<PointAndSolution<S> (double, double)> comb,
   Point southTip = parallel.intersection(ts);
   list< PointAndSolution<S> > westList, southList;
   // call comb on the two subproblems
-  westList  = doChord<S>(comb, west,  southwest, westTip,  eps);
-  southList = doChord<S>(comb, southwest, south, southTip, eps);
+  westList  = doChord(west,  southwest, westTip,  eps);
+  southList = doChord(southwest, south, southTip, eps);
   // remove southList's first element (it's the same as westList's last one)
   // and merge the lists
   southList.pop_front();

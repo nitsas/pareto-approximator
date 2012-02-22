@@ -1,38 +1,33 @@
-/* ChordTest.cpp */
+/* BaseProblemTest.cpp */
 
 
 #include <string>
 #include <list>
-#include <vector>
-#include <tr1/functional>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/dag_shortest_paths.hpp>
 
 #include "gtest/gtest.h"
 #include "../Point.h"
-#include "../Line2D.h"
 #include "../PointAndSolution.h"
-#include "../chord.h"
-#include "MyGraphProblem.h"
+#include "VerySmallProblem.h"
+#include "SmallGraphProblem.h"
 
 
 using std::string;
+
 using pareto_approximator::Point;
 using pareto_approximator::PointAndSolution;
-using pareto_approximator::Line2D;
-using pareto_approximator::doChord;
-using pareto_approximator::chordAlgorithm;
+using pareto_approximator::BaseProblem;
 
 
 namespace {
 
 
-// The fixture for testing our chord implementation.
-class ChordTest : public ::testing::Test {
+// The fixture for testing the BaseProblem wrapper class template.
+// (and our implementation of the chord algorithm)
+class BaseProblemTest : public ::testing::Test {
   protected:
-    ChordTest() { }
+    BaseProblemTest() { }
     
-    ~ChordTest() { }
+    ~BaseProblemTest() { }
 
     static const double bigEps       = 0.5;
     static const double smallEps     = 0.1;
@@ -40,26 +35,10 @@ class ChordTest : public ::testing::Test {
 };
 
 
-// A very simple comb routine we'll pass to chord as a callback.
-// xWeight is objective x's weight and yWeight objective y's weight
-PointAndSolution<string> 
-verySimpleComb(double xWeight, double yWeight)
-{
-  if (xWeight > 2 * yWeight) {
-    return PointAndSolution<string>(Point(1.0, 4.0), "west");
-  }
-  else if (yWeight > 2 * xWeight) {
-    return PointAndSolution<string>(Point(4.0, 1.0), "south");
-  }
-  else {
-    return PointAndSolution<string>(Point(2.0, 2.0), "southwest");
-  }
-}
-
-
+/*
 // Test that doChord does what expected if we give it verySimpleComb() 
 // and the west and south points.
-TEST_F(ChordTest, DoChordWithVerySimpleComb) 
+TEST_F(BaseProblemTest, DoChordWithVerySimpleComb) 
 {
   list< PointAndSolution<string> > paretoSet;
   PointAndSolution<string> west(Point(1.0, 4.0), "west");
@@ -73,13 +52,16 @@ TEST_F(ChordTest, DoChordWithVerySimpleComb)
   EXPECT_EQ(Point(2.0, 2.0), it->point);
   EXPECT_EQ("southwest", it->solution);
 }
+*/
 
 
-// Test that chordAlgorithm does what expected if we pass it verySimpleComb().
-TEST_F(ChordTest, ChordWithVerySimpleComb) 
+// Test that the approximateParetoSet() method does what expected for 
+// the VerySmallProblem class (child of BaseProblem).
+TEST_F(BaseProblemTest, ChordForVerySmallProblem) 
 {
+  VerySmallProblem vsp;
   list< PointAndSolution<string> > paretoSet;
-  paretoSet = chordAlgorithm<string>(verySimpleComb, smallEps);
+  paretoSet = vsp.approximateParetoSet(smallEps);
   ASSERT_EQ(3, paretoSet.size());
   paretoSet.sort();
   list< PointAndSolution<string> >::iterator it = paretoSet.begin();
@@ -94,12 +76,11 @@ TEST_F(ChordTest, ChordWithVerySimpleComb)
 }
 
 
-TEST_F(ChordTest, ChordForShortestPathOnSmallGraph)
+TEST_F(BaseProblemTest, ChordForSmallGraphProblem)
 {
-  MyGraphProblem mgp;
+  SmallGraphProblem sgp;
   list< PointAndSolution<PredecessorMap> > paretoSet;
-//  std::tr1::function< PointAndSolution<PredecessorMap> (double, double) > myComb;
-  paretoSet = chordAlgorithm<PredecessorMap>(mgp, verySmallEps);
+  paretoSet = sgp.approximateParetoSet(verySmallEps);
   EXPECT_EQ(4, paretoSet.size());
 }
 
