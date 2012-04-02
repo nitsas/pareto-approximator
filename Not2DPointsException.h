@@ -1,6 +1,6 @@
 /*! \file Not2DPointsException.h
- *  \brief A file containing the declaration and definition of the 
- *         Not2DPointsException exception class.
+ *  \brief The declaration and definition of the Not2DPointsException 
+ *         exception class.
  */
 
 

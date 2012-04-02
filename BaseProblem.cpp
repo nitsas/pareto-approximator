@@ -1,10 +1,9 @@
 /*! \file BaseProblem.cpp
- *  \brief A file containing the definition of the BaseProblem<S> 
- *         class template.
+ *  \brief The definition of the BaseProblem<S> class template.
  *  
- *  Won't <tt>#include</tt> "BaseProblem.h". In fact "BaseProblem.h" will 
- *  <tt>#include</tt> "BaseProblem.cpp" because it describes a class 
- *  template (which doesn't allow us to split declaration from definition).
+ *  Won't `#include` "BaseProblem.h". In fact "BaseProblem.h" will 
+ *  `#include` "BaseProblem.cpp" because it describes a class template 
+ *  (which doesn't allow us to split declaration from definition).
  */
 
 
@@ -105,6 +104,24 @@ BaseProblem<S>::doChord(const PointAndSolution<S>& west,
                         const Point& tip, double eps)
 {
   // reminder: comb's arguments are x objective's weight and y's weight
+
+  // check if the westmost or the southmost point given is the same as
+  // the tip (ideal point) and if either is stop searching and return 
+  // the west and south objects
+  if (west.point.dominates(south.point)) {
+    list< PointAndSolution<S> > resultList;
+    // if west.point is better than (dominates) south.point return 
+    // only the west object
+    resultList.push_back(west);
+    return resultList;
+  }
+  else if (south.point.dominates(west.point)) {
+    list< PointAndSolution<S> > resultList;
+    // if south.point is better than (dominates) west.point return 
+    // only the south object
+    resultList.push_back(south);
+    return resultList;
+  }
 
   // check if the best possible point is approximately dominated by the 
   // points we have so far

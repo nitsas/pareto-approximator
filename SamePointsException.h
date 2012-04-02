@@ -1,6 +1,6 @@
 /*! \file SamePointsException.h
- *  \brief A file containing the declaration and definition of the 
- *         SamePointsException exception class.
+ *  \brief The declaration and definition of the SamePointsException 
+ *         exception class.
  */
 
 

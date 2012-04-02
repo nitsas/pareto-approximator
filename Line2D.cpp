@@ -1,5 +1,5 @@
 /*! \file Line2D.cpp
- *  \brief A file containing the definition of the Line2D class.
+ *  \brief The definition of the Line2D class.
  */
 
 

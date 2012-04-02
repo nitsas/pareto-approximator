@@ -1,6 +1,5 @@
 /*! \file BaseProblem.h
- *  \brief A file containing the declaration of the BaseProblem<S>
- *         class template.
+ *  \brief The declaration of the BaseProblem<S> class template.
  */
 
 
@@ -68,7 +67,8 @@ class BaseProblem
      *          - An optimum solution of the problem with respect to the 
      *            linear combination \f$ xWeight * x + yWeight * y \f$ of the 
      *            objectives and
-     *          - the corresponding point in objective space.
+     *          - the corresponding point in objective space. Points returned 
+     *            by comb() must have positive coordinates.
      *
      *  approximateParetoSet() uses the instance's comb() to optimize linear 
      *  combinations of the objectives in order to come up with an 
@@ -148,7 +148,7 @@ class BaseProblem
 }  // namespace pareto_approximator
 
 
-// We've got to include the implementation here because we are describing 
+// We've got to #include the implementation here because we are describing 
 // a class template, not a simple class.
 #include "BaseProblem.cpp"
 

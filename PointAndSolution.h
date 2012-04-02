@@ -1,6 +1,6 @@
 /*! \file PointAndSolution.h
- *  \brief A file containing the declaration and definition of the 
- *         PointAndSolution<S> class template.
+ *  \brief The declaration and definition of the PointAndSolution<S> 
+ *         class template.
  */
 
 
@@ -62,8 +62,9 @@ class PointAndSolution
      *  on the right. Returns true if L.point is less than R.point using 
      *  Point::operator<().
      *  
-     *  PointAndSolution::operator<() may throw a DifferentDimensionsException 
-     *  if the two Points are of different dimensions (can't be compared).
+     *  Possible exceptions:
+     *  - May throw a DifferentDimensionsException if the two Points are of 
+     *    different dimensions (can't be compared).
      *  
      *  \sa PointAndSolution and Point::operator<()
      */

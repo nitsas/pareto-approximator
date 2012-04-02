@@ -1,4 +1,6 @@
-/* BaseProblemTest.cpp */
+/*! \file BaseProblemTest.cpp
+ *  \brief Unit test for the BaseProblem class.
+ */
 
 
 #include <string>
@@ -7,7 +9,7 @@
 #include "gtest/gtest.h"
 #include "../Point.h"
 #include "../PointAndSolution.h"
-#include "VerySmallProblem.h"
+#include "NonOptimalStartingPointsProblem.h"
 #include "SmallGraphProblem.h"
 
 
@@ -15,7 +17,6 @@ using std::string;
 
 using pareto_approximator::Point;
 using pareto_approximator::PointAndSolution;
-using pareto_approximator::BaseProblem;
 
 
 namespace {
@@ -35,36 +36,34 @@ class BaseProblemTest : public ::testing::Test {
 };
 
 
-/*
-// Test that doChord does what expected if we give it verySimpleComb() 
-// and the west and south points.
-TEST_F(BaseProblemTest, DoChordWithVerySimpleComb) 
+// Test that the approximateParetoSet() method does what's expected 
+// for the SmallGraphProblem class (child of BaseProblem). 
+// SmallGraphProblem is a multiobjective shortest path problem on a 
+// small boost graph.
+TEST_F(BaseProblemTest, ChordForSmallGraphProblem)
 {
-  list< PointAndSolution<string> > paretoSet;
-  PointAndSolution<string> west(Point(1.0, 4.0), "west");
-  PointAndSolution<string> south(Point(4.0, 1.0), "south");
-  Point ideal(1.0, 1.0);
-  paretoSet = doChord<string>(verySimpleComb, west, south, ideal, smallEps);
-  ASSERT_EQ(3, paretoSet.size());
-  paretoSet.sort();
-  list< PointAndSolution<string> >::iterator it = paretoSet.begin();
-  ++it;
-  EXPECT_EQ(Point(2.0, 2.0), it->point);
-  EXPECT_EQ("southwest", it->solution);
+  SmallGraphProblem sgp;
+  list< PointAndSolution<PredecessorMap> > paretoSet;
+  paretoSet = sgp.approximateParetoSet(verySmallEps);
+  EXPECT_EQ(4, paretoSet.size());
 }
-*/
 
 
-// Test that the approximateParetoSet() method does what expected for 
-// the VerySmallProblem class (child of BaseProblem).
-TEST_F(BaseProblemTest, ChordForVerySmallProblem) 
+// Test approximateParetoSet().
+// Test that non-optimal starting points are correctly deleted when 
+// points that dominate them are found.
+TEST_F(BaseProblemTest, ChordForNonOptimalStartingPointsProblem) 
 {
-  VerySmallProblem vsp;
+  NonOptimalStartingPointsProblem nospp;
   list< PointAndSolution<string> > paretoSet;
-  paretoSet = vsp.approximateParetoSet(smallEps);
-  ASSERT_EQ(3, paretoSet.size());
-  paretoSet.sort();
+  paretoSet = nospp.approximateParetoSet(verySmallEps);
+  EXPECT_EQ(3, paretoSet.size());
   list< PointAndSolution<string> >::iterator it = paretoSet.begin();
+/*
+  EXPECT_EQ(Point(1.0, 8.0), it->point);
+  EXPECT_EQ("west-dominated", it->solution);
+  ++it;
+*/
   EXPECT_EQ(Point(1.0, 4.0), it->point);
   EXPECT_EQ("west", it->solution);
   ++it;
@@ -73,15 +72,11 @@ TEST_F(BaseProblemTest, ChordForVerySmallProblem)
   ++it;
   EXPECT_EQ(Point(4.0, 1.0), it->point);
   EXPECT_EQ("south", it->solution);
-}
-
-
-TEST_F(BaseProblemTest, ChordForSmallGraphProblem)
-{
-  SmallGraphProblem sgp;
-  list< PointAndSolution<PredecessorMap> > paretoSet;
-  paretoSet = sgp.approximateParetoSet(verySmallEps);
-  EXPECT_EQ(4, paretoSet.size());
+/*
+  ++it;
+  EXPECT_EQ(Point(8.0, 1.0), it->point);
+  EXPECT_EQ("south-dominated", it->solution);
+*/
 }
 
 

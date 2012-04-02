@@ -1,15 +1,17 @@
 /*! \file Point.h
- *  \brief A file containing the declaration of the Point class.
+ *  \brief The declaration of Point. (a simple point class)
  */
 
 
-#ifndef SIMPLE_POINT_H
-#define SIMPLE_POINT_H
+#ifndef SIMPLE_POINT_CLASS_H
+#define SIMPLE_POINT_CLASS_H
 
 #include <iostream>
 #include <string>
 
 #include "DifferentDimensionsException.h"
+#include "NegativeApproximationRatioException.h"
+#include "NotPositivePointException.h"
 
 
 //! The namespace containing everything needed for the chord algorithm.
@@ -38,33 +40,32 @@ namespace pareto_approximator {
 
 class Point {
   public:
-    //! A Point's 1st dimension.
+    //! A point's 1st dimension.
     double x;
-    //! A Point's 2nd dimension. (value is undefined for 1-dimensional points)
+    //! A point's 2nd dimension. (value is undefined for 1D points)
     double y;
-    //! A Point's 3rd dimension. (value is undefined for 1-dimensional and 
-    //! 2-dimensional points)
+    //! A point's 3rd dimension. (value is undefined for 1D and 2D points)
     double z;
 
     //! The empty constructor. Creates an all-zero 3-dimensional Point.
     Point();
     
     //! An 1-dimensional Point constructor. 
-    /*! The resulting Point's dimensions will be doubles, not ints. */
+    /*! The resulting point's dimensions will be doubles, not ints. */
     Point(int xx);
     
     //! An 1-dimensional Point constructor.
     Point(double xx);
     
     //! A 2-dimensional Point constructor.
-    /*! The resulting Point's dimensions will be doubles, not ints. */
+    /*! The resulting point's dimensions will be doubles, not ints. */
     Point(int xx, int yy);
     
     //! A 2-dimensional Point constructor.
     Point(double xx, double yy);
     
     //! A 3-dimensional Point constructor.
-    /*! The resulting Point's dimensions will be doubles, not ints. */
+    /*! The resulting point's dimensions will be doubles, not ints. */
     Point(int xx, int yy, int zz);
     
     //! A 3-dimensional Point constructor.
@@ -169,7 +170,7 @@ class Point {
 
     //! Set the point's dimension. (1D, 2D or 3D point)
     /*! 
-     *  \param dim The dimension we want to change the Point instance to.
+     *  \param dimension The dimension we want to change the Point instance to.
      *  \return true if everything went ok, false otherwise.
      *          (we get false only if dim was not 1, 2 or 3)
      *  
@@ -204,9 +205,37 @@ class Point {
      *  - May throw a DifferentDimensionsException exception if the two 
      *    Point instances are of different dimensions (can't be compared).
      *
-     *  \sa Point and Line2D::ratioDistance()
+     *  \sa Point, Point::dominates() and Line2D::ratioDistance()
      */
     double ratioDistance(const Point& q) const;
+
+    //! Check if the current point (p) eps-covers the given point (q).
+    /*! 
+     *  \param q A Point instance with \f$ q_{i} \ge 0 \f$ for all i.
+     *  \param eps An approximation factor.
+     *  \return true if p eps-covers q, false otherwise.
+     *  
+     *  Note that both p and q must be greater than zero (dominated by 0),
+     *  that is both \f$ p_{i} \ge 0 \f$ and \f$ q_{i} \ge 0 \f$ must hold
+     *  for all i.
+     *  
+     *  We say that p \f$ \epsilon \f$-covers q (\f$\epsilon \ge 0 \f$) if 
+     *  \f$ p_{i} \le (1 + \epsilon) q_{i} \f$, for all i. Both p and 
+     *  q must be of the same dimension.
+     *  
+     *  If eps=0.0 the method simply checks whether or not p dominates 
+     *  q and that is how it got its name.
+     *  
+     *  Possible exceptions:
+     *  - May throw a NotPositivePointException if either p or q is not 
+     *    greater than 0 (dominated by 0).
+     *  - May throw a NegativeApproximationRatioException if \f$ eps < 0 \f$.
+     *  - May throw a DifferentDimensionsException if p and q are of different 
+     *    dimensions.
+     *  
+     *  \sa Point and Point::ratioDistance()
+     */
+    bool dominates(const Point& q, double eps=0.0) const;
 
   private:
     //! The Point instance's dimension. (1D, 2D or 3D point)
@@ -217,4 +246,4 @@ class Point {
 }  // namespace pareto_approximator
 
 
-#endif  // SIMPLE_POINT_H
+#endif  // SIMPLE_POINT_CLASS_H

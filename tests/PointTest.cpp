@@ -133,6 +133,24 @@ TEST_F(PointTest, PointRatioDistanceWorks) {
 }
 
 
+// Test that Point::dominates() works as expected.
+TEST_F(PointTest, PointDominatesWorks) {
+  Point p1(1.0, 5.0);
+  Point p2(1.5, 7.0);
+  EXPECT_EQ(true, p1.dominates(p2));
+  EXPECT_EQ(false, p2.dominates(p1));
+  EXPECT_EQ(true, p2.dominates(p1, 0.5));
+  Point p3(1.6, 6.0);
+  EXPECT_EQ(false, p3.dominates(p1, 0.5));
+
+  ASSERT_THROW(p1.dominates(p2, -0.5), NegativeApproximationRatioException);
+  Point p4(-1.3, 8.7);
+  ASSERT_THROW(p1.dominates(p4), NotPositivePointException);
+  Point p5(2.4, 8.97, 1.42);
+  ASSERT_THROW(p1.dominates(p5), DifferentDimensionsException);
+}
+
+
 // Test that Point::str() works as expected.
 TEST_F(PointTest, PointStrWorks) {
   Point p1(1, 1000);

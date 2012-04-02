@@ -1,5 +1,5 @@
 /*! \file Point.cpp
- *  \brief A file containing the definition of the Point class.
+ *  \brief The declaration of Point. (a simple point class)
  */
 
 
@@ -24,7 +24,7 @@ Point::Point()
 
 
 //! An 1-dimensional Point constructor. 
-/*! The resulting Point's dimensions will be doubles, not ints. */
+/*! The resulting point's dimensions will be doubles, not ints. */
 Point::Point(int xx)
 {
   dimension_ = 1;
@@ -43,7 +43,7 @@ Point::Point(double xx)
 
 
 //! A 2-dimensional Point constructor.
-/*! The resulting Point's dimensions will be doubles, not ints. */
+/*! The resulting point's dimensions will be doubles, not ints. */
 Point::Point(int xx, int yy)
 {
   dimension_ = 2;
@@ -64,7 +64,7 @@ Point::Point(double xx, double yy)
 
 
 //! A 3-dimensional Point constructor.
-/*! The resulting Point's dimensions will be doubles, not ints. */
+/*! The resulting point's dimensions will be doubles, not ints. */
 Point::Point(int xx, int yy, int zz)
 {
   dimension_ = 3;
@@ -104,7 +104,7 @@ Point::dimension() const
 
 //! Set the point's dimension. (1D, 2D or 3D point)
 /*! 
- *  \param dim The dimension we want to change the Point instance to.
+ *  \param dimension The dimension we want to change the Point instance to.
  *  \return true if everything went ok, false otherwise.
  *          (we get false only if dim was not 1, 2 or 3)
  *  
@@ -357,7 +357,7 @@ Point::str() const
  *  - May throw a DifferentDimensionsException exception if the two 
  *    Point instances are of different dimensions (can't be compared).
  *
- *  \sa Point and Line2D::ratioDistance()
+ *  \sa Point, Point::dominates() and Line2D::ratioDistance()
  */
 double 
 Point::ratioDistance(const Point& q) const 
@@ -380,6 +380,77 @@ Point::ratioDistance(const Point& q) const
 
     default :
       return max( (q.x - x)/x, max( (q.y - y)/y, max( (q.z - z)/z, 0.0) ) );
+  }
+}
+
+
+//! Check if the current point (p) eps-covers the given point (q).
+/*! 
+ *  \param q A Point instance with \f$ q_{i} \ge 0 \f$ for all i.
+ *  \param eps An approximation factor. (default 0.0)
+ *  \return true if p eps-covers q, false otherwise.
+ *  
+ *  Note that both p and q must be greater than zero (dominated by 0),
+ *  that is both \f$ p_{i} \ge 0 \f$ and \f$ q_{i} \ge 0 \f$ must hold
+ *  for all i.
+ *  
+ *  We say that p \f$ \epsilon \f$-covers q (\f$\epsilon \ge 0 \f$) if 
+ *  \f$ p_{i} \le (1 + \epsilon) q_{i} \f$, for all i. Both p and 
+ *  q must be of the same dimension.
+ *  
+ *  If eps=0.0 the method simply checks whether or not p dominates 
+ *  q and that is how it got its name.
+ *  
+ *  Possible exceptions:
+ *  - May throw a NotPositivePointException if either p or q is not 
+ *    greater than 0 (dominated by 0).
+ *  - May throw a NegativeApproximationRatioException if \f$ eps < 0 \f$.
+ *  - May throw a DifferentDimensionsException if p and q are of different 
+ *    dimensions.
+ *  
+ *  \sa Point and Point::ratioDistance()
+ */
+bool 
+Point::dominates(const Point& q, double eps) const
+{
+  if (dimension_ != q.dimension())
+    throw DifferentDimensionsException();
+  if (eps < 0.0)
+    throw NegativeApproximationRatioException();
+
+  // precompute (1+eps)
+  double r = 1+eps;
+  switch (dimension_) {
+    case 1 :
+      if ( (x < 0.0) || (q.x < 0.0) )
+        throw NotPositivePointException();
+      else if (x > r*q.x)
+        return false;
+      else
+        return true;
+      break;    // not really needed
+      
+    case 2 :
+      if ( (x < 0.0) || (y < 0.0) || (q.x < 0.0) || (q.y < 0.0) )
+        throw NotPositivePointException();
+      else if ( (x > r*q.x) || (y > r*q.y) )
+        return false;
+      else 
+        return true;
+      break;    // not really needed
+      
+    case 3 :
+      if ( (x < 0.0) || (y < 0.0) || (z < 0.0) || 
+           (q.x < 0.0) || (q.y < 0.0) || (q.z < 0.0) )
+        throw NotPositivePointException();
+      else if ( (x > r*q.x) || (y > r*q.y) || (z > r*q.z) )
+        return false;
+      else 
+        return true;
+      break;    // not really needed
+      
+    default :
+      return false;
   }
 }
 

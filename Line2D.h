@@ -1,5 +1,5 @@
 /*! \file Line2D.h
- *  \brief A file containing the declaration of the Line2D class.
+ *  \brief The declaration of the Line2D class.
  */
 
 
