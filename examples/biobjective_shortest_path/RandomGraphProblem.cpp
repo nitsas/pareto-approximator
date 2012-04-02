@@ -13,7 +13,7 @@
 #include <boost/random/variate_generator.hpp>
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/breadth_first_search.hpp>
-#include <boost/property_map/property_map.hpp>
+#include <boost/property_map/vector_property_map.hpp>
 
 #include "RandomGraphProblem.h"
 #include "../../Point.h"
@@ -30,6 +30,7 @@ using boost::uniform_int;
 using boost::variate_generator;
 using boost::adjacency_list;
 using boost::graph_traits;
+using boost::num_vertices;
 
 using pareto_approximator::Point;
 
@@ -163,7 +164,7 @@ PointAndSolution<PredecessorMap>
 RandomGraphProblem::comb(double xWeight, double yWeight)
 {
   map<Edge, double> weight;
-  vector<Vertex>                                      p_map(boost::num_vertices(g_));
+  vector<Vertex>                                      p_map(num_vertices(g_));
   VertexIterator vi, vi_end;
 
   // Make the weight property map.
@@ -205,7 +206,7 @@ RandomGraphProblem::comb(double xWeight, double yWeight)
 bool 
 RandomGraphProblem::isTargetReachable()
 {
-  boost::property_map<Graph, boost::vertex_color_t>::type c_map = boost::get(boost::vertex_color, g_);
+  boost::vector_property_map<boost::default_color_type> c_map(num_vertices(g_));
 
   boost::breadth_first_search(g_, s_, color_map(c_map));
   if (c_map[t_] == boost::white_color) 

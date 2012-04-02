@@ -38,9 +38,10 @@ class EdgeProperty
  *  - vertices have a color property (for BFS search)
  *  - edges have a bundled property (class EdgeProperty)
  */
-typedef boost::adjacency_list<boost::setS, boost::vecS, boost::undirectedS, 
-                              boost::property<boost::vertex_color_t, 
-                                boost::default_color_type>, 
+typedef boost::adjacency_list<boost::setS, 
+                              boost::vecS, 
+                              boost::undirectedS, 
+                              boost::no_property,
                               EdgeProperty>           Graph;
 //! A graph vertex. 
 typedef boost::graph_traits<Graph>::vertex_descriptor Vertex;
