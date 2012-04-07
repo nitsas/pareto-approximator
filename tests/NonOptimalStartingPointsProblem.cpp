@@ -1,4 +1,9 @@
-/* NonOptimalStartingPointsProblem.cpp */
+/*! \file NonOptimalStartingPointsProblem.cpp
+ *  \brief Implementation of the NonOptimalStartingPointsProblem class, 
+ *         a simple problem class used in BaseProblemTest.cpp.
+ *  \author Christos Nitsas
+ *  \date 2012
+ */
 
 
 #include "../Point.h"

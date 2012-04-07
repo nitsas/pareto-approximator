@@ -1,5 +1,7 @@
 /*! \file BaseProblemTest.cpp
  *  \brief Unit test for the BaseProblem class.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

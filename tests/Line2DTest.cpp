@@ -1,4 +1,8 @@
-/* Line2DTest.cpp */
+/*! \file Line2DTest.cpp
+ *  \brief Unit test for the Line2D class.
+ *  \author Christos Nitsas
+ *  \date 2012
+ */
 
 
 #include <string>

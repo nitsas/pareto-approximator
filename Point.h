@@ -1,5 +1,7 @@
 /*! \file Point.h
  *  \brief The declaration of Point. (a simple point class)
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

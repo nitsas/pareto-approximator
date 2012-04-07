@@ -1,6 +1,8 @@
 /*! \file SamePointsException.h
  *  \brief The declaration and definition of the SamePointsException 
  *         exception class.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

@@ -1,5 +1,7 @@
 /*! \file BaseProblem.h
  *  \brief The declaration of the BaseProblem<S> class template.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

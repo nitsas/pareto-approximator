@@ -1,6 +1,8 @@
 /*! \file Not2DPointsException.h
  *  \brief The declaration and definition of the Not2DPointsException 
  *         exception class.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

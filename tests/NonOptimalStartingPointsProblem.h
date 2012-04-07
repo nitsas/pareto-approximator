@@ -1,4 +1,9 @@
-/* NonOptimalStartingPointsProblem.h */
+/*! \file NonOptimalStartingPointsProblem.h
+ *  \brief Declaration of the NonOptimalStartingPointsProblem class, 
+ *         a simple problem class used in BaseProblemTest.cpp.
+ *  \author Christos Nitsas
+ *  \date 2012
+ */
 
 
 #ifndef EXAMPLE_CLASS_NON_OPTIMAL_STARTING_POINTS_PROBLEM_H

@@ -6,6 +6,9 @@
 # - BaseProblemTest.cpp  &  NonOptimalStartingPointsProblem.h  &  
 #		NonOptimalStartingPointsProblem.cpp  &  SmallGraphProblem.h  &  
 #		SmallGraphProblem.cpp
+# 
+# Author:  Christos Nitsas
+# Date:    2012
 #
 
 

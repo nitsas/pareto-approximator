@@ -1,5 +1,7 @@
 /*! \file BaseProblem.cpp
  *  \brief The definition of the BaseProblem<S> class template.
+ *  \author Christos Nitsas
+ *  \date 2012
  *  
  *  Won't `#include` "BaseProblem.h". In fact "BaseProblem.h" will 
  *  `#include` "BaseProblem.cpp" because it describes a class template 

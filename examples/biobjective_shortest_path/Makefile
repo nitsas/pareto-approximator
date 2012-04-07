@@ -1,4 +1,7 @@
-# Makefile for example1
+# Makefile for the biobjective_shortest_path example.
+#
+# Author:  Christos Nitsas
+# Date:    2012
 # 
 
 

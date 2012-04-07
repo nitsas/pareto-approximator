@@ -1,6 +1,8 @@
 /*! \file DifferentDimensionsException.h
  *  \brief The declaration and definition of the DifferentDimensionsException 
  *         exception class.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

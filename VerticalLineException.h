@@ -1,6 +1,8 @@
 /*! \file VerticalLineException.h
  *  \brief The declaration and definition of the VerticalLineException 
  *         exception class.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

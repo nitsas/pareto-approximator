@@ -1,6 +1,8 @@
 /*! \file NotPositivePointException.h
  *  \brief A file containing the declaration and definition of the 
  *         NotPositivePointException exception class.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

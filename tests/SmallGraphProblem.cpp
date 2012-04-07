@@ -1,4 +1,9 @@
-/* SmallGraphProblem.cpp */
+/*! \file SmallGraphProblem.cpp
+ *  \brief Implementation of SmallGraphProblem, a simple graph problem class 
+ *         used in BaseProblemTest.cpp.
+ *  \author Christos Nitsas
+ *  \date 2012
+ */
 
 
 #include <boost/graph/dag_shortest_paths.hpp>

@@ -1,6 +1,8 @@
 /*! \file main.cpp
  *  \brief The main program using RandomGraphProblem::approximateParetoSet() 
  *         to solve a biobjective shortest path problem.
+ *  \author Christos Nitsas
+ *  \date 2012
  *  
  *  We use a RandomGraphProblem object to represent a biobjective shortest 
  *  path problem on a random boost graph.

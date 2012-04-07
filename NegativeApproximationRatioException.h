@@ -1,6 +1,8 @@
 /*! \file NegativeApproximationRatioException.h
  *  \brief The declaration and definition of the 
  *         NegativeApproximationRatioException exception class.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

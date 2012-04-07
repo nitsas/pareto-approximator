@@ -1,6 +1,8 @@
 /*! \file ParallelLinesException.h
  *  \brief The declaration and definition of the ParallelLinesException 
  *         exception class.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

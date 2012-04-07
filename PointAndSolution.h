@@ -1,6 +1,8 @@
 /*! \file PointAndSolution.h
  *  \brief The declaration and definition of the PointAndSolution<S> 
  *         class template.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

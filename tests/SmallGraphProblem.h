@@ -1,4 +1,9 @@
-/* SmallGraphProblem.h */
+/*! \file SmallGraphProblem.h
+ *  \brief Declaration of SmallGraphProblem, a simple graph problem class 
+ *         used in BaseProblemTest.cpp.
+ *  \author Christos Nitsas
+ *  \date 2012
+ */
 
 
 #ifndef EXAMPLE_CLASS_SMALL_GRAPH_PROBLEM_H

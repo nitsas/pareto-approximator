@@ -1,5 +1,7 @@
 /*! \file Line2D.h
  *  \brief The declaration of the Line2D class.
+ *  \author Christos Nitsas
+ *  \date 2012
  */
 
 

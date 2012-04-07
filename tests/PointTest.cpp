@@ -1,4 +1,8 @@
-/* PointTest.cpp */
+/*! \file PointTest.cpp
+ *  \brief Unit test for the Point class.
+ *  \author Christos Nitsas
+ *  \date 2012
+ */
 
 
 #include "gtest/gtest.h"
