@@ -242,7 +242,7 @@ Point::operator< (const Point& p) const
       return (x < p.x) || (x == p.x && y < p.y);
 
     case 3 :
-      return (x < p.x) || (x == p.x && ( y < p.y || (y == p.y && z < p.z) ) );
+      // Fallthrough
 
     default :
       return (x < p.x) || (x == p.x && ( y < p.y || (y == p.y && z < p.z) ) );
@@ -306,7 +306,7 @@ operator>> (std::istream& istr, Point& p)
   // else             // skip ','
   istr >> p.z;
   p.dimension(3);     // 3-dimensional point
-  istr >> c;
+  istr >> c;          // skip ')'
   return istr;
 }
 
@@ -377,8 +377,7 @@ Point::ratioDistance(const Point& q) const
       break;
       
     case 3 :
-      return max( (q.x - x)/x, max( (q.y - y)/y, max( (q.z - z)/z, 0.0) ) );
-      break;
+      // Fallthrough
 
     default :
       return max( (q.x - x)/x, max( (q.y - y)/y, max( (q.z - z)/z, 0.0) ) );

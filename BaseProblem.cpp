@@ -28,7 +28,7 @@ BaseProblem<S>::~BaseProblem() { }
 
 //! Compute an (1+eps)-convex Pareto set of the problem.
 /*! 
- *  \param eps The degree of approximation. approximateParetoSet() will 
+ *  \param eps The degree of approximation. computeConvexParetoSet() will 
  *             find an (1+eps)-convex Pareto set of the problem.
  *  \return An (1+eps)-convex Pareto set of the problem whose linear 
  *          combinations of objectives comb optimizes.
@@ -40,17 +40,17 @@ BaseProblem<S>::~BaseProblem() { }
  *  to do is optimize linear combinations of the problem's objectives and 
  *  return the resulting problem solution and the corresponding point in 
  *  objective space. After all the above users can make a Problem 
- *  instance and call its approximateParetoSet() method with the eps 
+ *  instance and call its computeConvexParetoSet() method with the eps 
  *  they want.
  *
- *  approximateParetoSet() will use the comb() method the user 
+ *  computeConvexParetoSet() will use the comb() method the user 
  *  implemented. That is why comb() is declared virtual.
  *
  *  \sa BaseProblem, PointAndSolution and Point
  */
 template <class S> 
 list< PointAndSolution<S> > 
-BaseProblem<S>::approximateParetoSet(double eps)
+BaseProblem<S>::computeConvexParetoSet(double eps)
 {
   // reminder: comb's arguments are x objective's weight and y's weight
 
@@ -69,7 +69,7 @@ BaseProblem<S>::approximateParetoSet(double eps)
 }
 
 
-/*! \brief A recursive function called by approximateParetoSet() to do 
+/*! \brief A recursive function called by computeConvexParetoSet() to do 
  *         the bulk of the work.
  * 
  *  \param west A PointAndSolution<S> instance (where S is the type of 
@@ -85,7 +85,7 @@ BaseProblem<S>::approximateParetoSet(double eps)
  *          the point "tip", the point in "west" and the one in "south".
  *  
  *  Users don't need to use doChord() - that is why it's declared private. 
- *  It's just a recursive routine the approximateParetoSet() method uses 
+ *  It's just a recursive routine the computeConvexParetoSet() method uses 
  *  to do the bulk of the work.
  *  
  *  Each time it's called doChord() finds at most one new (1+eps)-convex 
@@ -97,7 +97,7 @@ BaseProblem<S>::approximateParetoSet(double eps)
  *  Daskalakis, Ilias Diakonikolas and Mihalis Yannakakis for in-depth 
  *  info on how the chord algorithm works.
  *  
- *  \sa approximateParetoSet(), BaseProblem, PointAndSolution and Point
+ *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
  */
 template <class S> 
 list< PointAndSolution<S> > 

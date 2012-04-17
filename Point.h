@@ -120,7 +120,7 @@ class Point {
      *  \f$ q = \min{k : p1_{k} \ne p2_k} \f$.
      *  
      *  Possible exceptions:
-     *  - May throw a DifferentDimensionException exception if the two Point 
+     *  - May throw a DifferentDimensionsException exception if the two Point 
      *    instances are of different dimensions (can't be compared).
      *  
      *  \sa Point, operator==(), operator!=(), 

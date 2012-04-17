@@ -134,6 +134,9 @@ TEST_F(PointTest, PointRatioDistanceWorks) {
   Point p4(1, 100);
   EXPECT_EQ(0, p1.ratioDistance(p4));
   EXPECT_EQ(0, p1.ratioDistance(p1));
+  Point p5(1, 10, 100);
+  Point p6(2, 30, 400);
+  EXPECT_EQ(3, p5.ratioDistance(p6));
 }
 
 
@@ -146,12 +149,16 @@ TEST_F(PointTest, PointDominatesWorks) {
   EXPECT_EQ(true, p2.dominates(p1, 0.5));
   Point p3(1.6, 6.0);
   EXPECT_EQ(false, p3.dominates(p1, 0.5));
+  Point p4(1.0, 1.0, 1.0);
+  Point p5(2.0, 2.0, 2.0);
+  EXPECT_EQ(true, p4.dominates(p5));
+  EXPECT_EQ(false, p5.dominates(p4));
 
   ASSERT_THROW(p1.dominates(p2, -0.5), NegativeApproximationRatioException);
-  Point p4(-1.3, 8.7);
-  ASSERT_THROW(p1.dominates(p4), NotPositivePointException);
-  Point p5(2.4, 8.97, 1.42);
-  ASSERT_THROW(p1.dominates(p5), DifferentDimensionsException);
+  Point p6(-1.3, 8.7);
+  ASSERT_THROW(p1.dominates(p6), NotPositivePointException);
+  Point p7(2.4, 8.97, 1.42);
+  ASSERT_THROW(p1.dominates(p7), DifferentDimensionsException);
 }
 
 

@@ -38,7 +38,7 @@ class BaseProblemTest : public ::testing::Test {
 };
 
 
-// Test that the approximateParetoSet() method does what's expected 
+// Test that the computeConvexParetoSet() method does what's expected 
 // for the SmallGraphProblem class (child of BaseProblem). 
 // SmallGraphProblem is a multiobjective shortest path problem on a 
 // small boost graph.
@@ -46,19 +46,19 @@ TEST_F(BaseProblemTest, ChordForSmallGraphProblem)
 {
   SmallGraphProblem sgp;
   list< PointAndSolution<PredecessorMap> > paretoSet;
-  paretoSet = sgp.approximateParetoSet(verySmallEps);
+  paretoSet = sgp.computeConvexParetoSet(verySmallEps);
   EXPECT_EQ(4, paretoSet.size());
 }
 
 
-// Test approximateParetoSet().
+// Test computeConvexParetoSet().
 // Test that non-optimal starting points are correctly deleted when 
 // points that dominate them are found.
 TEST_F(BaseProblemTest, ChordForNonOptimalStartingPointsProblem) 
 {
   NonOptimalStartingPointsProblem nospp;
   list< PointAndSolution<string> > paretoSet;
-  paretoSet = nospp.approximateParetoSet(verySmallEps);
+  paretoSet = nospp.computeConvexParetoSet(verySmallEps);
   EXPECT_EQ(3, paretoSet.size());
   list< PointAndSolution<string> >::iterator it = paretoSet.begin();
 /*
