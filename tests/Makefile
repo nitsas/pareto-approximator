@@ -21,7 +21,7 @@ CPPLIBS=-lgtest
 all: PointTest.out Line2DTest.out BaseProblemTest.out
 
 # Make PointTest.out
-PointTest.out: PointTest.cpp ../Point.h Point.o ../DifferentDimensionsException.h ../NegativeApproximationRatioException.h ../NotPositivePointException.h
+PointTest.out: PointTest.cpp ../Point.h Point.o ../DifferentDimensionsException.h ../NegativeApproximationRatioException.h ../NotPositivePointException.h ../NonExistentCoordinateException.h
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o PointTest.cpp -o PointTest.out
 
 # Make Line2DTest.out

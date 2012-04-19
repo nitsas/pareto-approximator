@@ -24,7 +24,7 @@ RandomGraphProblem.o: RandomGraphProblem.h RandomGraphProblem.cpp ../../PointAnd
 
 
 # Make Point.o
-Point.o: ../../Point.h ../../Point.cpp ../../DifferentDimensionsException.h
+Point.o: ../../Point.h ../../Point.cpp ../../DifferentDimensionsException.h ../../NonExistentCoordinateException.h ../../NegativeApproximationRatioException.h ../../NotPositivePointException.h
 	$(CC) $(CPPFLAGS) $(DEBUGFLAGS) -c ../../Point.cpp -o Point.o
 
 # Make Line2D.o

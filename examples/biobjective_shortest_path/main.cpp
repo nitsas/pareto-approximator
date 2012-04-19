@@ -1,5 +1,5 @@
 /*! \file main.cpp
- *  \brief The main program using RandomGraphProblem::approximateParetoSet() 
+ *  \brief The main program using RandomGraphProblem::computeConvexParetoSet() 
  *         to solve a biobjective shortest path problem.
  *  \author Christos Nitsas
  *  \date 2012
@@ -74,10 +74,10 @@ main(void)
   cout << "(computing... please wait a few seconds)" << endl << endl;
   // All the work (2 lines!)
   // =======================
-  // Use RandomGraphProblem::approximateParetoSet() (inherited from 
+  // Use RandomGraphProblem::computeConvexParetoSet() (inherited from 
   // BaseProblem) to find the approximate Pareto set.
   list< PointAndSolution<PredecessorMap> > paretoSet;
-  paretoSet = rgp.approximateParetoSet(0.001);
+  paretoSet = rgp.computeConvexParetoSet(0.001);
 
   // Output
   // =======================
