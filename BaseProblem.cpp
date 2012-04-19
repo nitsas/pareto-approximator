@@ -62,7 +62,7 @@ BaseProblem<S>::computeConvexParetoSet(double eps)
   // find that point in objective space which corresponds to the best possible 
   // solution we could expect (we'll pass it to doChord as a sort of lower 
   // limit on the search space)
-  Point tip(min(west.point.x, south.point.x), min(west.point.y, south.point.y));
+  Point tip(min(west.point[0], south.point[0]), min(west.point[1], south.point[1]));
 
   // let doChord do all the work (it's recursive)
   return doChord(west, south, tip, eps);

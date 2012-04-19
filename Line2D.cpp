@@ -48,15 +48,15 @@ Line2D::Line2D(const Point& p1, const Point& p2)
   if (p1.dimension() != 2 || p2.dimension() != 2)
     throw Not2DPointsException();
   // else
-  if (p1.x != p2.x) {
-    m_ = (p2.y - p1.y) / (p2.x - p1.x);
-    b_ = p1.y - m_ * p1.x;
+  if (p1[0] != p2[0]) {
+    m_ = (p2[1] - p1[1]) / (p2[0] - p1[0]);
+    b_ = p1[1] - m_ * p1[0];
     isVertical_ = false;
   }
   else {
     // the line passing through them is vertical
     m_ = 1;               // will not be used
-    b_ = -p1.x;           // so that   0 = x + b   holds
+    b_ = -p1[0];           // so that   0 = x + b   holds
     isVertical_ = true;
   }
 }
@@ -85,6 +85,10 @@ Line2D::~Line2D() { }
 
 
 //! Return the Line2D instance's slope (m_).
+/*! 
+ *  Possible exceptions:
+ *  - May throw a VerticalLineException exception if the line is vertical.
+ */
 double 
 Line2D::m() const 
 {
@@ -278,9 +282,9 @@ double
 Line2D::ratioDistance(const Point& p) const
 {
   if (isVertical_) 
-    return max( (-b_ - p.x) / p.x, 0.0 );
+    return max( (-b_ - p[0]) / p[0], 0.0 );
   else
-    return max( (p.y - m_ * p.x - b_) / (m_ * p.x - p.y), 0.0 );
+    return max( (p[1] - m_ * p[0] - b_) / (m_ * p[0] - p[1]), 0.0 );
 }
 
 
@@ -298,9 +302,9 @@ Line2D
 Line2D::parallelThrough(const Point& p) const
 {
   if (isVertical_)
-    return Line2D(p.x);
+    return Line2D(p[0]);
   else
-    return Line2D(m_, p.y - m_ * p.x);
+    return Line2D(m_, p[1] - m_ * p[0]);
 }
 
 

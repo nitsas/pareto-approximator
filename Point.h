@@ -10,8 +10,10 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "DifferentDimensionsException.h"
+#include "NonExistentCoordinateException.h"
 #include "NegativeApproximationRatioException.h"
 #include "NotPositivePointException.h"
 
@@ -22,15 +24,14 @@ namespace pareto_approximator {
 
 //! A simple 3-dimensional point class. Can represent 2D and 1D points too.
 /*! 
- *  A point with 3 dimensions called x, y and z. In the case of 2-dimensional 
- *  or 1-dimensional points higher dimensions contain undefined values. Users 
- *  can differentiate between points like (3.0, 10.0, 0.0) and (3.0, 10.0) by 
- *  checking each point's Point::dimension() method.
+ *  Users can check (and set) the point's dimension using the dimension() 
+ *  (and dimension(int)) method.
  *  
  *  Operators defined:
  *  - operator=(), (defined automatically by the compiler)
  *  - operator==(), 
  *  - operator!=(), 
+ *  - operator[](), 
  *  - operator<(), 
  *  - operator<<() (as a friend of the class) and
  *  - operator>>() (as a friend of the class).
@@ -42,39 +43,49 @@ namespace pareto_approximator {
 
 class Point {
   public:
-    //! A point's 1st dimension.
-    double x;
-    //! A point's 2nd dimension. (value is undefined for 1D points)
-    double y;
-    //! A point's 3rd dimension. (value is undefined for 1D and 2D points)
-    double z;
-
     //! The empty constructor. Creates an all-zero 3-dimensional Point.
     Point();
     
     //! An 1-dimensional Point constructor. 
-    /*! The resulting point's dimensions will be doubles, not ints. */
-    Point(int xx);
+    /*! The resulting point's coordinates will be doubles, not ints. */
+    Point(int x);
     
     //! An 1-dimensional Point constructor.
-    Point(double xx);
+    Point(double x);
     
     //! A 2-dimensional Point constructor.
-    /*! The resulting point's dimensions will be doubles, not ints. */
-    Point(int xx, int yy);
+    /*! The resulting point's coordinates will be doubles, not ints. */
+    Point(int x, int y);
     
     //! A 2-dimensional Point constructor.
-    Point(double xx, double yy);
+    Point(double x, double y);
     
     //! A 3-dimensional Point constructor.
-    /*! The resulting point's dimensions will be doubles, not ints. */
-    Point(int xx, int yy, int zz);
+    /*! The resulting point's coordinates will be doubles, not ints. */
+    Point(int x, int y, int z);
     
     //! A 3-dimensional Point constructor.
-    Point(double xx, double yy, double zz);
+    Point(double x, double y, double z);
 
     //! A simple (and empty) Destructor.
     ~Point();
+
+    //! The Point access coordinate operator.
+    /*! 
+     *  \param pos The position (coordinate) to access. 
+     *             (0 <= pos < dimension())
+     *  \return The Point's "pos" coordinate.
+     *  
+     *  Possible exceptions:
+     *  - May throw a NonExistentCoordinateException exception if the 
+     *    requested coordinate does not exist. ("pos" is greater than or 
+     *    equal to dimension())
+     *  
+     *  \sa Point, dimension(), operator==(), operator!=(), operator<(), 
+     *      std::ostream& operator<<(std::ostream&, Point&) and 
+     *      std::istream& operator>>(std::istream&, Point&)
+     */
+    double operator[] (unsigned int pos) const;
 
     //! The Point equality operator.
     /*! 
@@ -82,11 +93,10 @@ class Point {
      *  \return true if the Points are equal, false otherwise.
      *  
      *  Checks if both Point instances are of the same dimension and have 
-     *  equal x, y and z dimensions. Returns true if all the above hold, false 
-     *  otherwise. Undefined dimensions will not be checked (e.g. z for 
-     *  2-dimensional or 1-dimensional Points).
+     *  equal coordinates. Returns true if all the above hold, false 
+     *  otherwise. 
      *  
-     *  \sa Point, operator!=(), operator<(), 
+     *  \sa Point, operator!=(), operator<(), operator[](),
      *      std::ostream& operator<<(std::ostream&, Point&) and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
@@ -98,11 +108,10 @@ class Point {
      *  \return true if the Points are not equal, false otherwise.
      *  
      *  Checks if the two Point instances are of different dimensions or differ
-     *  in at least one of the x, y and z dimensions. Returns true if at least 
-     *  one of the above holds, false otherwise. Undefined dimensions will not 
-     *  be checked (e.g. z for 2-dimensional or 1-dimensional Points).
+     *  in at least one of their coordinates. Returns true if at least one of 
+     *  the above holds, false otherwise. 
      *  
-     *  \sa Point, operator==(), operator<(), 
+     *  \sa Point, operator==(), operator<(), operator[](), 
      *      std::ostream& operator<<(std::ostream&, Point&) and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
@@ -123,7 +132,7 @@ class Point {
      *  - May throw a DifferentDimensionsException exception if the two Point 
      *    instances are of different dimensions (can't be compared).
      *  
-     *  \sa Point, operator==(), operator!=(), 
+     *  \sa Point, operator==(), operator!=(), operator[](), 
      *      std::ostream& operator<<(std::ostream&, Point&) and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
@@ -146,7 +155,7 @@ class Point {
      *  - std::cout << "some text " << Point(2.7, -2.7) << std::endl;
      *
      *  \sa Point, Point::str(), Point::operator==(), Point::operator!=(), 
-     *      Point::operator<() and 
+     *      Point::operator<(), Point::operator[]() and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
     friend std::ostream& operator<< (std::ostream& ostr, const Point& p);
@@ -156,7 +165,7 @@ class Point {
      *  The accepted format is similar to the one operator<<() uses for output.
      *  
      *  \sa Point, Point::operator==(), Point::operator!=(), 
-     *      Point::operator<() and 
+     *      Point::operator<(), Point::operator[]() and 
      *      std::ostream& operator<<(std::ostream&, Point&)
      */
     friend std::istream& operator>> (std::istream& istr, Point& p);
@@ -168,7 +177,7 @@ class Point {
      *  
      *  \sa Point and bool Point::dimension(int)
      */
-    int dimension() const;
+    unsigned int dimension() const;
 
     //! Set the point's dimension. (1D, 2D or 3D point)
     /*! 
@@ -176,12 +185,12 @@ class Point {
      *  \return true if everything went ok, false otherwise.
      *          (we get false only if dim was not 1, 2 or 3)
      *  
-     *  Set higher dimension values to 0. (e.g. z = 0 if we want to make the 
-     *  Point instance 2-dimensional or 1-dimensional)
+     *  If "dimension" is smaller than the current Point dimension only the 
+     *  first "dimension" coordinates will be kept, the rest being dropped.
      *  
      *  \sa Point and int Point::dimension() const
      */
-    bool dimension(int dim);
+    bool dimension(unsigned int dimension);
 
     //! Return the Point instance as a string.
     /*! 
@@ -240,8 +249,9 @@ class Point {
     bool dominates(const Point& q, double eps=0.0) const;
 
   private:
-    //! The Point instance's dimension. (1D, 2D or 3D point)
-    int dimension_;
+    //! The Point instance's coordinates. The instance's dimension will 
+    //! always be equal to the vector's size.
+    std::vector<double> coordinates_;
 };
 
 

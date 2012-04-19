@@ -93,6 +93,10 @@ class Line2D
     ~Line2D();
 
     //! Return the Line2D instance's slope (m_).
+    /*! 
+     *  Possible exceptions:
+     *  - May throw a VerticalLineException exception if the line is vertical.
+     */
     double m() const;
 
     //! Return the Line2D instance's y-intercept (b_).

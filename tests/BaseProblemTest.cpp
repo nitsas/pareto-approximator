@@ -61,11 +61,6 @@ TEST_F(BaseProblemTest, ChordForNonOptimalStartingPointsProblem)
   paretoSet = nospp.computeConvexParetoSet(verySmallEps);
   EXPECT_EQ(3, paretoSet.size());
   list< PointAndSolution<string> >::iterator it = paretoSet.begin();
-/*
-  EXPECT_EQ(Point(1.0, 8.0), it->point);
-  EXPECT_EQ("west-dominated", it->solution);
-  ++it;
-*/
   EXPECT_EQ(Point(1.0, 4.0), it->point);
   EXPECT_EQ("west", it->solution);
   ++it;
@@ -74,11 +69,6 @@ TEST_F(BaseProblemTest, ChordForNonOptimalStartingPointsProblem)
   ++it;
   EXPECT_EQ(Point(4.0, 1.0), it->point);
   EXPECT_EQ("south", it->solution);
-/*
-  ++it;
-  EXPECT_EQ(Point(8.0, 1.0), it->point);
-  EXPECT_EQ("south-dominated", it->solution);
-*/
 }
 
 

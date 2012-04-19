@@ -49,6 +49,13 @@ TEST_F(Line2DTest, Line2DConstructorsAndAccessorsWork) {
   Line2D l3(p1, p2);
   EXPECT_EQ(1, l3.m());
   EXPECT_EQ(0, l3.b());
+
+  // Check possible exceptions.
+  Point p3(2, 2, 2);
+  EXPECT_THROW(Line2D l4(p1, p3), Not2DPointsException);
+  Point p4(1, 1);
+  EXPECT_THROW(Line2D l5(p1, p1), SamePointsException);
+  EXPECT_THROW(l2.m(), VerticalLineException);
 }
 
 
@@ -139,6 +146,12 @@ TEST_F(Line2DTest, Line2DIntersectionWorks) {
   Point p5(4.0, 0.0);
   Line2D l3(p1, p4);        // vertical line   x = 4.0
   EXPECT_EQ(p5, l3.intersection(l2));
+
+  Line2D l4(-10);           // vertical line   x = -10
+  EXPECT_THROW(l4.intersection(l4), ParallelLinesException);
+  Line2D l5(1.0, 1.0);
+  Line2D l6(1.0, 2.0);
+  EXPECT_THROW(l5.intersection(l6), ParallelLinesException);
 }
 
 

@@ -6,11 +6,9 @@
 
 
 #include <sstream>
+#include <assert.h>
 
 #include "Point.h"
-
-
-using std::max;
 
 
 //! The namespace containing everything needed for the chord algorithm.
@@ -20,69 +18,67 @@ namespace pareto_approximator {
 //! The empty constructor. Creates an all-zero 3-dimensional Point.
 Point::Point()
 {
-  dimension_ = 3; 
-  x = y = z = 0;
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(0.0);
+  coordinates_.push_back(0.0);
+  coordinates_.push_back(0.0);
 }
 
 
 //! An 1-dimensional Point constructor. 
-/*! The resulting point's dimensions will be doubles, not ints. */
-Point::Point(int xx)
+/*! The resulting point's coordinates will be doubles, not ints. */
+Point::Point(int x)
 {
-  dimension_ = 1;
-  x = xx;
-  y = z = 0;
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
 }
 
 
 //! An 1-dimensional Point constructor.
-Point::Point(double xx)
+Point::Point(double x)
 {
-  dimension_ = 1;
-  x = xx;
-  y = z = 0;
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
 }
 
 
 //! A 2-dimensional Point constructor.
-/*! The resulting point's dimensions will be doubles, not ints. */
-Point::Point(int xx, int yy)
+/*! The resulting point's coordinates will be doubles, not ints. */
+Point::Point(int x, int y)
 {
-  dimension_ = 2;
-  x = xx;
-  y = yy;
-  z = 0;
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
 }
 
 
 //! A 2-dimensional Point constructor.
-Point::Point(double xx, double yy)
+Point::Point(double x, double y)
 {
-  dimension_ = 2;
-  x = xx;
-  y = yy;
-  z = 0;
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
 }
 
 
 //! A 3-dimensional Point constructor.
-/*! The resulting point's dimensions will be doubles, not ints. */
-Point::Point(int xx, int yy, int zz)
+/*! The resulting point's coordinates will be doubles, not ints. */
+Point::Point(int x, int y, int z)
 {
-  dimension_ = 3;
-  x = xx;
-  y = yy;
-  z = zz;
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
+  coordinates_.push_back(z);
 }
 
 
 //! A 3-dimensional Point constructor.
-Point::Point(double xx, double yy, double zz)
+Point::Point(double x, double y, double z)
 {
-  dimension_ = 3;
-  x = xx;
-  y = yy;
-  z = zz;
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
+  coordinates_.push_back(z);
 }
 
 
@@ -97,10 +93,10 @@ Point::~Point() {}
  *  
  *  \sa Point and bool Point::dimension(int)
  */
-int 
+unsigned int 
 Point::dimension() const
 {
-  return dimension_;
+  return coordinates_.size();
 }
 
 
@@ -108,32 +104,49 @@ Point::dimension() const
 /*! 
  *  \param dimension The dimension we want to change the Point instance to.
  *  \return true if everything went ok, false otherwise.
- *          (we get false only if dim was not 1, 2 or 3)
+ *          (we get false only if "dimension" was not 1, 2 or 3)
  *  
- *  Set higher dimension values to 0. (e.g. z = 0 if we want to make the 
- *  Point instance 2-dimensional or 1-dimensional)
+ *  If "dimension" is smaller than the current Point dimension only the 
+ *  first "dimension" coordinates will be kept, the rest being dropped.
  *  
  *  \sa Point and int Point::dimension() const
  */
 bool 
-Point::dimension(int dimension)
+Point::dimension(unsigned int dimension)
 {
-  switch (dimension) {
-    case 1 :
-      y = 0;
-      // Fallthrough
-      
-    case 2 :
-      z = 0;
-      // Fallthrough
-      
-    case 3 :
-      dimension_ = dimension;
-      return true;
-      
-    default :
-      return false;
-  }
+  if (dimension < 1 || dimension > 3)
+    return false;
+
+  // Resize the coordinates_ vector to "dimension" elements. 
+  // Initialize any newly inserted elements to 0.0.
+  coordinates_.resize(dimension, 0.0);
+
+  return true;
+}
+
+
+//! The Point access coordinate operator.
+/*! 
+ *  \param pos The position (coordinate) to access. 
+ *             (0 <= pos < dimension())
+ *  \return The Point's "pos" coordinate.
+ *  
+ *  Possible exceptions:
+ *  - May throw a NonExistentCoordinateException exception if the 
+ *    requested coordinate does not exist. ("pos" is greater than or 
+ *    equal to dimension())
+ *  
+ *  \sa Point, dimension(), operator==(), operator!=(), operator<(), 
+ *      std::ostream& operator<<(std::ostream&, Point&) and 
+ *      std::istream& operator>>(std::istream&, Point&)
+ */
+double 
+Point::operator[] (unsigned int pos) const
+{
+  if (pos >= dimension())
+    throw NonExistentCoordinateException();
+  else
+    return coordinates_[pos];
 }
 
 
@@ -143,33 +156,24 @@ Point::dimension(int dimension)
  *  \return true if the Points are equal, false otherwise.
  *  
  *  Checks if both Point instances are of the same dimension and have 
- *  equal x, y and z dimensions. Returns true if all the above hold, false 
- *  otherwise. Undefined dimensions will not be checked (e.g. z for 
- *  2-dimensional or 1-dimensional Points).
+ *  equal coordinates. Returns true if all the above hold, false 
+ *  otherwise. 
  *  
- *  \sa Point, operator!=(), operator<(), 
+ *  \sa Point, operator!=(), operator<(), operator[](), 
  *      std::ostream& operator<<(std::ostream&, Point&) and 
  *      std::istream& operator>>(std::istream&, Point&)
  */
 bool 
 Point::operator== (const Point& p) const
 {
-  if (dimension_ != p.dimension())
+  if (dimension() != p.dimension())
     return false;
 
-  switch (dimension_) {
-    case 1 :
-      return (x == p.x);
+  for (unsigned int i=0; i<dimension(); i++) 
+    if (coordinates_[i] != p[i]) 
+      return false;
 
-    case 2 :
-      return (x == p.x && y == p.y);
-
-    case 3 :
-      // Fallthrough
-
-    default :
-      return (x == p.x && y == p.y && z == p.z);
-  }
+  return true;
 }
 
 
@@ -179,33 +183,24 @@ Point::operator== (const Point& p) const
  *  \return true if the Points are not equal, false otherwise.
  *  
  *  Checks if the two Point instances are of different dimensions or differ
- *  in at least one of the x, y and z dimensions. Returns true if at least 
- *  one of the above holds, false otherwise. Undefined dimensions will not 
- *  be checked (e.g. z for 2-dimensional or 1-dimensional Points).
+ *  in at least one of their coordinates. Returns true if at least one of 
+ *  the above holds, false otherwise. 
  *  
- *  \sa Point, operator==(), operator<(), 
+ *  \sa Point, operator==(), operator<(), operator[](), 
  *      std::ostream& operator<<(std::ostream&, Point&) and 
  *      std::istream& operator>>(std::istream&, Point&)
  */
 bool 
 Point::operator!= (const Point& p) const
 {
-  if (dimension_ != p.dimension())
+  if (dimension() != p.dimension())
     return true;
 
-  switch (dimension_) {
-    case 1 :
-      return (x != p.x);
+  for (unsigned int i=0; i<dimension(); i++) 
+    if (coordinates_[i] != p[i]) 
+      return true;
 
-    case 2 :
-      return (x != p.x || y != p.y);
-
-    case 3 :
-      // Fallthrough
-
-    default :
-      return (x != p.x || y != p.y || z != p.z);
-  }
+  return false;
 }
 
 
@@ -221,32 +216,29 @@ Point::operator!= (const Point& p) const
  *  \f$ q = \min{k : p1_{k} \ne p2_k} \f$.
  *  
  *  Possible exceptions:
- *  - May throw a DifferentDimensionException exception if the two Point 
+ *  - May throw a DifferentDimensionsException exception if the two Point 
  *    instances are of different dimensions (can't be compared).
  *  
- *  \sa Point, operator==(), operator!=(), 
+ *  \sa Point, operator==(), operator!=(), operator[](), 
  *      std::ostream& operator<<(std::ostream&, Point&) and 
  *      std::istream& operator>>(std::istream&, Point&)
  */
 bool 
 Point::operator< (const Point& p) const 
 {
-  if (dimension_ != p.dimension())
+  if (dimension() != p.dimension()) 
     throw DifferentDimensionsException();
   // else
-  switch (dimension_) {
-    case 1 :
-      return x < p.x;
-
-    case 2 :
-      return (x < p.x) || (x == p.x && y < p.y);
-
-    case 3 :
-      // Fallthrough
-
-    default :
-      return (x < p.x) || (x == p.x && ( y < p.y || (y == p.y && z < p.z) ) );
+  for (unsigned int i=0; i<dimension(); i++) {
+    if (coordinates_[i] < p[i])
+      return true;
+    else if (coordinates_[i] > p[i])
+      return false;
+    else 
+      continue;
   }
+
+  return false;
 }
 
 
@@ -267,7 +259,7 @@ Point::operator< (const Point& p) const
  *  - std::cout << "some text " << Point(2.7, -2.7) << std::endl;
  *
  *  \sa Point, Point::str(), Point::operator==(), Point::operator!=(), 
- *      Point::operator<() and 
+ *      Point::operator<(), Point::operator[]() and 
  *      std::istream& operator>>(std::istream&, Point&)
  */
 std::ostream& 
@@ -282,31 +274,22 @@ operator<< (std::ostream& ostr, const Point& p)
  *  The accepted format is similar to the one operator<<() uses for output.
  *  
  *  \sa Point, Point::operator==(), Point::operator!=(), 
- *      Point::operator<() and 
+ *      Point::operator<(), Point::operator[]() and 
  *      std::ostream& operator<<(std::ostream&, Point&)
  */
 std::istream& 
 operator>> (std::istream& istr, Point& p)
 {
   char c;
+  double d;
+  p.coordinates_.clear();
   istr >> c;          // skip '('
-  istr >> p.x;
-  istr >> c;
-  if (c == ')') {
-    p.dimension(1);   // 1-dimensional point
-    return istr;
+  while (c != ')') {
+    istr >> d;
+    p.coordinates_.push_back(d);
+    istr >> c;        // get ',' or ')'
   }
-  // else             // skip ','
-  istr >> p.y;
-  istr >> c;
-  if (c == ')') {
-    p.dimension(2);   // 2-dimensional point
-    return istr;
-  }
-  // else             // skip ','
-  istr >> p.z;
-  p.dimension(3);     // 3-dimensional point
-  istr >> c;          // skip ')'
+
   return istr;
 }
 
@@ -325,24 +308,14 @@ operator>> (std::istream& istr, Point& p)
 std::string 
 Point::str() const
 {
+  assert(dimension() >= 1 && dimension() <= 3);
+
   std::stringstream ss;
 
-  switch (dimension_) {
-    case 1 :
-      ss << "(" << x << ")";
-      break;
-
-    case 2 :
-      ss << "(" << x << ", " << y << ")";
-      break;
-      
-    case 3 :
-      // Fallthrough
-
-    default :
-      ss << "(" << x << ", " << y << ", " << z << ")";
-      break;
-  }
+  ss << "(" << coordinates_[0];
+  for (unsigned int i=1; i<dimension(); i++) 
+    ss << ", " << coordinates_[i];
+  ss << ")";
 
   return ss.str();
 }
@@ -364,24 +337,20 @@ Point::str() const
 double 
 Point::ratioDistance(const Point& q) const 
 {
-  if (q.dimension() != dimension_)
+  assert(dimension() >= 0 && dimension() <= 3);
+  assert(q.dimension() >= 0 && q.dimension() <= 3);
+
+  if (dimension() != q.dimension())
     throw DifferentDimensionsException();
   // else
-  switch (dimension_) {
-    case 1 :
-      return max( (q.x - x)/x, 0.0 );
-      break;
-
-    case 2 :
-      return max( (q.x - x)/x, max( (q.y - y)/y, 0.0 ) );
-      break;
-      
-    case 3 :
-      // Fallthrough
-
-    default :
-      return max( (q.x - x)/x, max( (q.y - y)/y, max( (q.z - z)/z, 0.0) ) );
+  double max = 0.0;
+  for (unsigned int i=0; i<dimension(); i++) {
+    double r = (q[i] - coordinates_[i]) / coordinates_[i];
+    if (r > max) 
+      max = r;
   }
+
+  return max;
 }
 
 
@@ -414,45 +383,23 @@ Point::ratioDistance(const Point& q) const
 bool 
 Point::dominates(const Point& q, double eps) const
 {
-  if (dimension_ != q.dimension())
+  assert(dimension() >= 0 && dimension() <= 3);
+  assert(q.dimension() >= 0 && q.dimension() <= 3);
+
+  if (dimension() != q.dimension())
     throw DifferentDimensionsException();
   if (eps < 0.0)
     throw NegativeApproximationRatioException();
+  for (unsigned int i=0; i<dimension(); i++) 
+    if (coordinates_[i] < 0.0 || q[i] < 0.0) 
+      throw NotPositivePointException();
 
-  // precompute (1+eps)
   double r = 1+eps;
-  switch (dimension_) {
-    case 1 :
-      if ( (x < 0.0) || (q.x < 0.0) )
-        throw NotPositivePointException();
-      else if (x > r*q.x)
-        return false;
-      else
-        return true;
-      break;    // not really needed
-      
-    case 2 :
-      if ( (x < 0.0) || (y < 0.0) || (q.x < 0.0) || (q.y < 0.0) )
-        throw NotPositivePointException();
-      else if ( (x > r*q.x) || (y > r*q.y) )
-        return false;
-      else 
-        return true;
-      break;    // not really needed
-      
-    case 3 :
-      if ( (x < 0.0) || (y < 0.0) || (z < 0.0) || 
-           (q.x < 0.0) || (q.y < 0.0) || (q.z < 0.0) )
-        throw NotPositivePointException();
-      else if ( (x > r*q.x) || (y > r*q.y) || (z > r*q.z) )
-        return false;
-      else 
-        return true;
-      break;    // not really needed
-      
-    default :
+  for (unsigned int i=0; i<dimension(); i++) 
+    if (coordinates_[i] > r * q[i])
       return false;
-  }
+
+  return true;
 }
 
 
