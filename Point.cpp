@@ -5,8 +5,10 @@
  */
 
 
-#include <sstream>
 #include <assert.h>
+#include <string>
+#include <sstream>
+#include <vector>
 
 #include "Point.h"
 
@@ -15,14 +17,8 @@
 namespace pareto_approximator {
 
 
-//! The empty constructor. Creates an all-zero 3-dimensional Point.
-Point::Point()
-{
-  assert(coordinates_.size() == 0);
-  coordinates_.push_back(0.0);
-  coordinates_.push_back(0.0);
-  coordinates_.push_back(0.0);
-}
+//! The empty constructor. Creates a zero-dimensional Point.
+Point::Point() {}
 
 
 //! An 1-dimensional Point constructor. 
@@ -82,6 +78,80 @@ Point::Point(double x, double y, double z)
 }
 
 
+//! An n-dimensional Point constructor.
+/*! 
+ *  \param first Iterator to the initial position in a std::vector<double>.
+ *  \param last Iterator to the final position in a std::vector<double>.
+ *  
+ *  The range used is [first, last), which includes all the elements between 
+ *  first and last, including the element pointed by first but not the 
+ *  element pointed by last.
+ *  
+ *  The resulting point's coordinates will be doubles, not ints. 
+ */
+Point::Point(std::vector<int>::iterator first, 
+             std::vector<int>::iterator last)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.assign(first, last);
+}
+
+
+//! An n-dimensional Point constructor.
+/*! 
+ *  \param first Iterator to the initial position in a std::vector<double>.
+ *  \param last Iterator to the final position in a std::vector<double>.
+ *  
+ *  The range used is [first, last), which includes all the elements between 
+ *  first and last, including the element pointed by first but not the 
+ *  element pointed by last.
+ */
+Point::Point(std::vector<double>::iterator first, 
+             std::vector<double>::iterator last)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.assign(first, last);
+}
+
+
+//! An n-dimensional Point constructor.
+/*! 
+ *  \param first Iterator (pointer) to the initial position in an array of 
+ *               double.
+ *  \param last Iterator (pointer) to the final position in an array of 
+ *              double. (the position just beyond the last element we want)
+ *  
+ *  The range used is [first, last), which includes all the elements between 
+ *  first and last, including the element pointed by first but not the 
+ *  element pointed by last.
+ *  
+ *  The resulting point's coordinates will be doubles, not ints. 
+ */
+Point::Point(int* first, int* last)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.assign(first, last);
+}
+
+
+//! An n-dimensional Point constructor.
+/*! 
+ *  \param first Iterator (pointer) to the initial position in an array of 
+ *               double.
+ *  \param last Iterator (pointer) to the final position in an array of 
+ *              double. (the position just beyond the last element we want)
+ *  
+ *  The range used is [first, last), which includes all the elements between 
+ *  first and last, including the element pointed by first but not the 
+ *  element pointed by last.
+ */
+Point::Point(double* first, double* last)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.assign(first, last);
+}
+
+
 //! A simple (and empty) Destructor.
 Point::~Point() {}
 
@@ -100,28 +170,21 @@ Point::dimension() const
 }
 
 
-//! Set the point's dimension. (1D, 2D or 3D point)
+//! Set the point's dimension. (1D, 2D, 3D, etc point)
 /*! 
  *  \param dimension The dimension we want to change the Point instance to.
- *  \return true if everything went ok, false otherwise.
- *          (we get false only if "dimension" was not 1, 2 or 3)
  *  
  *  If "dimension" is smaller than the current Point dimension only the 
  *  first "dimension" coordinates will be kept, the rest being dropped.
  *  
  *  \sa Point and int Point::dimension() const
  */
-bool 
+void 
 Point::dimension(unsigned int dimension)
 {
-  if (dimension < 1 || dimension > 3)
-    return false;
-
   // Resize the coordinates_ vector to "dimension" elements. 
   // Initialize any newly inserted elements to 0.0.
   coordinates_.resize(dimension, 0.0);
-
-  return true;
 }
 
 
@@ -249,6 +312,7 @@ Point::operator< (const Point& p) const
  *  - (1.0, 4.27, 0.883)
  *  - (3.0)
  *  - (5, 1.99204e+09)
+ *  - ()      <-- zero-dimensional point
  *  - etc
  *
  *  operator<<() uses the Point instance's Point::str() method to create 
@@ -272,8 +336,9 @@ operator<< (std::ostream& ostr, const Point& p)
 //! The Point input stream operator. A friend of the Point class.
 /*! 
  *  The accepted format is similar to the one operator<<() uses for output.
+ *  Zero-dimensional points of the form "()" are not accepted.
  *  
- *  \sa Point, Point::operator==(), Point::operator!=(), 
+ *  \sa Point, Point::str(), Point::operator==(), Point::operator!=(), 
  *      Point::operator<(), Point::operator[]() and 
  *      std::ostream& operator<<(std::ostream&, Point&)
  */
@@ -301,23 +366,28 @@ operator>> (std::istream& istr, Point& p)
  *  - (1.0, 4.27, 0.883)
  *  - (3.0)
  *  - (5, 1.99204e+09)
+ *  - ()      <-- zero-dimensional point
  *  - etc
  *
- *  /sa Point and std::ostream& operator<<(std::ostream&, const Point&)
+ *  \sa Point, Point::operator==(), Point::operator!=(), 
+ *      Point::operator<(), Point::operator[]() and 
+ *      std::ostream& operator<<(std::ostream&, const Point&)
  */
 std::string 
 Point::str() const
 {
-  assert(dimension() >= 1 && dimension() <= 3);
+  if (dimension() == 0)
+    return "()";
+  else {
+    std::stringstream ss;
 
-  std::stringstream ss;
+    ss << "(" << coordinates_[0];
+    for (unsigned int i=1; i<dimension(); i++) 
+      ss << ", " << coordinates_[i];
+    ss << ")";
 
-  ss << "(" << coordinates_[0];
-  for (unsigned int i=1; i<dimension(); i++) 
-    ss << ", " << coordinates_[i];
-  ss << ")";
-
-  return ss.str();
+    return ss.str();
+  }
 }
 
 
@@ -337,9 +407,6 @@ Point::str() const
 double 
 Point::ratioDistance(const Point& q) const 
 {
-  assert(dimension() >= 0 && dimension() <= 3);
-  assert(q.dimension() >= 0 && q.dimension() <= 3);
-
   if (dimension() != q.dimension())
     throw DifferentDimensionsException();
   // else
@@ -383,9 +450,6 @@ Point::ratioDistance(const Point& q) const
 bool 
 Point::dominates(const Point& q, double eps) const
 {
-  assert(dimension() >= 0 && dimension() <= 3);
-  assert(q.dimension() >= 0 && q.dimension() <= 3);
-
   if (dimension() != q.dimension())
     throw DifferentDimensionsException();
   if (eps < 0.0)

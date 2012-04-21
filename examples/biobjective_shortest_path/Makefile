@@ -6,7 +6,7 @@
 
 
 CC=g++
-CPPFLAGS=-Wall
+CPPFLAGS=-Wall -Wextra -Werror
 DEBUGFLAGS=-g
 
 

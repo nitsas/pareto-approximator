@@ -13,7 +13,7 @@
 
 
 CC=g++
-CPPFLAGS=-Wall -g
+CPPFLAGS=-Wall -Wextra -Werror -g
 CPPLIBS=-lgtest
 
 

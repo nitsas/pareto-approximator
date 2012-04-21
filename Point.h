@@ -8,7 +8,6 @@
 #ifndef SIMPLE_POINT_CLASS_H
 #define SIMPLE_POINT_CLASS_H
 
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -48,10 +47,10 @@ class Point {
     
     //! An 1-dimensional Point constructor. 
     /*! The resulting point's coordinates will be doubles, not ints. */
-    Point(int x);
+    explicit Point(int x);
     
     //! An 1-dimensional Point constructor.
-    Point(double x);
+    explicit Point(double x);
     
     //! A 2-dimensional Point constructor.
     /*! The resulting point's coordinates will be doubles, not ints. */
@@ -66,6 +65,59 @@ class Point {
     
     //! A 3-dimensional Point constructor.
     Point(double x, double y, double z);
+
+    //! An n-dimensional Point constructor.
+    /*! 
+     *  \param first Iterator to the initial position in a std::vector<double>.
+     *  \param last Iterator to the final position in a std::vector<double>.
+     *  
+     *  The range used is [first, last), which includes all the elements between 
+     *  first and last, including the element pointed by first but not the 
+     *  element pointed by last.
+     *  
+     *  The resulting point's coordinates will be doubles, not ints. 
+     */
+    Point(std::vector<int>::iterator first, std::vector<int>::iterator last);
+
+    //! An n-dimensional Point constructor.
+    /*! 
+     *  \param first Iterator to the initial position in a std::vector<double>.
+     *  \param last Iterator to the final position in a std::vector<double>.
+     *  
+     *  The range used is [first, last), which includes all the elements between 
+     *  first and last, including the element pointed by first but not the 
+     *  element pointed by last.
+     */
+    Point(std::vector<double>::iterator first, 
+          std::vector<double>::iterator last);
+
+    //! An n-dimensional Point constructor.
+    /*! 
+     *  \param first Iterator (pointer) to the initial position in an array of 
+     *               double.
+     *  \param last Iterator (pointer) to the final position in an array of 
+     *              double. (the position just beyond the last element we want)
+     *  
+     *  The range used is [first, last), which includes all the elements between 
+     *  first and last, including the element pointed by first but not the 
+     *  element pointed by last.
+     *  
+     *  The resulting point's coordinates will be doubles, not ints. 
+     */
+    Point(int* first, int* last);
+
+    //! An n-dimensional Point constructor.
+    /*! 
+     *  \param first Iterator (pointer) to the initial position in an array of 
+     *               double.
+     *  \param last Iterator (pointer) to the final position in an array of 
+     *              double. (the position just beyond the last element we want)
+     *  
+     *  The range used is [first, last), which includes all the elements between 
+     *  first and last, including the element pointed by first but not the 
+     *  element pointed by last.
+     */
+    Point(double* first, double* last);
 
     //! A simple (and empty) Destructor.
     ~Point();
@@ -145,6 +197,7 @@ class Point {
      *  - (1.0, 4.27, 0.883)
      *  - (3.0)
      *  - (5, 1.99204e+09)
+     *  - ()      <-- zero-dimensional point
      *  - etc
      *
      *  operator<<() uses the Point instance's Point::str() method to create 
@@ -163,8 +216,9 @@ class Point {
     //! The Point input stream operator. A friend of the Point class.
     /*! 
      *  The accepted format is similar to the one operator<<() uses for output.
+     *  Zero-dimensional points of the form "()" are not accepted.
      *  
-     *  \sa Point, Point::operator==(), Point::operator!=(), 
+     *  \sa Point, Point::str(), Point::operator==(), Point::operator!=(), 
      *      Point::operator<(), Point::operator[]() and 
      *      std::ostream& operator<<(std::ostream&, Point&)
      */
@@ -179,18 +233,16 @@ class Point {
      */
     unsigned int dimension() const;
 
-    //! Set the point's dimension. (1D, 2D or 3D point)
+    //! Set the point's dimension. (1D, 2D, 3D, etc. point)
     /*! 
      *  \param dimension The dimension we want to change the Point instance to.
-     *  \return true if everything went ok, false otherwise.
-     *          (we get false only if dim was not 1, 2 or 3)
      *  
      *  If "dimension" is smaller than the current Point dimension only the 
      *  first "dimension" coordinates will be kept, the rest being dropped.
      *  
      *  \sa Point and int Point::dimension() const
      */
-    bool dimension(unsigned int dimension);
+    void dimension(unsigned int dimension);
 
     //! Return the Point instance as a string.
     /*! 
@@ -199,6 +251,7 @@ class Point {
      *  - (1.0, 4.27, 0.883)
      *  - (3.0)
      *  - (5, 1.99204e+09)
+     *  - ()      <-- dimensionless point
      *  - etc
      *
      *  /sa Point and std::ostream& operator<<(std::ostream&, const Point&)
