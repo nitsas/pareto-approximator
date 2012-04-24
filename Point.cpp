@@ -21,15 +21,6 @@ namespace pareto_approximator {
 Point::Point() {}
 
 
-//! An 1-dimensional Point constructor. 
-/*! The resulting point's coordinates will be doubles, not ints. */
-Point::Point(int x)
-{
-  assert(coordinates_.size() == 0);
-  coordinates_.push_back(x);
-}
-
-
 //! An 1-dimensional Point constructor.
 Point::Point(double x)
 {
@@ -39,32 +30,11 @@ Point::Point(double x)
 
 
 //! A 2-dimensional Point constructor.
-/*! The resulting point's coordinates will be doubles, not ints. */
-Point::Point(int x, int y)
-{
-  assert(coordinates_.size() == 0);
-  coordinates_.push_back(x);
-  coordinates_.push_back(y);
-}
-
-
-//! A 2-dimensional Point constructor.
 Point::Point(double x, double y)
 {
   assert(coordinates_.size() == 0);
   coordinates_.push_back(x);
   coordinates_.push_back(y);
-}
-
-
-//! A 3-dimensional Point constructor.
-/*! The resulting point's coordinates will be doubles, not ints. */
-Point::Point(int x, int y, int z)
-{
-  assert(coordinates_.size() == 0);
-  coordinates_.push_back(x);
-  coordinates_.push_back(y);
-  coordinates_.push_back(z);
 }
 
 
@@ -152,7 +122,7 @@ Point::Point(double* first, double* last)
 }
 
 
-//! A simple (and empty) Destructor.
+//! A simple (and empty) destructor.
 Point::~Point() {}
 
 

@@ -45,37 +45,27 @@ class Point {
     //! The empty constructor. Creates an all-zero 3-dimensional Point.
     Point();
     
-    //! An 1-dimensional Point constructor. 
-    /*! The resulting point's coordinates will be doubles, not ints. */
-    explicit Point(int x);
-    
     //! An 1-dimensional Point constructor.
     explicit Point(double x);
     
     //! A 2-dimensional Point constructor.
-    /*! The resulting point's coordinates will be doubles, not ints. */
-    Point(int x, int y);
-    
-    //! A 2-dimensional Point constructor.
     Point(double x, double y);
-    
-    //! A 3-dimensional Point constructor.
-    /*! The resulting point's coordinates will be doubles, not ints. */
-    Point(int x, int y, int z);
     
     //! A 3-dimensional Point constructor.
     Point(double x, double y, double z);
 
     //! An n-dimensional Point constructor.
     /*! 
-     *  \param first Iterator to the initial position in a std::vector<double>.
-     *  \param last Iterator to the final position in a std::vector<double>.
+     *  \param first Iterator to the initial position in a std::vector<int>.
+     *  \param last Iterator to the final position in a std::vector<int>.
      *  
      *  The range used is [first, last), which includes all the elements between 
      *  first and last, including the element pointed by first but not the 
      *  element pointed by last.
      *  
      *  The resulting point's coordinates will be doubles, not ints. 
+     *  
+     *  \sa Point
      */
     Point(std::vector<int>::iterator first, std::vector<int>::iterator last);
 
@@ -87,6 +77,8 @@ class Point {
      *  The range used is [first, last), which includes all the elements between 
      *  first and last, including the element pointed by first but not the 
      *  element pointed by last.
+     *  
+     *  \sa Point
      */
     Point(std::vector<double>::iterator first, 
           std::vector<double>::iterator last);
@@ -103,6 +95,8 @@ class Point {
      *  element pointed by last.
      *  
      *  The resulting point's coordinates will be doubles, not ints. 
+     *  
+     *  \sa Point
      */
     Point(int* first, int* last);
 
@@ -116,10 +110,12 @@ class Point {
      *  The range used is [first, last), which includes all the elements between 
      *  first and last, including the element pointed by first but not the 
      *  element pointed by last.
+     *  
+     *  \sa Point
      */
     Point(double* first, double* last);
 
-    //! A simple (and empty) Destructor.
+    //! A simple (and empty) destructor.
     ~Point();
 
     //! The Point access coordinate operator.

@@ -55,7 +55,7 @@ BaseProblem<S>::computeConvexParetoSet(double eps)
   // reminder: comb's arguments are x objective's weight and y's weight
 
   // find the westmost (best on x objective) and the southmost (best on y
-  // objective) solutions (and the corresponding points in objective space)
+  // objective) solutions (and their corresponding points in objective space)
   PointAndSolution<S> west = comb(1.0, 0.0);
   PointAndSolution<S> south = comb(0.0, 1.0);
 
