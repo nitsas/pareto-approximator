@@ -54,9 +54,6 @@ class Line2D
     Line2D();
 
     //! A non-vertical line constructor. Creates line \f$ y = m x + b \f$.
-    Line2D(int m, int b);
-
-    //! A non-vertical line constructor. Creates line \f$ y = m x + b \f$.
     Line2D(double m, double b);
 
     //! Creates the line that passes through points p1 and p2 (might be 
@@ -72,14 +69,6 @@ class Line2D
      *    Point instances doesn't represent a 2-dimensional point.
      */
     Line2D(const Point& p1, const Point& p2);
-
-    //! A vertical line constructor. Creates line \f$ x = c \f$.
-    /*! 
-     *  \param c The resulting line's equation should be \f$ x = c \f$.
-     *  
-     *  Will set b_ to -c so that \f$ 0 = x + b \f$ holds.
-     */
-    Line2D(int c);
 
     //! A vertical line constructor. Creates line \f$ x = c \f$.
     /*! 

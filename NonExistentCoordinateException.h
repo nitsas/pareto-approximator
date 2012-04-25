@@ -26,7 +26,7 @@ class NonExistentCoordinateException : public std::exception
     //! Return a simple char* message.
     const char* what() const throw() 
     {
-      return "The requested coordinate does not exist.";
+      return "The requested coordinate does not exist. (out of bounds)";
     }
 };
 

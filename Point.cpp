@@ -18,7 +18,7 @@ namespace pareto_approximator {
 
 
 //! The empty constructor. Creates a zero-dimensional Point.
-Point::Point() {}
+Point::Point() { }
 
 
 //! An 1-dimensional Point constructor.
@@ -123,7 +123,7 @@ Point::Point(double* first, double* last)
 
 
 //! A simple (and empty) destructor.
-Point::~Point() {}
+Point::~Point() { }
 
 
 //! Get a Point instance's dimension. (1D, 2D or 3D point)

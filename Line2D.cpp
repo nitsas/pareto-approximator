@@ -22,10 +22,6 @@ Line2D::Line2D() : m_(1), b_(0), isVertical_(false) { }
 
 
 //! A non-vertical line constructor. Creates line \f$ y = m x + b \f$.
-Line2D::Line2D(int m, int b) : m_(m), b_(b), isVertical_(false) { }
-
-
-//! A non-vertical line constructor. Creates line \f$ y = m x + b \f$.
 Line2D::Line2D(double m, double b) : m_(m), b_(b), isVertical_(false) { }
 
 
@@ -60,15 +56,6 @@ Line2D::Line2D(const Point& p1, const Point& p2)
     isVertical_ = true;
   }
 }
-
-
-//! A vertical line constructor. Creates line \f$ x = c \f$.
-/*! 
- *  \param c The resulting line's equation should be \f$ x = c \f$.
- *  
- *  Will set b_ to -c so that \f$ 0 = x + b \f$ holds.
- */
-Line2D::Line2D(int c) : m_(1), b_(-c), isVertical_(true) { }
 
 
 //! A vertical line constructor. Creates line \f$ x = c \f$.

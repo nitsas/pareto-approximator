@@ -3,6 +3,7 @@
 # Available unit tests are currently:
 # - PointTest.cpp
 # - Line2DTest.cpp
+# - HyperplaneTest.cpp
 # - BaseProblemTest.cpp  &  NonOptimalStartingPointsProblem.h  &  
 #		NonOptimalStartingPointsProblem.cpp  &  SmallGraphProblem.h  &  
 #		SmallGraphProblem.cpp
@@ -18,7 +19,7 @@ CPPLIBS=-lgtest
 
 
 # Make all unit tests
-all: PointTest.out Line2DTest.out BaseProblemTest.out
+all: PointTest.out Line2DTest.out HyperplaneTest.out BaseProblemTest.out
 
 # Make PointTest.out
 PointTest.out: PointTest.cpp ../Point.h Point.o ../DifferentDimensionsException.h ../NegativeApproximationRatioException.h ../NotPositivePointException.h ../NonExistentCoordinateException.h
@@ -27,6 +28,10 @@ PointTest.out: PointTest.cpp ../Point.h Point.o ../DifferentDimensionsException.
 # Make Line2DTest.out
 Line2DTest.out: Line2DTest.cpp ../Point.h Point.o ../Line2D.h Line2D.o ../Not2DPointsException.h ../SamePointsException.h ../VerticalLineException.h ../ParallelLinesException.h
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Line2D.o Line2DTest.cpp -o Line2DTest.out
+
+# Make HyperplaneTest.out
+HyperplaneTest.out: HyperplaneTest.cpp ../Point.h Point.o ../Hyperplane.h Hyperplane.o ../NonExistentCoefficientException.h
+	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o HyperplaneTest.cpp -o HyperplaneTest.out
 
 # Make BaseProblemTest.out
 BaseProblemTest.out: BaseProblemTest.o SmallGraphProblem.o NonOptimalStartingPointsProblem.o Point.o Line2D.o
@@ -53,7 +58,10 @@ Point.o: ../Point.h ../Point.cpp ../DifferentDimensionsException.h ../NegativeAp
 Line2D.o: ../Line2D.h ../Line2D.cpp ../Point.h Point.o ../Not2DPointsException.h ../SamePointsException.h ../VerticalLineException.h ../ParallelLinesException.h
 	$(CC) $(CPPFLAGS) -c ../Line2D.cpp -o Line2D.o
 
+Hyperplane.o: ../Hyperplane.h ../Hyperplane.cpp ../Point.h Point.o ../NonExistentCoefficientException.h
+	$(CC) $(CPPFLAGS) -c ../Hyperplane.cpp -o Hyperplane.o
+
 # Clean object files and executables
 clean: 
-	rm -f Point.o Line2D.o BaseProblemTest.o SmallGraphProblem.o NonOptimalStartingPointsProblem.o PointTest.out Line2DTest.out BaseProblemTest.out
+	rm -f Point.o Line2D.o Hyperplane.o BaseProblemTest.o SmallGraphProblem.o NonOptimalStartingPointsProblem.o PointTest.out Line2DTest.out HyperplaneTest.out BaseProblemTest.out
 

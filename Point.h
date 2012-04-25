@@ -42,7 +42,7 @@ namespace pareto_approximator {
 
 class Point {
   public:
-    //! The empty constructor. Creates an all-zero 3-dimensional Point.
+    //! The empty constructor. Creates a zero-dimensional Point.
     Point();
     
     //! An 1-dimensional Point constructor.
