@@ -207,7 +207,7 @@ class Point {
      *      Point::operator<(), Point::operator[]() and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
-    friend std::ostream& operator<< (std::ostream& ostr, const Point& p);
+    friend std::ostream& operator<< (std::ostream& out, const Point& p);
 
     //! The Point input stream operator. A friend of the Point class.
     /*! 

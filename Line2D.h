@@ -173,7 +173,10 @@ class Line2D
      *  \return The ratio distance from the given Point instance to the line.
      *
      *  The ratio distance from a point p to a line L is defined as:
-     *  \f$ RD(p, L) = \min_{q \in L} RD(p, q) \f$.
+     *  \f$ RD(p, L) = \min_{q \in L} RD(p, q) \f$, where q is a point on L.
+     *  The ratio distance from a point p to a point q is defined as:
+     *  \f$ RD(p, q) = \max\{ \max_{i}\{(q_{i} - p_{i}) / p_{i}\}, 0.0 \} \f$.
+     *  
      *  Intuitively it is the minimum value of \f$ \epsilon \ge 0 \f$ such 
      *  that some point on L \f$ \epsilon -covers p \f$.
      *  

@@ -161,7 +161,7 @@ BaseProblem<S>::doChord(const PointAndSolution<S>& west,
   Point westTip  = parallel.intersection(wt);
   Point southTip = parallel.intersection(ts);
   list< PointAndSolution<S> > westList, southList;
-  // call comb on the two subproblems
+  // call chord on the two subproblems
   westList  = doChord(west,  southwest, westTip,  eps);
   southList = doChord(southwest, south, southTip, eps);
   // remove southList's first element (it's the same as westList's last one)

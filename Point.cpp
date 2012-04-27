@@ -297,9 +297,9 @@ Point::operator< (const Point& p) const
  *      std::istream& operator>>(std::istream&, Point&)
  */
 std::ostream& 
-operator<< (std::ostream& ostr, const Point& p)
+operator<< (std::ostream& out, const Point& p)
 {
-  return ostr << p.str();
+  return out << p.str();
 }
 
 

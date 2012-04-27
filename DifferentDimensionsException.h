@@ -18,8 +18,9 @@ namespace pareto_approximator {
 
 //! Exception thrown by Point::operator<() and Point::ratioDistance().
 /*! 
- *  An exception thrown when two Point instances were supposed to be 
- *  compared but they have different dimensions.
+ *  An exception thrown when two Point instances or two Hyperplane instances 
+ *  were supposed to be compared but they have different dimensions.
+ *  (they belong to spaces of different dimensions)
  */
 class DifferentDimensionsException : public std::exception
 {
@@ -27,7 +28,7 @@ class DifferentDimensionsException : public std::exception
     //! Return a simple char* message.
     const char* what() const throw() 
     {
-      return "The points have different dimensions.";
+      return "The instances have different dimensions.";
     }
 };
 

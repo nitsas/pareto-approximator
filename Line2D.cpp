@@ -51,7 +51,7 @@ Line2D::Line2D(const Point& p1, const Point& p2)
   }
   else {
     // the line passing through them is vertical
-    m_ = 1;               // will not be used
+    m_ = 1;                // will not be used
     b_ = -p1[0];           // so that   0 = x + b   holds
     isVertical_ = true;
   }
@@ -258,7 +258,10 @@ Line2D::intersection(const Line2D& line) const
  *  \return The ratio distance from the given Point instance to the line.
  *
  *  The ratio distance from a point p to a line L is defined as:
- *  \f$ RD(p, L) = \min_{q \in L} RD(p, q) \f$.
+ *  \f$ RD(p, L) = \min_{q \in L} RD(p, q) \f$, where q is a point on L.
+ *  The ratio distance from a point p to a point q is defined as:
+ *  \f$ RD(p, q) = \max\{ \max_{i}\{(q_{i} - p_{i}) / p_{i}\}, 0.0 \} \f$.
+ *  
  *  Intuitively it is the minimum value of \f$ \epsilon \ge 0 \f$ such 
  *  that some point on L \f$ \epsilon -covers p \f$.
  *  
