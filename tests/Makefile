@@ -38,15 +38,15 @@ BaseProblemTest.out: BaseProblemTest.o SmallGraphProblem.o NonOptimalStartingPoi
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o NonOptimalStartingPointsProblem.o SmallGraphProblem.o BaseProblemTest.o -o BaseProblemTest.out
 
 # Make BaseProblemTest.o
-BaseProblemTest.o: BaseProblemTest.cpp ../Point.h ../PointAndSolution.h NonOptimalStartingPointsProblem.h SmallGraphProblem.h ../BaseProblem.h ../BaseProblem.cpp
+BaseProblemTest.o: BaseProblemTest.cpp ../Point.h ../PointAndSolution.h ../PointAndSolution.cpp NonOptimalStartingPointsProblem.h SmallGraphProblem.h ../BaseProblem.h ../BaseProblem.cpp
 	$(CC) $(CPPFLAGS) -c BaseProblemTest.cpp -o BaseProblemTest.o
 
 # Make SmallGraphProblem.o
-SmallGraphProblem.o: SmallGraphProblem.cpp SmallGraphProblem.h ../PointAndSolution.h ../BaseProblem.h ../BaseProblem.cpp ../Point.h
+SmallGraphProblem.o: SmallGraphProblem.cpp SmallGraphProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h
 	$(CC) $(CPPFLAGS) -c SmallGraphProblem.cpp -o SmallGraphProblem.o
 
 # Make NonOptimalStartingPointsProblem.o
-NonOptimalStartingPointsProblem.o: NonOptimalStartingPointsProblem.cpp NonOptimalStartingPointsProblem.h ../PointAndSolution.h ../BaseProblem.h ../BaseProblem.cpp ../Point.h
+NonOptimalStartingPointsProblem.o: NonOptimalStartingPointsProblem.cpp NonOptimalStartingPointsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h
 	$(CC) $(CPPFLAGS) -c NonOptimalStartingPointsProblem.cpp -o NonOptimalStartingPointsProblem.o
 
 

@@ -1,6 +1,5 @@
 /*! \file PointAndSolution.h
- *  \brief The declaration and definition of the PointAndSolution<S> 
- *         class template.
+ *  \brief The declaration of the PointAndSolution<S> class template.
  *  \author Christos Nitsas
  *  \date 2012
  */
@@ -57,18 +56,33 @@ class PointAndSolution
 {
   public:
     //! PointAndSolution's default constructor. (empty)
-    PointAndSolution() {}
+    PointAndSolution();
     //! A constructor initializing PointAndSolution's attributes.
-    PointAndSolution(const Point& p, const S& s) : point(p), solution(s) {}
+    PointAndSolution(const Point& p, const S& s);
     //! PointAndSolution's default destructor. (empty)
-    ~PointAndSolution() {}
+    ~PointAndSolution();
 
-    //! The PointAndSolution less-than operator. Compare PointAndSolution 
-    //! instances according to the Point instances they contain.
+    //! PointAndSolution equality operator.
+    /*!
+     *  \param pas A PointAndSolution instance to compare with the current 
+     *             instance.
+     *  \return true if the point in pas is the same as the one in the 
+     *          current instance; false otherwise.
+     *
+     *  Compare the points in the two PointAndSolutionInstances.
+     *  
+     *  \sa PointAndSolution
+     */
+    inline bool operator==(const PointAndSolution& pas) const;
+
+    //! The PointAndSolution less-than operator. 
     /*! 
      *  Let's call L the instance on the left of the operator and R the one 
      *  on the right. Returns true if L.point is less than R.point using 
      *  Point::operator<().
+     *  
+     *  Compare the two PointAndSolution instances according to the Point 
+     *  instances they contain.
      *  
      *  Possible exceptions:
      *  - May throw a DifferentDimensionsException if the two Points are of 
@@ -76,10 +90,7 @@ class PointAndSolution
      *  
      *  \sa PointAndSolution and Point::operator<()
      */
-    bool operator< (const PointAndSolution<S>& pas) const 
-    { 
-      return point < pas.point; 
-    }
+    inline bool operator< (const PointAndSolution<S>& pas) const;
 
     //! A point in objective space.
     Point point;
@@ -92,6 +103,11 @@ class PointAndSolution
 
 
 /* @} */
+
+
+// We've got to #include the implementation here because we are describing 
+// a class template, not a simple class.
+#include "PointAndSolution.cpp"
 
 
 #endif  // POINT_AND_SOLUTION_H

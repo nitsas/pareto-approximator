@@ -11,15 +11,15 @@ DEBUGFLAGS=-g
 
 
 # Link everything and make example1
-bosp_example.out: main.o ../../Point.h Point.o ../../Hyperplane.h Hyperplane.o ../../BaseProblem.h ../../BaseProblem.cpp RandomGraphProblem.h RandomGraphProblem.o ../../PointAndSolution.h
+bosp_example.out: main.o ../../Point.h Point.o ../../Hyperplane.h Hyperplane.o ../../BaseProblem.h ../../BaseProblem.cpp RandomGraphProblem.h RandomGraphProblem.o ../../PointAndSolution.h ../../PointAndSolution.cpp
 	$(CC) $(CPPFLAGS) $(DEBUGFLAGS) Point.o Hyperplane.o RandomGraphProblem.o main.o -o $@
 
 # Compile main.cpp
-main.o: main.cpp ../../BaseProblem.h ../../BaseProblem.cpp RandomGraphProblem.h ../../PointAndSolution.h
+main.o: main.cpp ../../BaseProblem.h ../../BaseProblem.cpp RandomGraphProblem.h ../../PointAndSolution.h ../../PointAndSolution.cpp
 	$(CC) $(CPPFLAGS) $(DEBUGFLAGS) -c main.cpp -o main.o
 
 # Make RandomGraphProblem.o
-RandomGraphProblem.o: RandomGraphProblem.h RandomGraphProblem.cpp ../../PointAndSolution.h ../../BaseProblem.h ../../BaseProblem.cpp ../../Point.h 
+RandomGraphProblem.o: RandomGraphProblem.h RandomGraphProblem.cpp ../../PointAndSolution.h ../../PointAndSolution.cpp ../../BaseProblem.h ../../BaseProblem.cpp ../../Point.h 
 	$(CC) $(CPPFLAGS) $(DEBUGFLAGS) -c RandomGraphProblem.cpp -o RandomGraphProblem.o
 
 
