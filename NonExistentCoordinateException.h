@@ -12,6 +12,12 @@
 #include <exception>
 
 
+/*!
+ *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
+
+
 //! The namespace containing everything needed for the chord algorithm.
 namespace pareto_approximator {
 
@@ -32,6 +38,9 @@ class NonExistentCoordinateException : public std::exception
 
 
 }  // namespace pareto_approximator
+
+
+/* @} */
 
 
 #endif  // NON_EXISTENT_COORDINATE_EXCEPTION_H

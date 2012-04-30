@@ -6,6 +6,8 @@
  */
 
 
+#include <assert.h>
+
 #include "../Point.h"
 #include "NonOptimalStartingPointsProblem.h"
 
@@ -20,8 +22,13 @@ NonOptimalStartingPointsProblem::~NonOptimalStartingPointsProblem() { }
 
 
 PointAndSolution<string> 
-NonOptimalStartingPointsProblem::comb(double xWeight, double yWeight)
+NonOptimalStartingPointsProblem::comb(std::vector<double>::const_iterator first,
+                                      std::vector<double>::const_iterator last)
 {
+  assert(last == first + 2);
+  double xWeight = *first;
+  double yWeight = *(first + 1);
+
   if (yWeight == 0.0 && xWeight == 0.0)
     return PointAndSolution<string>(Point(0.0, 0.0), "error: both weights were 0");
   

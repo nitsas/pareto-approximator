@@ -6,6 +6,8 @@
  */
 
 
+#include <iostream>
+#include <assert.h>
 #include <boost/graph/dag_shortest_paths.hpp>
 
 #include "SmallGraphProblem.h"
@@ -103,11 +105,17 @@ SmallGraphProblem::makeGraph()
 
 
 PointAndSolution<PredecessorMap> 
-SmallGraphProblem::comb(double xWeight, double yWeight)
+SmallGraphProblem::comb(std::vector<double>::const_iterator first, 
+                        std::vector<double>::const_iterator last)
 {
+  assert(last == first + 2);
+
   boost::property_map<Graph, double EdgeProperty::*>::type   w_map   = boost::get(&EdgeProperty::weight,  g_);
   boost::property_map<Graph, boost::vertex_distance_t>::type d_map = boost::get(boost::vertex_distance, g_);
   std::vector<Vertex>                                        p_map(boost::num_vertices(g_));
+
+  double xWeight = *first;
+  double yWeight = *(first + 1);
 
   boost::graph_traits<Graph>::edge_iterator ei, ei_end;
   for (boost::tie(ei, ei_end) = edges(g_); ei != ei_end; ++ei)

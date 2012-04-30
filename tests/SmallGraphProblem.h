@@ -11,6 +11,7 @@
 
 
 #include <string>
+#include <vector>
 #include <boost/graph/adjacency_list.hpp>
 
 #include "../PointAndSolution.h"
@@ -50,7 +51,8 @@ class SmallGraphProblem : public BaseProblem<PredecessorMap>
     SmallGraphProblem();
     ~SmallGraphProblem();
 
-    PointAndSolution<PredecessorMap> comb(double xWeight, double yWeight);
+    PointAndSolution<PredecessorMap> comb(std::vector<double>::const_iterator first, 
+                                          std::vector<double>::const_iterator last);
 
     void makeGraph();
 

@@ -12,6 +12,12 @@
 using std::min;
 
 
+/*!
+ *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
+
+
 //! The namespace containing everything needed for the chord algorithm.
 namespace pareto_approximator {
 
@@ -56,8 +62,13 @@ BaseProblem<S>::computeConvexParetoSet(double eps)
 
   // find the westmost (best on x objective) and the southmost (best on y
   // objective) solutions (and their corresponding points in objective space)
-  PointAndSolution<S> west = comb(1.0, 0.0);
-  PointAndSolution<S> south = comb(0.0, 1.0);
+  std::vector<double> weightsWest, weightsSouth;
+  weightsWest.push_back(1.0);
+  weightsWest.push_back(0.0);
+  weightsSouth.push_back(0.0);
+  weightsSouth.push_back(1.0);
+  PointAndSolution<S> west = comb(weightsWest.begin(), weightsWest.end());
+  PointAndSolution<S> south = comb(weightsSouth.begin(), weightsSouth.end());
 
   // find that point in objective space which corresponds to the best possible 
   // solution we could expect (we'll pass it to doChord as a sort of lower 
@@ -127,7 +138,7 @@ BaseProblem<S>::doChord(const PointAndSolution<S>& west,
 
   // check if the best possible point is approximately dominated by the 
   // points we have so far
-  Line2D ws(west.point, south.point);
+  Hyperplane ws(west.point, south.point);
   if (ws.ratioDistance(tip) <= eps) {
     list< PointAndSolution<S> > resultList;
     resultList.push_back(west);
@@ -136,13 +147,8 @@ BaseProblem<S>::doChord(const PointAndSolution<S>& west,
   }
   // else
 
-  // check if ws is a vertical line (slope is infinite) and call comb 
-  // using its slope
-  PointAndSolution<S> southwest;
-  if (!ws.isVertical())
-    southwest = comb(-ws.m(), 1.0);
-  else
-    southwest = comb(1.0, 0.0);
+  // call comb using ws's coefficients (essentially ws's slope) as weights 
+  PointAndSolution<S> southwest = comb(ws.begin(), ws.end());
 
   // check if the point we just found is approximately dominated by the 
   // points we have so far
@@ -155,9 +161,9 @@ BaseProblem<S>::doChord(const PointAndSolution<S>& west,
   // else
 
   // split the problem into two subproblems, the west one and the south one
-  Line2D parallel = ws.parallelThrough(southwest.point);
-  Line2D wt(west.point, tip);
-  Line2D ts(tip, south.point);
+  Hyperplane parallel = ws.parallelThrough(southwest.point);
+  Hyperplane wt(west.point, tip);
+  Hyperplane ts(tip, south.point);
   Point westTip  = parallel.intersection(wt);
   Point southTip = parallel.intersection(ts);
   list< PointAndSolution<S> > westList, southList;
@@ -176,3 +182,4 @@ BaseProblem<S>::doChord(const PointAndSolution<S>& west,
 }  // namespace pareto_approximator
 
 
+/* @} */

@@ -14,6 +14,12 @@
 #include "Hyperplane.h"
 
 
+/*!
+ *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
+
+
 //! The namespace containing everything needed for the chord algorithm.
 namespace pareto_approximator {
 
@@ -255,19 +261,55 @@ Hyperplane::space_dimension() const
 }
 
 
-//! Get all the a_{i} coefficients (in a std::vector<double>).
+//! Return iterator to beginning of the vector of a_{i} coefficients.
 /*!
- *  \return A std::vector<double> with all the a_{i} coefficients, 
- *          from a_{1} to a_{n}.
- *  
- *  The vector returned is a copy of the actual vector of coefficients.
+ *  \return An iterator referring to the first of the a_{i} coefficients.
  *  
  *  \sa Hyperplane
  */
-std::vector<double> 
-Hyperplane::getCoefficients() const
+Hyperplane::iterator 
+Hyperplane::begin() 
 {
-  return coefficients_;
+  return coefficients_.begin();
+}
+
+
+//! Return const iterator to beginning of the vector of a_{i} coefficients.
+/*!
+ *  \return An iterator referring to the first of the a_{i} coefficients.
+ *  
+ *  \sa Hyperplane
+ */
+Hyperplane::const_iterator 
+Hyperplane::begin() const 
+{
+  return coefficients_.begin();
+}
+
+
+//! Return iterator to end of the vector of a_{i} coefficients.
+/*!
+ *  \return An iterator pointing just after the last a_{i} coefficient.
+ *  
+ *  \sa Hyperplane
+ */
+Hyperplane::iterator 
+Hyperplane::end() 
+{
+  return coefficients_.end();
+}
+
+
+//! Return const iterator to end of the vector of a_{i} coefficients.
+/*!
+ *  \return An iterator pointing just after the last a_{i} coefficient.
+ *  
+ *  \sa Hyperplane
+ */
+Hyperplane::const_iterator 
+Hyperplane::end() const 
+{
+  return coefficients_.end();
 }
 
 
@@ -414,7 +456,7 @@ Hyperplane::ratioDistance(const Point& p) const
  *  
  *  The new hyperplane will have the same a_{i} coefficients but a different 
  *  b coefficient, one that satisfies the equation:
- *  \f$ a_{1} * p_{1} + a_{2} * p_{2} + ... + a_{n} * p_{n} = b \$f.
+ *  \f$ a_{1} * p_{1} + a_{2} * p_{2} + ... + a_{n} * p_{n} = b \f$.
  *  
  *  \sa Hyperplane and Point
  */
@@ -493,3 +535,6 @@ Hyperplane::intersection(const Hyperplane& hyperplane) const
 
 
 }  // namespace pareto_approximator
+
+
+/* @} */

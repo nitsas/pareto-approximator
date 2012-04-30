@@ -5,6 +5,7 @@
  */
 
 
+#include <assert.h>
 #include <map>
 #include <list>
 #include <time.h>
@@ -35,6 +36,14 @@ using boost::graph_traits;
 using boost::num_vertices;
 
 using pareto_approximator::Point;
+
+
+/*!
+ *  \weakgroup BiobjectiveShortestPathExample
+ *  An example biobjective shortest path problem.
+ *  
+ *  @{
+ */
 
 
 //! A random number generator for uniformly distributed random integers.
@@ -150,32 +159,48 @@ RandomGraphProblem::makeGraph(int numVertices, int numEdges,
 
 //! The comb routine we had to implement. 
 /*!
- *  \param xWeight The x objective's (Black objective function) weight.
- *                 (in the linear combination of objective functions)
- *  \param yWeight The y objective's (Red objective function) weight.
- *                 (in the linear combination of objective functions)
- *  \return An s-t path (P) that minimizes \$f xWeight * Black(P) + 
- *          yWeight * Red(P) \$f and the corresponding point in 
- *          objective space.
+ *  \param first Iterator to the initial position in an 
+ *               std::vector<double> containing the weights w_{i} of the 
+ *               objectives (in the linear combination of objective 
+ *               functions).
+ *  \param last Iterator to the past-the-end position in an 
+ *              std::vector<double> containing the weights w_{i} of the 
+ *              objectives (in the linear combination of objective 
+ *              functions).
+ *  \return A PointAndSolution object containing an s-t path (P) that 
+ *          minimizes \$f w_{0} * Black(P) + w_{1} * Red(P) \$f and the 
+ *          corresponding point in objective space.
  *  
- *  Minimizes linear combinations of the objective functions.
+ *  The vector of weights will only contain two weights for this example, 
+ *  w_{0} (the Black objective function weight) and w_{1} (the Red 
+ *  objective function weight).
+ *  
+ *  Minimizes linear combinations of the objective functions of the 
+ *  following form:
+ *  \$f w_{0} * Black(P) + w_{1} * Red(P) \$f,
+ *  where P is an s-t path.
  *  
  *  \sa RandomGraphProblem, RandomGraphProblem() and BaseProblem::comb()
  */
 PointAndSolution<PredecessorMap> 
-RandomGraphProblem::comb(double xWeight, double yWeight)
+RandomGraphProblem::comb(std::vector<double>::const_iterator first, 
+                         std::vector<double>::const_iterator last)
 {
-  map<Edge, double> weight;
-  vector<Vertex>                                      p_map(num_vertices(g_));
-  VertexIterator vi, vi_end;
+  assert(last == first + 2);
+
+  double xWeight, yWeight;
+  xWeight = *first;
+  yWeight = *(first + 1);
 
   // Make the weight property map.
+  map<Edge, double> weight;
   EdgeIterator ei, ei_end;
   for (tie(ei, ei_end) = edges(g_); ei != ei_end; ++ei)
     weight[*ei] = xWeight * g_[*ei].black + yWeight * g_[*ei].red;
   boost::associative_property_map< map<Edge, double> > w_map(weight);
 
   // Find all shortest paths from s.
+  vector<Vertex> p_map(num_vertices(g_));
   boost::dijkstra_shortest_paths(g_, s_, weight_map(w_map).predecessor_map(&p_map[0]));
 
   double xDistance = 0;
@@ -280,3 +305,6 @@ RandomGraphProblem::target()
 }
 
 
+/*!
+ *  @}
+ */

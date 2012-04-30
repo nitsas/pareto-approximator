@@ -17,6 +17,12 @@
 #include "NotPositivePointException.h"
 
 
+/*!
+ *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
+
+
 //! The namespace containing everything needed for the chord algorithm.
 namespace pareto_approximator {
 
@@ -305,6 +311,9 @@ class Point {
 
 
 }  // namespace pareto_approximator
+
+
+/* @} */
 
 
 #endif  // SIMPLE_POINT_CLASS_H

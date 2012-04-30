@@ -67,21 +67,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork) {
   EXPECT_EQ(h4[2], 0.0);
   EXPECT_EQ(h4[3], 0.0);
   EXPECT_EQ(h4.b(), 12.0);
-  // test that Hyperplane::getCoefficients() works
   EXPECT_EQ(h4.space_dimension(), 4);
-  std::vector<double> coeffic = h4.getCoefficients();
-  EXPECT_EQ(coefficientsB.size(), coeffic.size());
-  EXPECT_EQ(std::equal(coefficientsB.begin(), 
-                       coefficientsB.end(), coeffic.begin()), true);
-  // test that it returns a copy of the actual vector of coefficients
-  coeffic[0] = 8.0;
-  coeffic[1] = 8.0;
-  coeffic[2] = 8.0;
-  coeffic[3] = 8.0;
-  EXPECT_EQ(h4[0], -2.0);
-  EXPECT_EQ(h4[1], 1.0);
-  EXPECT_EQ(h4[2], 0.0);
-  EXPECT_EQ(h4[3], 0.0);
 
   int coefficientsC[6] = {-1, 0, 1, 2, 3, 4};
   Hyperplane h5(coefficientsC, coefficientsC + 6, 5);
@@ -119,6 +105,19 @@ TEST_F(HyperplaneTest, HyperplaneOperatorsAndStrWork) {
   Hyperplane h3(2 * 4.1, 2 * (-2.2), 2 * 0.15, 2 * (-2.1));
   EXPECT_EQ(h1 == h3, true);
   EXPECT_EQ(h1 != h3, false);
+}
+
+
+TEST_F(HyperplaneTest, HyperplaneIteratorsWork) {
+  double coefficients[6] = {-1.0, 0.0, 1.0, 2.0, 3.0, 4.0};
+  Hyperplane h1(coefficients, coefficients + 6, 5.0);
+  EXPECT_EQ(std::equal(h1.begin(), h1.end(), coefficients), true);
+
+  Hyperplane::iterator h1_iter = h1.begin();
+  *h1_iter = 10.0;
+  *(h1_iter + 1) = 20.0;
+  EXPECT_EQ(h1[0], 10.0);
+  EXPECT_EQ(h1[1], 20.0);
 }
 
 

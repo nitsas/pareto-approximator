@@ -18,6 +18,12 @@
 #include "ParallelLinesException.h"
 
 
+/*!
+ *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
+
+
 //! The namespace containing everything needed for the chord algorithm.
 namespace pareto_approximator {
 
@@ -208,6 +214,9 @@ class Line2D
 
 
 }  // namespace pareto_approximator
+
+
+/* @} */
 
 
 #endif  // LINE_2D_H

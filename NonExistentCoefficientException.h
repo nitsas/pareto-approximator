@@ -1,4 +1,4 @@
-/*! \file NonExistentCoefficient.h
+/*! \file NonExistentCoefficientException.h
  *  \brief The declaration and definition of the NonExistentCoefficient 
  *         exception class.
  *  \author Christos Nitsas
@@ -10,6 +10,12 @@
 #define NON_EXISTENT_COEFFICIENT_EXCEPTION_H
 
 #include <exception>
+
+
+/*!
+ *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
 
 
 //! The namespace containing everything needed for the chord algorithm.
@@ -33,6 +39,9 @@ class NonExistentCoefficientException : public std::exception
 
 
 }  // namespace pareto_approximator
+
+
+/* @} */
 
 
 #endif  // NON_EXISTENT_COEFFICIENT_EXCEPTION_H

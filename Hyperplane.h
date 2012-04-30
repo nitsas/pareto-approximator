@@ -21,6 +21,12 @@
 #include "ParallelHyperplanesException.h"
 
 
+/*!
+ *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
+
+
 //! The namespace containing everything needed for the chord algorithm.
 namespace pareto_approximator {
 
@@ -38,6 +44,12 @@ namespace pareto_approximator {
 class Hyperplane
 {
   public:
+    //! Random access iterator (to the a_{i} coefficients).
+    typedef std::vector<double>::iterator iterator;
+    
+    //! Constant random access iterator (to the a_{i} coefficients).
+    typedef std::vector<double>::const_iterator const_iterator;
+
     //! Constructor for a hyperplane on a 2D space. (a simple line)
     /*!
      *  \param a1 The first dimension's (x_{1}) coefficient.
@@ -192,16 +204,37 @@ class Hyperplane
     //! Return the dimension of the space the hyperplane lives in.
     unsigned int space_dimension() const;
 
-    //! Get all the a_{i} coefficients (in a std::vector<double>).
+    //! Return iterator to beginning of the vector of a_{i} coefficients.
     /*!
-     *  \return A std::vector<double> with all the a_{i} coefficients, 
-     *          from a_{1} to a_{n}.
-     *  
-     *  The vector returned is a copy of the actual vector of coefficients.
+     *  \return An iterator referring to the first of the a_{i} coefficients.
      *  
      *  \sa Hyperplane
      */
-    std::vector<double> getCoefficients() const;
+    iterator begin();
+    
+    //! Return const iterator to beginning of the vector of a_{i} coefficients.
+    /*!
+     *  \return An iterator referring to the first of the a_{i} coefficients.
+     *  
+     *  \sa Hyperplane
+     */
+    const_iterator begin() const;
+
+    //! Return iterator to end of the vector of a_{i} coefficients.
+    /*!
+     *  \return An iterator pointing just after the last a_{i} coefficient.
+     *  
+     *  \sa Hyperplane
+     */
+    iterator end();
+
+    //! Return const iterator to end of the vector of a_{i} coefficients.
+    /*!
+     *  \return An iterator pointing just after the last a_{i} coefficient.
+     *  
+     *  \sa Hyperplane
+     */
+    const_iterator end() const;
 
     //! Get the hyperplane's equation in a string.
     /*!
@@ -280,7 +313,7 @@ class Hyperplane
      *  
      *  The new hyperplane will have the same a_{i} coefficients but a different 
      *  b coefficient, one that satisfies the equation:
-     *  \f$ a_{1} * p_{1} + a_{2} * p_{2} + ... + a_{n} * p_{n} = b \$f.
+     *  \f$ a_{1} * p_{1} + a_{2} * p_{2} + ... + a_{n} * p_{n} = b \f$.
      *  
      *  \sa Hyperplane and Point
      */
@@ -337,6 +370,9 @@ class Hyperplane
 
 
 }  // namespace pareto_approximator
+
+
+/* @} */
 
 
 #endif  // HYPERPLANE_H

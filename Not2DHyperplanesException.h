@@ -12,6 +12,12 @@
 #include <exception>
 
 
+/*!
+ *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
+
+
 //! The namespace containing everything needed for the chord algorithm.
 namespace pareto_approximator {
 
@@ -33,6 +39,9 @@ class Not2DHyperplanesException : public std::exception
 
 
 }  // namespace pareto_approximator
+
+
+/* @} */
 
 
 #endif  // NOT_2D_HYPERPLANES_EXCEPTION_H

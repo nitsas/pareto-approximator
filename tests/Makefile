@@ -34,8 +34,8 @@ HyperplaneTest.out: HyperplaneTest.cpp ../Point.h Point.o ../Hyperplane.h Hyperp
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o HyperplaneTest.cpp -o HyperplaneTest.out
 
 # Make BaseProblemTest.out
-BaseProblemTest.out: BaseProblemTest.o SmallGraphProblem.o NonOptimalStartingPointsProblem.o Point.o Line2D.o
-	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Line2D.o NonOptimalStartingPointsProblem.o SmallGraphProblem.o BaseProblemTest.o -o BaseProblemTest.out
+BaseProblemTest.out: BaseProblemTest.o SmallGraphProblem.o NonOptimalStartingPointsProblem.o Point.o Hyperplane.o
+	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o NonOptimalStartingPointsProblem.o SmallGraphProblem.o BaseProblemTest.o -o BaseProblemTest.out
 
 # Make BaseProblemTest.o
 BaseProblemTest.o: BaseProblemTest.cpp ../Point.h ../PointAndSolution.h NonOptimalStartingPointsProblem.h SmallGraphProblem.h ../BaseProblem.h ../BaseProblem.cpp
@@ -58,7 +58,8 @@ Point.o: ../Point.h ../Point.cpp ../DifferentDimensionsException.h ../NegativeAp
 Line2D.o: ../Line2D.h ../Line2D.cpp ../Point.h Point.o ../Not2DPointsException.h ../SamePointsException.h ../VerticalLineException.h ../ParallelLinesException.h
 	$(CC) $(CPPFLAGS) -c ../Line2D.cpp -o Line2D.o
 
-Hyperplane.o: ../Hyperplane.h ../Hyperplane.cpp ../Point.h Point.o ../NonExistentCoefficientException.h
+# Make Hyperplane.o
+Hyperplane.o: ../Hyperplane.h ../Hyperplane.cpp ../Point.h Point.o ../DifferentDimensionsException.h ../SamePointsException.h ../Not2DPointsException.h ../Not2DHyperplanesException.h ../NonExistentCoefficientException.h ../ParallelHyperplanesException.h
 	$(CC) $(CPPFLAGS) -c ../Hyperplane.cpp -o Hyperplane.o
 
 # Clean object files and executables

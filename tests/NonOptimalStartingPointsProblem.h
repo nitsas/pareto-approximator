@@ -11,6 +11,7 @@
 
 
 #include <string>
+#include <vector>
 
 #include "../PointAndSolution.h"
 #include "../BaseProblem.h"
@@ -28,7 +29,8 @@ class NonOptimalStartingPointsProblem : public BaseProblem<string>
     NonOptimalStartingPointsProblem();
     ~NonOptimalStartingPointsProblem();
 
-    PointAndSolution<string> comb(double xWeight, double yWeight);
+    PointAndSolution<string> comb(std::vector<double>::const_iterator first, 
+                                  std::vector<double>::const_iterator last);
 };
 
 

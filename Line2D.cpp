@@ -13,6 +13,12 @@
 using std::max;
 
 
+/*!
+ *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
+
+
 //! The namespace containing everything needed for the chord algorithm.
 namespace pareto_approximator {
 
@@ -299,3 +305,6 @@ Line2D::parallelThrough(const Point& p) const
 
 
 }  // namespace pareto_approximator
+
+
+/* @} */

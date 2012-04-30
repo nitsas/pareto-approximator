@@ -12,6 +12,12 @@
 #include "Point.h"
 
 
+/*!
+ *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
+
+
 //! The namespace containing everything needed for the chord algorithm.
 namespace pareto_approximator {
 
@@ -83,6 +89,9 @@ class PointAndSolution
 
 
 }  // namespace pareto_approximator
+
+
+/* @} */
 
 
 #endif  // POINT_AND_SOLUTION_H

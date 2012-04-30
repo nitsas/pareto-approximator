@@ -10,15 +10,22 @@
 
 
 #include <list>
+#include <vector>
 
 #include "Point.h"
-#include "Line2D.h"
+#include "Hyperplane.h"
 #include "PointAndSolution.h"
 
 
 using std::list;
 
 using pareto_approximator::PointAndSolution;
+
+
+/*!
+ *  \defgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  @{
+ */
 
 
 //! The namespace containing everything needed for the chord algorithm.
@@ -63,12 +70,16 @@ class BaseProblem
 
     //! Optimize a linear combination of the objectives.
     /*! 
-     *  \param xWeight The weight of the x objective.
-     *  \param yWeight The weight of the y objective.
+     *  \param first Iterator to the initial position in a std::vector<double> 
+     *               containing the weights w_{i}.
+     *  \param last Iterator to the final position in the std::vector<double> 
+     *              containing the weights w_{i}. (the position right after 
+     *              the last weight we want (w_{n}))
      *  \return A PointAndSolution<S> object containing: 
-     *          - An optimum solution of the problem with respect to the 
-     *            linear combination \f$ xWeight * x + yWeight * y \f$ of the 
-     *            objectives and
+     *          - An optimal solution of the problem with respect to the 
+     *            linear combination:
+     *            \f$ w_{1} * f_{1} + w_{2} * f_{2} + ... + w_{n} * f_{n} \f$ 
+     *            of the objectives (f_{i}) and the weights (w_{i}).
      *          - the corresponding point in objective space. Points returned 
      *            by comb() must have positive coordinates.
      *
@@ -83,7 +94,8 @@ class BaseProblem
      *  /sa BaseProblem(), ~BaseProblem() and operator()()
      */
     virtual PointAndSolution<S> 
-    comb(double xWeight, double yWeight) = 0;
+    comb(std::vector<double>::const_iterator first, 
+         std::vector<double>::const_iterator last) = 0;
 
     //! Compute an (1+eps)-convex Pareto set of the problem.
     /*! 
@@ -135,7 +147,7 @@ class BaseProblem
      *  itself recursivelly on the subproblems until the requested degree of 
      *  approximation is met.
      *  
-     *  Please read "How good is the Chord lgorithm?" by Constantinos 
+     *  Please read "How good is the Chord Algorithm?" by Constantinos 
      *  Daskalakis, Ilias Diakonikolas and Mihalis Yannakakis for in-depth 
      *  info on how the chord algorithm works.
      *  
@@ -148,6 +160,9 @@ class BaseProblem
 
 
 }  // namespace pareto_approximator
+
+
+/* @} */
 
 
 // We've got to #include the implementation here because we are describing 
