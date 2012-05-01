@@ -28,10 +28,27 @@ Point::Point() { }
 
 
 //! An 1-dimensional Point constructor.
+Point::Point(int x)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+}
+
+
+//! An 1-dimensional Point constructor.
 Point::Point(double x)
 {
   assert(coordinates_.size() == 0);
   coordinates_.push_back(x);
+}
+
+
+//! A 2-dimensional Point constructor.
+Point::Point(int x, int y)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
 }
 
 
@@ -41,6 +58,16 @@ Point::Point(double x, double y)
   assert(coordinates_.size() == 0);
   coordinates_.push_back(x);
   coordinates_.push_back(y);
+}
+
+
+//! A 3-dimensional Point constructor.
+Point::Point(int x, int y, int z)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
+  coordinates_.push_back(z);
 }
 
 

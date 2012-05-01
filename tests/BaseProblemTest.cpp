@@ -38,16 +38,26 @@ class BaseProblemTest : public ::testing::Test {
 };
 
 
-// Test that the computeConvexParetoSet() method does what's expected 
-// for the SmallGraphProblem class (child of BaseProblem). 
-// SmallGraphProblem is a multiobjective shortest path problem on a 
+// Test that the computeConvexParetoSet() method does what's expected for 
+// the SmallGraphProblem class (child of BaseProblem). 
+// SmallGraphProblem is a biobjective shortest path problem on a 
 // small boost graph.
 TEST_F(BaseProblemTest, ChordForSmallGraphProblem)
 {
+  using small_graph_problem::SmallGraphProblem;
+  using small_graph_problem::PredecessorMap;
+
   SmallGraphProblem sgp;
   list< PointAndSolution<PredecessorMap> > paretoSet;
-  paretoSet = sgp.computeConvexParetoSet(verySmallEps);
+  unsigned int numObjectives = 2;
+  paretoSet = sgp.computeConvexParetoSet(numObjectives, 0.0);
+
   EXPECT_EQ(4, paretoSet.size());
+  list< PointAndSolution<PredecessorMap> >::iterator psi = paretoSet.begin();
+  EXPECT_EQ(Point(2, 16), psi->point);
+  EXPECT_EQ(Point(3, 12), (++psi)->point);
+  EXPECT_EQ(Point(4, 10), (++psi)->point);
+  EXPECT_EQ(Point(14, 2), (++psi)->point);
 }
 
 
@@ -58,17 +68,19 @@ TEST_F(BaseProblemTest, ChordForNonOptimalStartingPointsProblem)
 {
   NonOptimalStartingPointsProblem nospp;
   list< PointAndSolution<string> > paretoSet;
-  paretoSet = nospp.computeConvexParetoSet(verySmallEps);
+  unsigned int numObjectives = 2;
+  paretoSet = nospp.computeConvexParetoSet(numObjectives, verySmallEps);
+
   EXPECT_EQ(3, paretoSet.size());
-  list< PointAndSolution<string> >::iterator it = paretoSet.begin();
-  EXPECT_EQ(Point(1.0, 4.0), it->point);
-  EXPECT_EQ("west", it->solution);
-  ++it;
-  EXPECT_EQ(Point(2.0, 2.0), it->point);
-  EXPECT_EQ("southwest", it->solution);
-  ++it;
-  EXPECT_EQ(Point(4.0, 1.0), it->point);
-  EXPECT_EQ("south", it->solution);
+  list< PointAndSolution<string> >::iterator psi = paretoSet.begin();
+  EXPECT_EQ(Point(1.0, 4.0), psi->point);
+  EXPECT_EQ("west", psi->solution);
+  ++psi;
+  EXPECT_EQ(Point(2.0, 2.0), psi->point);
+  EXPECT_EQ("southwest", psi->solution);
+  ++psi;
+  EXPECT_EQ(Point(4.0, 1.0), psi->point);
+  EXPECT_EQ("south", psi->solution);
 }
 
 

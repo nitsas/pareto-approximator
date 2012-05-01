@@ -9,6 +9,9 @@
  */
 
 
+#include <assert.h>
+
+
 using std::min;
 
 
@@ -56,9 +59,12 @@ BaseProblem<S>::~BaseProblem() { }
  */
 template <class S> 
 list< PointAndSolution<S> > 
-BaseProblem<S>::computeConvexParetoSet(double eps)
+BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
 {
-  // reminder: comb's arguments are x objective's weight and y's weight
+  // reminder: comb's arguments are a set of iterators over a 
+  // std::vector<double> of weights (one for each objective)
+
+  assert(numObjectives == 2);
 
   // find the westmost (best on x objective) and the southmost (best on y
   // objective) solutions (and their corresponding points in objective space)

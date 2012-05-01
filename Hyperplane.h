@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <string>
+#include <set>
 #include <vector>
 
 #include "Point.h"
@@ -140,7 +141,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane
      */
-    Hyperplane(int* first, int* last, int b);
+    Hyperplane(const int * first, const int * last, int b);
 
     //! Constructor for a hyperplane on an n-dimensional space.
     /*!
@@ -163,21 +164,57 @@ class Hyperplane
      *  
      *  \sa Hyperplane
      */
-    Hyperplane(double* first, double* last, double b);
+    Hyperplane(const double * first, const double * last, double b);
 
     //! Constructor for a hyperplane on a 2D space. (line)
     /*!
      *  \param p1 A 2D Point instance.
      *  \param p2 A 2D Point instance.
-     *  \return A 2-hyperplane (line) passing through both p1 and p2.
+     *  
+     *  Constructs a 2-hyperplane (line) that passes through points p1 and p2.
      *  
      *  Possible exceptions:
      *  - May throw a SamePointsException exception if p1 and p2 represent 
      *    the same point.
      *  - May throw a Not2DPointsException exception if either p1 or p2 is 
      *    not a 2D point.
+     *  
+     *  \sa Hyperplane, init() and Point
      */
-    Hyperplane(const Point& p1, const Point& p2);
+    Hyperplane(const Point & p1, const Point & p2);
+
+    //! Constructor for a hyperplane on an n-dimensional space.
+    /*!
+     *  \param first Iterator to the first element in a std::set<Point>.
+     *  \param last Iterator to the past-the-end element in a std::set<Point>.
+     *  
+     *  Let n be the number of elements in the std::vector<Point> that first
+     *  and last refer to.
+     *  
+     *  Constructs an n-hyperplane that passes through all the points in the 
+     *  std::set<Point> that first and last refer to.
+     *  
+     *  \sa Hyperplane, init() and Point
+     */
+    Hyperplane(std::set<Point>::const_iterator first, 
+               std::set<Point>::const_iterator last);
+
+    //! Constructor for a hyperplane on an n-dimensional space.
+    /*!
+     *  \param first Iterator (pointer) to the first element in an array 
+     *               of Point instances.
+     *  \param last Iterator (pointer) to the last element in an array of 
+     *              Point instances.
+     *  
+     *  Let n be the number of elements in the array of Point instances 
+     *  that first and last refer to.
+     *  
+     *  Constructs an n-hyperplane that passes through all the points in 
+     *  array of Point instances that first and last refer to.
+     *  
+     *  \sa Hyperplane, init() and Point
+     */
+    Hyperplane(const Point * first, const Point * last);
 
     //! A simple (and empty) destructor.
     ~Hyperplane();
@@ -257,7 +294,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane and operator!=()
      */
-    bool operator== (const Hyperplane& hyperplane) const;
+    bool operator== (const Hyperplane & hyperplane) const;
 
     //! The Hyperplane inequality operator.
     /*!
@@ -268,7 +305,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane and operator==()
      */
-    bool operator!= (const Hyperplane& hyperplane) const;
+    bool operator!= (const Hyperplane & hyperplane) const;
 
     //! The Hyperplane output stream operator.
     /*!
@@ -280,8 +317,8 @@ class Hyperplane
      *  
      *  \sa Hyperplane and str()
      */
-    friend std::ostream& operator<< (std::ostream& out, 
-                                     const Hyperplane& hyperplane);
+    friend std::ostream & operator<< (std::ostream & out, 
+                                     const Hyperplane & hyperplane);
 
     //! Compute the ratio distance from the given Point to the hyperplane.
     /*!
@@ -302,7 +339,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane and Point
      */
-    double ratioDistance(const Point& p) const;
+    double ratioDistance(const Point & p) const;
     
     //! Create a new Hyperplane parallel to the current one (through a point).
     /*!
@@ -317,7 +354,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane and Point
      */
-    Hyperplane parallelThrough(const Point& p) const;
+    Hyperplane parallelThrough(const Point & p) const;
 
     //! Check if two hyperplanes are parallel.
     /*!
@@ -336,7 +373,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane
      */
-    bool isParallel(const Hyperplane& hyperplane) const;
+    bool isParallel(const Hyperplane & hyperplane) const;
 
     //! Find the point where two 2-hyperplanes (lines) intersect.
     /*!
@@ -352,9 +389,26 @@ class Hyperplane
      *  
      *  \sa Hyperplane and Point
      */
-    Point intersection(const Hyperplane& hyperplane) const;
+    Point intersection(const Hyperplane & hyperplane) const;
 
   private:
+    //! Initializer for a hyperplane on an n-dimensional space.
+    /*!
+     *  \param first Iterator to the first element in a std::set<Point>.
+     *  \param last Iterator to the past-the-end element in a std::set<Point>.
+     *  
+     *  Let n be the number of elements in the std::vector<Point> that first
+     *  and last refer to.
+     *  
+     *  Initializes the current instance to an n-hyperplane that passes 
+     *  through all the points in the std::set<Point> that first and last 
+     *  refer to.
+     *  
+     *  \sa Hyperplane and Point
+     */
+    void init(std::set<Point>::const_iterator first, 
+              std::set<Point>::const_iterator last);
+
     //! A std::vector of all the a_{i} coefficients.
     /*!
      *  \sa Hyperplane

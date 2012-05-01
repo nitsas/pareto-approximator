@@ -120,7 +120,7 @@ class BaseProblem
      *  \sa BaseProblem, PointAndSolution and Point
      */
     list< PointAndSolution<S> > 
-    computeConvexParetoSet(double eps);
+    computeConvexParetoSet(unsigned int numObjectives, double eps=0.0);
 
   private:
     /*! \brief A recursive function called by computeConvexParetoSet() to do 

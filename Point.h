@@ -52,11 +52,20 @@ class Point {
     Point();
     
     //! An 1-dimensional Point constructor.
+    explicit Point(int x);
+    
+    //! An 1-dimensional Point constructor.
     explicit Point(double x);
+    
+    //! A 2-dimensional Point constructor.
+    Point(int x, int y);
     
     //! A 2-dimensional Point constructor.
     Point(double x, double y);
     
+    //! A 3-dimensional Point constructor.
+    Point(int x, int y, int z);
+
     //! A 3-dimensional Point constructor.
     Point(double x, double y, double z);
 

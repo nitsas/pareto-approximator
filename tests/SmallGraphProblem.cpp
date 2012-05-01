@@ -1,6 +1,6 @@
 /*! \file SmallGraphProblem.cpp
- *  \brief Implementation of SmallGraphProblem, a simple graph problem class 
- *         used in BaseProblemTest.cpp.
+ *  \brief Implementation of SmallGraphProblem, a simple 
+ *         biobjective shortest path problem class used in BaseProblem.cpp
  *  \author Christos Nitsas
  *  \date 2012
  */
@@ -8,13 +8,17 @@
 
 #include <iostream>
 #include <assert.h>
-#include <boost/graph/dag_shortest_paths.hpp>
+#include <map>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
 
 #include "SmallGraphProblem.h"
 #include "../Point.h"
 
 
 using pareto_approximator::Point;
+
+
+namespace small_graph_problem {
 
 
 SmallGraphProblem::SmallGraphProblem() 
@@ -37,15 +41,6 @@ SmallGraphProblem::makeGraph()
   Vertex r = boost::add_vertex(g_);
   t_ = boost::add_vertex(g_);
 
-  boost::property_map<Graph, boost::vertex_name_t>::type vName = get(boost::vertex_name, g_);
-  boost::put(vName, s_, 's');
-  boost::put(vName, u, 'u');
-  boost::put(vName, d, 'd');
-  boost::put(vName, l, 'l');
-  boost::put(vName, m, 'm');
-  boost::put(vName, r, 'r');
-  boost::put(vName, t_, 't');
-
   bool ok;
   Edge su, sl, sd, um, ur, ut, dt, lm, ld, mr, md, rt, rd;
   boost::tie(su, ok) = boost::add_edge(s_, u,  g_);
@@ -62,43 +57,30 @@ SmallGraphProblem::makeGraph()
   boost::tie(rt, ok) = boost::add_edge(r,  t_, g_);
   boost::tie(rd, ok) = boost::add_edge(r,  d,  g_);
   
-  g_[su].name  = "su";
   g_[su].black = 7;
   g_[su].red   = 1;
-  g_[sl].name  = "sl";
   g_[sl].black = 1;
   g_[sl].red   = 2;
-  g_[sd].name  = "sd";
   g_[sd].black = 1;
   g_[sd].red   = 11;
-  g_[um].name  = "um";
   g_[um].black = 1;
   g_[um].red   = 1;
-  g_[ur].name  = "ur";
   g_[ur].black = 2;
   g_[ur].red   = 2;
-  g_[ut].name  = "ut";
   g_[ut].black = 7;
   g_[ut].red   = 1;
-  g_[dt].name  = "dt";
   g_[dt].black = 1;
   g_[dt].red   = 5;
-  g_[lm].name  = "lm";
   g_[lm].black = 1;
   g_[lm].red   = 2;
-  g_[ld].name  = "ld";
   g_[ld].black = 1;
   g_[ld].red   = 5;
-  g_[mr].name  = "mr";
   g_[mr].black = 3;
   g_[mr].red   = 5;
-  g_[md].name  = "md";
   g_[md].black = 1;
   g_[md].red   = 1;
-  g_[rt].name  = "rt";
   g_[rt].black = 3;
   g_[rt].red   = 3;
-  g_[rd].name  = "rd";
   g_[rd].black = 2;
   g_[rd].red   = 2;
 }
@@ -110,32 +92,35 @@ SmallGraphProblem::comb(std::vector<double>::const_iterator first,
 {
   assert(last == first + 2);
 
-  boost::property_map<Graph, double EdgeProperty::*>::type   w_map   = boost::get(&EdgeProperty::weight,  g_);
-  boost::property_map<Graph, boost::vertex_distance_t>::type d_map = boost::get(boost::vertex_distance, g_);
-  std::vector<Vertex>                                        p_map(boost::num_vertices(g_));
+  double blackWeight = *first;
+  double redWeight = *(first + 1);
 
-  double xWeight = *first;
-  double yWeight = *(first + 1);
-
+  std::map<Edge, double> weight;
   boost::graph_traits<Graph>::edge_iterator ei, ei_end;
   for (boost::tie(ei, ei_end) = edges(g_); ei != ei_end; ++ei)
-    w_map[*ei] = xWeight * g_[*ei].black + yWeight * g_[*ei].red;
+    weight[*ei] = blackWeight * g_[*ei].black + redWeight * g_[*ei].red;
 
-  boost::dag_shortest_paths(g_, s_, weight_map(w_map).distance_map(d_map).predecessor_map(&p_map[0]));
+  // weight map
+  boost::associative_property_map< std::map<Edge, double> > w_map(weight);
+  // predecessor map
+  std::vector<Vertex> p_map(boost::num_vertices(g_));
 
-  double xDistance = 0;
-  double yDistance = 0;
+  boost::dijkstra_shortest_paths(g_, s_, weight_map(w_map).predecessor_map(&p_map[0]));
+
+  double blackDistance = 0;
+  double redDistance = 0;
   Vertex v, w;
   w = t_;
   v = p_map[w];
   while (w != s_) {
-    xDistance += g_[boost::edge(v, w, g_).first].black;
-    yDistance += g_[boost::edge(v, w, g_).first].red;
+    blackDistance += g_[boost::edge(v, w, g_).first].black;
+    redDistance += g_[boost::edge(v, w, g_).first].red;
     w = v;
     v = p_map[w];
   }
 
-  return PointAndSolution<PredecessorMap>(Point(xDistance, yDistance), p_map);
+  return PointAndSolution<PredecessorMap>(Point(blackDistance, redDistance), p_map);
 }
 
 
+}  // namespace small_graph_problem

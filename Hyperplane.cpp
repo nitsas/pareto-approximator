@@ -138,7 +138,7 @@ Hyperplane::Hyperplane(std::vector<double>::const_iterator first,
  *  
  *  \sa Hyperplane
  */
-Hyperplane::Hyperplane(int* first, int* last, int b) : b_(b)
+Hyperplane::Hyperplane(const int * first, const int * last, int b) : b_(b)
 {
   assert(coefficients_.size() == 0);
   coefficients_.assign(first, last);
@@ -166,7 +166,8 @@ Hyperplane::Hyperplane(int* first, int* last, int b) : b_(b)
  *  
  *  \sa Hyperplane
  */
-Hyperplane::Hyperplane(double* first, double* last, double b) : b_(b)
+Hyperplane::Hyperplane(const double * first, const double * last, 
+                       double b) : b_(b)
 {
   assert(coefficients_.size() == 0);
   coefficients_.assign(first, last);
@@ -185,14 +186,89 @@ Hyperplane::Hyperplane(double* first, double* last, double b) : b_(b)
  *  - May throw a Not2DPointsException exception if either p1 or p2 is 
  *    not a 2D point.
  */
-Hyperplane::Hyperplane(const Point& p1, const Point& p2)
+Hyperplane::Hyperplane(const Point & p1, const Point & p2)
 {
-  assert(coefficients_.size() == 0);
   if (p1 == p2)
     throw SamePointsException();
   if (p1.dimension() != 2 || p2.dimension() != 2)
     throw Not2DPointsException();
-  // else
+
+  std::set<Point> points;
+  points.insert(p1);
+  points.insert(p2);
+  init(points.begin(), points.end());
+}
+
+
+//! Constructor for a hyperplane on an n-dimensional space.
+/*!
+ *  \param first Iterator to the first element in a std::set<Point>.
+ *  \param last Iterator to the past-the-end element in a std::set<Point>.
+ *  
+ *  Let n be the number of elements in the std::vector<Point> that first
+ *  and last refer to.
+ *  
+ *  Constructs an n-hyperplane that passes through all the points in the 
+ *  std::set<Point> that first and last refer to.
+ *  
+ *  \sa Hyperplane, init() and Point
+ */
+Hyperplane::Hyperplane(std::set<Point>::const_iterator first, 
+                       std::set<Point>::const_iterator last)
+{
+  init(first, last);
+}
+
+
+//! Constructor for a hyperplane on an n-dimensional space.
+/*!
+ *  \param first Iterator (pointer) to the first element in an array 
+ *               of Point instances.
+ *  \param last Iterator (pointer) to the last element in an array of 
+ *              Point instances.
+ *  
+ *  Let n be the number of elements in the array of Point instances 
+ *  that first and last refer to.
+ *  
+ *  Constructs an n-hyperplane that passes through all the points in 
+ *  array of Point instances that first and last refer to.
+ *  
+ *  \sa Hyperplane, init() and Point
+ */
+Hyperplane::Hyperplane(const Point * first, const Point * last)
+{
+  std::set<Point> points(first, last);
+  init(points.begin(), points.end());
+}
+
+
+//! Initializer for a hyperplane on an n-dimensional space.
+/*!
+ *  \param first Iterator to the first element in a std::set<Point>.
+ *  \param last Iterator to the past-the-end element in a std::set<Point>.
+ *  
+ *  Let n be the number of elements in the std::vector<Point> that first
+ *  and last refer to.
+ *  
+ *  Initializes the current instance to an n-hyperplane that passes 
+ *  through all the points in the std::set<Point> that first and last 
+ *  refer to.
+ *  
+ *  \sa Hyperplane and Point
+ */
+void 
+Hyperplane::init(std::set<Point>::const_iterator first, 
+                 std::set<Point>::const_iterator last)
+{
+  assert(coefficients_.size() == 0);
+
+  // temporarily works only for two points
+  std::set<Point>::const_iterator temp = first;
+  temp++; temp++;
+  assert(temp == last);
+
+  Point p1 = *first;
+  Point p2 = *(++first);
   if (p1[1] != p2[1]) {
     double a1 = 1.0;
     double a2 = (p2[0] - p1[0]) / (p1[1] - p2[1]);
@@ -361,7 +437,7 @@ Hyperplane::str() const
  *  \sa Hyperplane and operator!=()
  */
 bool 
-Hyperplane::operator== (const Hyperplane& hyperplane) const
+Hyperplane::operator== (const Hyperplane & hyperplane) const
 {
   if (space_dimension() != hyperplane.space_dimension())
     return false;
@@ -384,7 +460,7 @@ Hyperplane::operator== (const Hyperplane& hyperplane) const
  *  \sa Hyperplane and operator==()
  */
 bool 
-Hyperplane::operator!= (const Hyperplane& hyperplane) const
+Hyperplane::operator!= (const Hyperplane & hyperplane) const
 {
   if (space_dimension() != hyperplane.space_dimension())
     return true;
@@ -407,8 +483,8 @@ Hyperplane::operator!= (const Hyperplane& hyperplane) const
  *  
  *  \sa Hyperplane and str()
  */
-std::ostream& 
-operator<< (std::ostream& out, const Hyperplane& hyperplane)
+std::ostream & 
+operator<< (std::ostream & out, const Hyperplane & hyperplane)
 {
   return out << hyperplane.str();
 }
@@ -434,7 +510,7 @@ operator<< (std::ostream& out, const Hyperplane& hyperplane)
  *  \sa Hyperplane and Point
  */
 double 
-Hyperplane::ratioDistance(const Point& p) const
+Hyperplane::ratioDistance(const Point & p) const
 {
   if (space_dimension() != p.dimension())
     throw DifferentDimensionsException();
@@ -461,7 +537,7 @@ Hyperplane::ratioDistance(const Point& p) const
  *  \sa Hyperplane and Point
  */
 Hyperplane 
-Hyperplane::parallelThrough(const Point& p) const
+Hyperplane::parallelThrough(const Point & p) const
 {
   double newB = 0.0;
   for (unsigned int i=0; i!=space_dimension(); ++i)
@@ -489,7 +565,7 @@ Hyperplane::parallelThrough(const Point& p) const
  *  \sa Hyperplane
  */
 bool 
-Hyperplane::isParallel(const Hyperplane& hyperplane) const
+Hyperplane::isParallel(const Hyperplane & hyperplane) const
 {
   if (space_dimension() != hyperplane.space_dimension())
     return false;
@@ -516,7 +592,7 @@ Hyperplane::isParallel(const Hyperplane& hyperplane) const
  *  \sa Hyperplane and Point
  */
 Point 
-Hyperplane::intersection(const Hyperplane& hyperplane) const
+Hyperplane::intersection(const Hyperplane & hyperplane) const
 {
   if (space_dimension() != 2 || hyperplane.space_dimension() != 2)
     throw Not2DHyperplanesException();

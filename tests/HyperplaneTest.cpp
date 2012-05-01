@@ -5,6 +5,7 @@
  */
 
 
+#include <set>
 #include <vector>
 #include <algorithm>
 
@@ -30,12 +31,14 @@ class HyperplaneTest : public ::testing::Test {
 
 // Test that Hyperplane's constructors and accessors work as expected.
 TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork) {
+  // test Hyperplane(double, double, double)
   Hyperplane h1(5, 10, 15);
   EXPECT_EQ(h1[0], 5.0);
   EXPECT_EQ(h1[1], 10.0);
   EXPECT_EQ(h1.b(), 15.0);
   EXPECT_EQ(h1.space_dimension(), 2);
 
+  // test Hyperplane(double, double, double, double)
   Hyperplane h2(0.0, 2.0, 5.0, -4.5);
   EXPECT_EQ(h2[0], 0.0);
   EXPECT_EQ(h2[1], 2.0);
@@ -43,6 +46,8 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork) {
   EXPECT_EQ(h2.b(), -4.5);
   EXPECT_EQ(h2.space_dimension(), 3);
 
+  // test Hyperplane(std::vector<int>::const_iterator, 
+  //                 std::vector<int>::const_iterator)
   std::vector<int> coefficientsA(4);
   coefficientsA[0] = -2;
   coefficientsA[1] = 1;
@@ -56,6 +61,8 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork) {
   EXPECT_EQ(h3.b(), 12.0);
   EXPECT_EQ(h3.space_dimension(), 4);
 
+  // test Hyperplane(std::vector<double>::const_iterator, 
+  //                 std::vector<double>::const_iterator)
   std::vector<double> coefficientsB(4);
   coefficientsB[0] = -2.0;
   coefficientsB[1] = 1.0;
@@ -69,6 +76,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork) {
   EXPECT_EQ(h4.b(), 12.0);
   EXPECT_EQ(h4.space_dimension(), 4);
 
+  // test Hyperplane(const int *, const int *, int)
   int coefficientsC[6] = {-1, 0, 1, 2, 3, 4};
   Hyperplane h5(coefficientsC, coefficientsC + 6, 5);
   EXPECT_EQ(h5[0], -1.0);
@@ -80,6 +88,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork) {
   EXPECT_EQ(h5.b(), 5.0);
   EXPECT_EQ(h5.space_dimension(), 6);
 
+  // test Hyperplane(const double *, const double *, double)
   double coefficientsD[6] = {-1.0, 0.0, 1.0, 2.0, 3.0, 4.0};
   Hyperplane h6(coefficientsD, coefficientsD + 6, 5.0);
   EXPECT_EQ(h6[0], -1.0);
@@ -90,6 +99,31 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork) {
   EXPECT_EQ(h6[5], 4.0);
   EXPECT_EQ(h6.b(), 5.0);
   EXPECT_EQ(h6.space_dimension(), 6);
+
+  // test Hyperplane(const Point &, const Point &)
+  Hyperplane h7(Point(0, 0), Point(1, 1));
+  EXPECT_EQ(h7.space_dimension(), 2);
+  EXPECT_EQ(h7[0], -h7[1]);
+  EXPECT_EQ(h7.b(), 0.0);
+
+  // test Hyperplane(std::map<Point>::const_iterator, 
+  //                 std::map<Point>::const_iterator)
+  std::set<Point> pointsA;
+  pointsA.insert(Point(1, 1));
+  pointsA.insert(Point(0, 0));
+  Hyperplane h8(pointsA.begin(), pointsA.end());
+  EXPECT_EQ(h8.space_dimension(), 2);
+  EXPECT_EQ(h8[0], -h8[1]);
+  EXPECT_EQ(h8.b(), 0.0);
+
+  // test Hyperplane(const Point *, const Point *)
+  Point pointsB[2];
+  pointsB[0] = Point(0, 0);
+  pointsB[1] = Point(1, 1);
+  Hyperplane h9(pointsB, pointsB + 2);
+  EXPECT_EQ(h9.space_dimension(), 2);
+  EXPECT_EQ(h9[0], -h9[1]);
+  EXPECT_EQ(h9.b(), 0.0);
 }
 
 

@@ -59,6 +59,7 @@ main(void)
        << "  (let P be an s-t path)" << endl
        << "  + Black(P): sum of \"black\" weights of all edges in P" << endl
        << "  + Red(P): sum of \"red\" weights of all edges in P" << endl
+       << "- find a convex 1.001-approximation to the Pareto set" << endl
        << endl;
 
   // Check whether or not t is reachable (from s).
@@ -72,12 +73,14 @@ main(void)
   }
 
   cout << "(computing... please wait a few seconds)" << endl << endl;
-  // All the work (2 lines!)
+  // All the work (essentially 2 lines!)
   // =======================
   // Use RandomGraphProblem::computeConvexParetoSet() (inherited from 
   // BaseProblem) to find the approximate Pareto set.
+  unsigned int numObjectives = 2;
+  double approximationRatio = 0.001;
   list< PointAndSolution<PredecessorMap> > paretoSet;
-  paretoSet = rgp.computeConvexParetoSet(0.001);
+  paretoSet = rgp.computeConvexParetoSet(numObjectives, approximationRatio);
 
   // Output
   // =======================
