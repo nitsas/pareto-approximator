@@ -21,7 +21,8 @@ namespace {
 
 
 // The fixture for testing class Line2D.
-class Line2DTest : public ::testing::Test {
+class Line2DTest : public ::testing::Test 
+{
   protected:
     Line2DTest() { }
     
@@ -31,7 +32,8 @@ class Line2DTest : public ::testing::Test {
 
 
 // Test that Line2D's constructors (and attribute getters) work as expected.
-TEST_F(Line2DTest, Line2DConstructorsAndAccessorsWork) {
+TEST_F(Line2DTest, Line2DConstructorsAndAccessorsWork) 
+{
   // Create line   y = 3.7 x - 1.15
   Line2D l1(3.7, -1.15);
   EXPECT_EQ(3.7, l1.m());
@@ -61,7 +63,8 @@ TEST_F(Line2DTest, Line2DConstructorsAndAccessorsWork) {
 
 // Test that Line2D::isVertical() works correctly (and that we correctly 
 // identify vertical lines).
-TEST_F(Line2DTest, Line2DIsVerticalWorks) {
+TEST_F(Line2DTest, Line2DIsVerticalWorks) 
+{
   Line2D l1(5);
   EXPECT_EQ(true, l1.isVertical());
   string willChange = "this will change";
@@ -134,7 +137,8 @@ TEST_F(Line2DTest, Line2DIsVerticalWorks) {
 
 
 // Test that Line2D::intersection() works as expected.
-TEST_F(Line2DTest, Line2DIntersectionWorks) {
+TEST_F(Line2DTest, Line2DIntersectionWorks) 
+{
   Point p1(4.0, 3.0);
   Point p2(2.0, 8.0);
   Point p3(3.0, 4.0);
@@ -156,7 +160,8 @@ TEST_F(Line2DTest, Line2DIntersectionWorks) {
 
 
 // Test that Line2D::ratioDistance() works as expected.
-TEST_F(Line2DTest, Line2DRatioDistanceWorks) {
+TEST_F(Line2DTest, Line2DRatioDistanceWorks) 
+{
   Line2D l1(-1, 3);
   Point p1(1, 1);
   EXPECT_EQ(0.5, l1.ratioDistance(p1));
@@ -177,7 +182,8 @@ TEST_F(Line2DTest, Line2DRatioDistanceWorks) {
 
 
 // Test that Line2D::parallelThrough() works as expected.
-TEST_F(Line2DTest, Line2DParallelThroughWorks) {
+TEST_F(Line2DTest, Line2DParallelThroughWorks) 
+{
   Line2D l1(-1, 3);
   Point p1(0, 4);
   Point p2(0, 3);

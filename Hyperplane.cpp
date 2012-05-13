@@ -10,6 +10,7 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <armadillo>
 
 #include "Hyperplane.h"
 
@@ -196,27 +197,28 @@ Hyperplane::Hyperplane(const Point & p1, const Point & p2)
   std::set<Point> points;
   points.insert(p1);
   points.insert(p2);
-  init(points.begin(), points.end());
+  init(points);
 }
 
 
 //! Constructor for a hyperplane on an n-dimensional space.
 /*!
- *  \param first Iterator to the first element in a std::set<Point>.
- *  \param last Iterator to the past-the-end element in a std::set<Point>.
+ *  \param first Iterator to the first element in a std::vector<Point>.
+ *  \param last Iterator to the past-the-end element in a std::vector<Point>.
  *  
  *  Let n be the number of elements in the std::vector<Point> that first
  *  and last refer to.
  *  
  *  Constructs an n-hyperplane that passes through all the points in the 
- *  std::set<Point> that first and last refer to.
+ *  std::vector<Point> that first and last refer to.
  *  
  *  \sa Hyperplane, init() and Point
  */
-Hyperplane::Hyperplane(std::set<Point>::const_iterator first, 
-                       std::set<Point>::const_iterator last)
+Hyperplane::Hyperplane(std::vector<Point>::const_iterator first, 
+                       std::vector<Point>::const_iterator last)
 {
-  init(first, last);
+  std::set<Point> points(first, last);
+  init(points);
 }
 
 
@@ -238,52 +240,66 @@ Hyperplane::Hyperplane(std::set<Point>::const_iterator first,
 Hyperplane::Hyperplane(const Point * first, const Point * last)
 {
   std::set<Point> points(first, last);
-  init(points.begin(), points.end());
+  init(points);
 }
 
 
 //! Initializer for a hyperplane on an n-dimensional space.
 /*!
- *  \param first Iterator to the first element in a std::set<Point>.
- *  \param last Iterator to the past-the-end element in a std::set<Point>.
+ *  \param points An std::set<Point> of Point instances.
  *  
- *  Let n be the number of elements in the std::vector<Point> that first
- *  and last refer to.
+ *  Let n be the number of elements in the std::set<Point> that "points"
+ *  refers to.
  *  
  *  Initializes the current instance to an n-hyperplane that passes 
- *  through all the points in the std::set<Point> that first and last 
- *  refer to.
+ *  through all the points in the std::set<Point> that points refer to.
+ *  
+ *  Possible exceptions:
+ *  - May throw a DifferentDimensionsException exception if a given 
+ *    point's dimension is not n.
  *  
  *  \sa Hyperplane and Point
  */
 void 
-Hyperplane::init(std::set<Point>::const_iterator first, 
-                 std::set<Point>::const_iterator last)
+Hyperplane::init(const std::set<Point> points)
 {
   assert(coefficients_.size() == 0);
 
-  // temporarily works only for two points
-  std::set<Point>::const_iterator temp = first;
-  temp++; temp++;
-  assert(temp == last);
+  unsigned int n = points.size();
 
-  Point p1 = *first;
-  Point p2 = *(++first);
-  if (p1[1] != p2[1]) {
-    double a1 = 1.0;
-    double a2 = (p2[0] - p1[0]) / (p1[1] - p2[1]);
-    coefficients_.push_back(a1);
-    coefficients_.push_back(a2);
-    b_ = p1[0] + a2 * p1[1];
+  // check if all points have dimension n
+  std::set<Point>::const_iterator pit;
+  for (pit = points.begin(); pit != points.end(); ++pit)
+    if (pit->dimension() != n)
+      throw DifferentDimensionsException();
+  
+  // fill a matrix will each point's coordinates
+  arma::mat M;
+  for (pit = points.begin(); pit != points.end(); ++pit)
+    M.insert_rows(M.n_rows, pit->toRowVec());
+  // add a column of ones at the end (will make the following easier)
+  M.insert_cols(M.n_cols, arma::ones<arma::vec>(n));
+  
+  // find the hyperplane's a_{i} coefficients
+  for (unsigned int i = 0; i != n; ++i) {
+    M.swap_cols(i, M.n_cols - 1);
+    coefficients_.push_back(arma::det(M.cols(0, M.n_cols - 2)));
+    M.swap_cols(i, M.n_cols - 1);
   }
-  else {
-    // the line through them is horizontal
-    double a1 = 0.0;
-    double a2 = 1.0;
-    coefficients_.push_back(a1);
-    coefficients_.push_back(a2);
-    b_ = p1[1];
-  }
+
+  // find the hyperplane's b coefficient
+  b_ = arma::det(M.cols(0, M.n_cols - 2));
+
+  // if every coefficient is negative make them all positive
+  // (flip b's sign as well to keep the equation the same)
+  bool allNegative = true;
+  for (unsigned int i = 0; i != n; ++i) 
+    if (coefficients_[i] > 0) {
+      allNegative = false;
+      break;
+    }
+  if (allNegative)
+    reverseCoefficientSigns();
 }
 
 
@@ -607,6 +623,26 @@ Hyperplane::intersection(const Hyperplane & hyperplane) const
     y0 = ( hyperplane.b() - hyperplane[0] * x0 ) / hyperplane[1];
   
   return Point(x0, y0);
+}
+
+
+//! Reverse the sign of all of the Hyperplane's coefficients.
+/*!
+ *  Reverse the sign of all the \f$ a_{i} \f$ and b coefficients.
+ *  Since we're reversing the sign on both sides of the hyperplane 
+ *  equation, the equation stays the same.
+ *
+ *  Reminder:
+ *  A hyperplane on an n-dimensional space can be described by an 
+ *  equation of the form:
+ *  \f$ a_{1} x_{1} + a_{2} x_{2} + ... + a_{n} x_{n} = b \f$
+ */
+void 
+Hyperplane::reverseCoefficientSigns()
+{
+  for (unsigned int i = 0; i != space_dimension(); ++i)
+    coefficients_[i] = -coefficients_[i];
+  b_ = -b_;
 }
 
 

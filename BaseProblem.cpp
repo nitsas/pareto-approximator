@@ -37,6 +37,9 @@ BaseProblem<S>::~BaseProblem() { }
 
 //! Compute an (1+eps)-convex Pareto set of the problem.
 /*! 
+ *  \param numObjectives The number of objectives to minimize. Note: The 
+ *                       user's comb() routine should be able to handle a 
+ *                       std::vector<double> of \#numObjectives weights.
  *  \param eps The degree of approximation. computeConvexParetoSet() will 
  *             find an (1+eps)-convex Pareto set of the problem.
  *  \return An (1+eps)-convex Pareto set of the problem whose linear 
@@ -82,17 +85,18 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
   Point tip(min(west.point[0], south.point[0]), min(west.point[1], south.point[1]));
 
   // let doChord do all the work (it's recursive)
-  return doChord(west, south, tip, eps);
+  std::vector< PointAndSolution<S> > base;
+  base.push_back(west);
+  base.push_back(south);
+  return doChord(base, tip, eps);
 }
 
 
 /*! \brief A recursive function called by computeConvexParetoSet() to do 
  *         the bulk of the work.
  * 
- *  \param west A PointAndSolution<S> instance (where S is the type of 
- *              the problem solutions). 
- *  \param south A PointAndSolution<S> instance (where S is the type of 
- *               the problem solutions).
+ *  \param base A std::vector of PointAndSolution<S> instances (where S is 
+ *              the type of the problem solutions).
  *  \param tip A Point instance which, together with the points in "west" 
  *             and "south" forms the triangle inside which doChord() will 
  *             search for points of the (1+eps)-convex Pareto set.
@@ -106,11 +110,12 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  *  to do the bulk of the work.
  *  
  *  Each time it's called doChord() finds at most one new (1+eps)-convex 
- *  Pareto set point, splits the problem into two subproblems and calls 
- *  itself recursivelly on the subproblems until the requested degree of 
- *  approximation is met.
+ *  Pareto set point (inside the convex polytope defined by the given 
+ *  points: tip and the points in base), splits the problem into 
+ *  subproblems and calls itself recursivelly on the subproblems until 
+ *  the requested degree of approximation is met.
  *  
- *  Please read "How good is the Chord lgorithm?" by Constantinos 
+ *  Please read "How good is the Chord Algorithm?" by Constantinos 
  *  Daskalakis, Ilias Diakonikolas and Mihalis Yannakakis for in-depth 
  *  info on how the chord algorithm works.
  *  
@@ -118,11 +123,15 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  */
 template <class S> 
 list< PointAndSolution<S> > 
-BaseProblem<S>::doChord(const PointAndSolution<S>& west, 
-                        const PointAndSolution<S>& south, 
-                        const Point& tip, double eps)
+BaseProblem<S>::doChord(std::vector< PointAndSolution<S> > base, 
+                        const Point & tip, double eps)
 {
   // reminder: comb's arguments are x objective's weight and y's weight
+
+  assert(base.size() == 2);
+
+  PointAndSolution<S> west = *base.begin();
+  PointAndSolution<S> south = *(base.begin() + 1);
 
   // check if the westmost or the southmost point given is the same as
   // the tip (ideal point) and if either is stop searching and return 
@@ -174,8 +183,13 @@ BaseProblem<S>::doChord(const PointAndSolution<S>& west,
   Point southTip = parallel.intersection(ts);
   list< PointAndSolution<S> > westList, southList;
   // call chord on the two subproblems
-  westList  = doChord(west,  southwest, westTip,  eps);
-  southList = doChord(southwest, south, southTip, eps);
+  std::vector< PointAndSolution<S> > westBase, southBase;
+  westBase.push_back(west); 
+  westBase.push_back(southwest);
+  westList  = doChord(westBase, westTip,  eps);
+  southBase.push_back(southwest);
+  southBase.push_back(south);
+  southList = doChord(southBase, southTip, eps);
   // remove southList's first element (it's the same as westList's last one)
   // and merge the lists
   southList.pop_front();

@@ -5,8 +5,9 @@
 # - Line2DTest.cpp
 # - HyperplaneTest.cpp
 # - BaseProblemTest.cpp  &  NonOptimalStartingPointsProblem.h  &  
-#		NonOptimalStartingPointsProblem.cpp  &  SmallGraphProblem.h  &  
-#		SmallGraphProblem.cpp
+#		NonOptimalStartingPointsProblem.cpp  &  SmallBiobjectiveSPProblem.h  &  
+#		SmallBiobjectiveSPProblem.cpp $ SmallTripleobjectiveSPProblem.h & 
+#   SmallTrimpleobjectiveSPProblem.cpp
 # 
 # Author:  Christos Nitsas
 # Date:    2012
@@ -15,7 +16,7 @@
 
 CC=g++
 CPPFLAGS=-Wall -Wextra -Werror -g
-CPPLIBS=-lgtest
+CPPLIBS=-lgtest -larmadillo
 
 
 # Make all unit tests
@@ -34,16 +35,20 @@ HyperplaneTest.out: HyperplaneTest.cpp ../Point.h Point.o ../Hyperplane.h Hyperp
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o HyperplaneTest.cpp -o HyperplaneTest.out
 
 # Make BaseProblemTest.out
-BaseProblemTest.out: BaseProblemTest.o SmallGraphProblem.o NonOptimalStartingPointsProblem.o Point.o Hyperplane.o
-	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o NonOptimalStartingPointsProblem.o SmallGraphProblem.o BaseProblemTest.o -o BaseProblemTest.out
+BaseProblemTest.out: BaseProblemTest.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o NonOptimalStartingPointsProblem.o Point.o Hyperplane.o
+	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o NonOptimalStartingPointsProblem.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o BaseProblemTest.o -o BaseProblemTest.out
 
 # Make BaseProblemTest.o
-BaseProblemTest.o: BaseProblemTest.cpp ../Point.h ../PointAndSolution.h ../PointAndSolution.cpp NonOptimalStartingPointsProblem.h SmallGraphProblem.h ../BaseProblem.h ../BaseProblem.cpp
+BaseProblemTest.o: BaseProblemTest.cpp ../Point.h ../PointAndSolution.h ../PointAndSolution.cpp NonOptimalStartingPointsProblem.h SmallBiobjectiveSPProblem.h SmallTripleobjectiveSPProblem.h ../BaseProblem.h ../BaseProblem.cpp
 	$(CC) $(CPPFLAGS) -c BaseProblemTest.cpp -o BaseProblemTest.o
 
-# Make SmallGraphProblem.o
-SmallGraphProblem.o: SmallGraphProblem.cpp SmallGraphProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h
-	$(CC) $(CPPFLAGS) -c SmallGraphProblem.cpp -o SmallGraphProblem.o
+# Make SmallBiobjectiveSPProblem.o
+SmallBiobjectiveSPProblem.o: SmallBiobjectiveSPProblem.cpp SmallBiobjectiveSPProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h
+	$(CC) $(CPPFLAGS) -c SmallBiobjectiveSPProblem.cpp -o SmallBiobjectiveSPProblem.o
+
+# Make SmallTripleobjectiveSPProblem.o
+SmallTripleobjectiveSPProblem.o: SmallTripleobjectiveSPProblem.cpp SmallTripleobjectiveSPProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h
+	$(CC) $(CPPFLAGS) -c SmallTripleobjectiveSPProblem.cpp -o SmallTripleobjectiveSPProblem.o
 
 # Make NonOptimalStartingPointsProblem.o
 NonOptimalStartingPointsProblem.o: NonOptimalStartingPointsProblem.cpp NonOptimalStartingPointsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h
@@ -64,5 +69,5 @@ Hyperplane.o: ../Hyperplane.h ../Hyperplane.cpp ../Point.h Point.o ../DifferentD
 
 # Clean object files and executables
 clean: 
-	rm -f Point.o Line2D.o Hyperplane.o BaseProblemTest.o SmallGraphProblem.o NonOptimalStartingPointsProblem.o PointTest.out Line2DTest.out HyperplaneTest.out BaseProblemTest.out
+	rm -f Point.o Line2D.o Hyperplane.o BaseProblemTest.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o NonOptimalStartingPointsProblem.o PointTest.out Line2DTest.out HyperplaneTest.out BaseProblemTest.out
 

@@ -81,6 +81,28 @@ Point::Point(double x, double y, double z)
 }
 
 
+//! A 4-dimensional Point constructor.
+Point::Point(int x, int y, int z, int w)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
+  coordinates_.push_back(z);
+  coordinates_.push_back(w);
+}
+
+
+//! A 4-dimensional Point constructor.
+Point::Point(double x, double y, double z, double w)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
+  coordinates_.push_back(z);
+  coordinates_.push_back(w);
+}
+
+
 //! An n-dimensional Point constructor.
 /*! 
  *  \param first Iterator to the initial position in a std::vector<double>.
@@ -188,6 +210,25 @@ Point::dimension(unsigned int dimension)
   // Resize the coordinates_ vector to "dimension" elements. 
   // Initialize any newly inserted elements to 0.0.
   coordinates_.resize(dimension, 0.0);
+}
+
+
+//! Check if the Point's coordinates are all zero.
+/*!
+ *  \return true if all the Point's coordinates are zero; false otherwise.
+ *          (false if the Point is dimensionless)
+ */
+bool 
+Point::isZero() const
+{
+  if (dimension() == 0)
+    return false;
+  std::vector<double>::const_iterator it;
+  for (it = coordinates_.begin(); it != coordinates_.end(); ++it)
+    if (*it != 0.0)
+      return false;
+
+  return true;
 }
 
 
@@ -391,6 +432,34 @@ Point::str() const
 
     return ss.str();
   }
+}
+
+
+/*! 
+ *  \brief Return the point's coordinates as an arma::vec (armadillo vector).
+ */
+arma::vec 
+Point::toVec() const
+{
+  arma::vec coords(coordinates_.size());
+  for (unsigned int i = 0; i != coordinates_.size(); ++i)
+    coords(i) = coordinates_[i];
+
+  return coords;
+}
+
+
+/*! 
+ *  \brief Return the point's coordinates as an arma::rowvec (armadillo row vector).
+ */
+arma::rowvec 
+Point::toRowVec() const
+{
+  arma::rowvec coords(coordinates_.size());
+  for (unsigned int i = 0; i != coordinates_.size(); ++i)
+    coords(i) = coordinates_[i];
+
+  return coords;
 }
 
 

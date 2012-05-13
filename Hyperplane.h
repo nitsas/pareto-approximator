@@ -185,19 +185,20 @@ class Hyperplane
 
     //! Constructor for a hyperplane on an n-dimensional space.
     /*!
-     *  \param first Iterator to the first element in a std::set<Point>.
-     *  \param last Iterator to the past-the-end element in a std::set<Point>.
+     *  \param first Iterator to the first element in a std::vector<Point>.
+     *  \param last Iterator to the past-the-end element in a 
+     *              std::vector<Point>.
      *  
      *  Let n be the number of elements in the std::vector<Point> that first
      *  and last refer to.
      *  
      *  Constructs an n-hyperplane that passes through all the points in the 
-     *  std::set<Point> that first and last refer to.
+     *  std::vector<Point> that first and last refer to.
      *  
      *  \sa Hyperplane, init() and Point
      */
-    Hyperplane(std::set<Point>::const_iterator first, 
-               std::set<Point>::const_iterator last);
+    Hyperplane(std::vector<Point>::const_iterator first, 
+               std::vector<Point>::const_iterator last);
 
     //! Constructor for a hyperplane on an n-dimensional space.
     /*!
@@ -391,23 +392,37 @@ class Hyperplane
      */
     Point intersection(const Hyperplane & hyperplane) const;
 
+    //! Reverse the sign of all of the Hyperplane's coefficients.
+    /*!
+     *  Reverse the sign of all the \f$ a_{i} \f$ and b coefficients.
+     *  Since we're reversing the sign on both sides of the hyperplane 
+     *  equation, the equation stays the same.
+     *
+     *  Reminder:
+     *  A hyperplane on an n-dimensional space can be described by an 
+     *  equation of the form:
+     *  \f$ a_{1} x_{1} + a_{2} x_{2} + ... + a_{n} x_{n} = b \f$
+     */
+    void reverseCoefficientSigns();
+
   private:
     //! Initializer for a hyperplane on an n-dimensional space.
     /*!
-     *  \param first Iterator to the first element in a std::set<Point>.
-     *  \param last Iterator to the past-the-end element in a std::set<Point>.
+     *  \param points An std::set<Point> of Point instances.
      *  
-     *  Let n be the number of elements in the std::vector<Point> that first
-     *  and last refer to.
+     *  Let n be the number of elements in the std::set<Point> that "points"
+     *  refers to.
      *  
      *  Initializes the current instance to an n-hyperplane that passes 
-     *  through all the points in the std::set<Point> that first and last 
-     *  refer to.
+     *  through all the points in the std::set<Point> that points refer to.
+     *  
+     *  Possible exceptions:
+     *  - May throw a DifferentDimensionsException exception if a given 
+     *    point's dimension is not n.
      *  
      *  \sa Hyperplane and Point
      */
-    void init(std::set<Point>::const_iterator first, 
-              std::set<Point>::const_iterator last);
+    void init(std::set<Point> points);
 
     //! A std::vector of all the a_{i} coefficients.
     /*!

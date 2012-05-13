@@ -1,13 +1,13 @@
-/*! \file SmallGraphProblem.h
- *  \brief Declaration of SmallGraphProblem, a simple 
+/*! \file SmallBiobjectiveSPProblem.h
+ *  \brief Declaration of SmallBiobjectiveSPProblem, a simple 
  *         biobjective shortest path problem class used in BaseProblem.cpp
  *  \author Christos Nitsas
  *  \date 2012
  */
 
 
-#ifndef EXAMPLE_CLASS_SMALL_GRAPH_PROBLEM_H
-#define EXAMPLE_CLASS_SMALL_GRAPH_PROBLEM_H
+#ifndef EXAMPLE_CLASS_SMALL_BIOBJECTIVE_SHORTEST_PATH_PROBLEM_H
+#define EXAMPLE_CLASS_SMALL_BIOBJECTIVE_SHORTEST_PATH_PROBLEM_H
 
 
 #include <string>
@@ -24,7 +24,7 @@ using pareto_approximator::PointAndSolution;
 using pareto_approximator::BaseProblem;
 
 
-namespace small_graph_problem {
+namespace small_biobjective_sp_problem {
 
 
 // Each edge has two weights: black and red.
@@ -43,6 +43,8 @@ typedef boost::adjacency_list<boost::listS,
                               EdgeProperty> Graph;
 typedef Graph::vertex_descriptor Vertex;
 typedef Graph::edge_descriptor   Edge;
+typedef Graph::vertex_iterator   VertexIterator;
+typedef Graph::edge_iterator     EdgeIterator;
 typedef std::vector<Vertex>      PredecessorMap;
 
 
@@ -58,11 +60,11 @@ typedef std::vector<Vertex>      PredecessorMap;
  *    the path P.
  *  - Red(P): the sum of all e.red weights, where e is an Edge on the path P.
  */
-class SmallGraphProblem : public BaseProblem<PredecessorMap>
+class SmallBiobjectiveSPProblem : public BaseProblem<PredecessorMap>
 {
   public:
-    SmallGraphProblem();
-    ~SmallGraphProblem();
+    SmallBiobjectiveSPProblem();
+    ~SmallBiobjectiveSPProblem();
 
     PointAndSolution<PredecessorMap> comb(std::vector<double>::const_iterator first, 
                                           std::vector<double>::const_iterator last);
@@ -80,7 +82,7 @@ class SmallGraphProblem : public BaseProblem<PredecessorMap>
 };
 
 
-}  // namespace small_graph_problem
+}  // namespace small_biobjective_sp_problem
 
 
-#endif  // EXAMPLE_CLASS_SMALL_GRAPH_PROBLEM_H
+#endif  // EXAMPLE_CLASS_SMALL_BIOBJECTIVE_SHORTEST_PATH_PROBLEM_H

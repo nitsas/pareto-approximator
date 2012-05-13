@@ -1,5 +1,5 @@
-/*! \file SmallGraphProblem.cpp
- *  \brief Implementation of SmallGraphProblem, a simple 
+/*! \file SmallBiobjectiveSPProblem.cpp
+ *  \brief Implementation of SmallBiobjectiveSPProblem, a simple 
  *         biobjective shortest path problem class used in BaseProblem.cpp
  *  \author Christos Nitsas
  *  \date 2012
@@ -9,29 +9,30 @@
 #include <iostream>
 #include <assert.h>
 #include <map>
-#include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/graph/bellman_ford_shortest_paths.hpp>
+#include <boost/property_map/vector_property_map.hpp>
 
-#include "SmallGraphProblem.h"
+#include "SmallBiobjectiveSPProblem.h"
 #include "../Point.h"
 
 
 using pareto_approximator::Point;
 
 
-namespace small_graph_problem {
+namespace small_biobjective_sp_problem {
 
 
-SmallGraphProblem::SmallGraphProblem() 
+SmallBiobjectiveSPProblem::SmallBiobjectiveSPProblem() 
 {
   makeGraph();
 }
 
 
-SmallGraphProblem::~SmallGraphProblem() { }
+SmallBiobjectiveSPProblem::~SmallBiobjectiveSPProblem() { }
 
 
 void 
-SmallGraphProblem::makeGraph()
+SmallBiobjectiveSPProblem::makeGraph()
 {
   s_ = boost::add_vertex(g_);
   Vertex u = boost::add_vertex(g_);
@@ -87,8 +88,8 @@ SmallGraphProblem::makeGraph()
 
 
 PointAndSolution<PredecessorMap> 
-SmallGraphProblem::comb(std::vector<double>::const_iterator first, 
-                        std::vector<double>::const_iterator last)
+SmallBiobjectiveSPProblem::comb(std::vector<double>::const_iterator first, 
+                                std::vector<double>::const_iterator last)
 {
   assert(last == first + 2);
 
@@ -104,8 +105,15 @@ SmallGraphProblem::comb(std::vector<double>::const_iterator first,
   boost::associative_property_map< std::map<Edge, double> > w_map(weight);
   // predecessor map
   std::vector<Vertex> p_map(boost::num_vertices(g_));
+  // distance map
+  boost::vector_property_map<double> d_map(boost::num_vertices(g_));
 
-  boost::dijkstra_shortest_paths(g_, s_, weight_map(w_map).predecessor_map(&p_map[0]));
+  // find all shortest paths starting from s_
+  boost::bellman_ford_shortest_paths(g_, boost::num_vertices(g_), 
+                                     weight_map(w_map).
+                                     distance_map(d_map).
+                                     predecessor_map(&p_map[0]).
+                                     root_vertex(s_));
 
   double blackDistance = 0;
   double redDistance = 0;
@@ -123,4 +131,4 @@ SmallGraphProblem::comb(std::vector<double>::const_iterator first,
 }
 
 
-}  // namespace small_graph_problem
+}  // namespace small_biobjective_sp_problem

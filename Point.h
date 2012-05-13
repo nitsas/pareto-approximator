@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <armadillo>
 
 #include "DifferentDimensionsException.h"
 #include "NonExistentCoordinateException.h"
@@ -68,6 +69,12 @@ class Point {
 
     //! A 3-dimensional Point constructor.
     Point(double x, double y, double z);
+
+    //! A 4-dimensional Point constructor.
+    Point(int x, int y, int z, int w);
+
+    //! A 4-dimensional Point constructor.
+    Point(double x, double y, double z, double w);
 
     //! An n-dimensional Point constructor.
     /*! 
@@ -255,6 +262,13 @@ class Point {
      */
     void dimension(unsigned int dimension);
 
+    //! Check if the Point's coordinates are all zero.
+    /*!
+     *  \return true if all the Point's coordinates are zero; false otherwise.
+     *          (false if the Point is dimensionless)
+     */
+    bool isZero() const;
+
     //! Return the Point instance as a string.
     /*! 
      *  Makes a string with the Point instance's dimensions inside parentheses. 
@@ -268,6 +282,16 @@ class Point {
      *  /sa Point and std::ostream& operator<<(std::ostream&, const Point&)
      */
     std::string str() const;
+
+    /*! 
+     *  \brief Return the point's coordinates as an arma::vec (armadillo vector).
+     */
+    arma::vec toVec() const;
+
+    /*! 
+     *  \brief Return the point's coordinates as an arma::rowvec (armadillo row vector).
+     */
+    arma::rowvec toRowVec() const;
 
     //! Return the ratio distance from the current to the given Point instance.
     /*! 

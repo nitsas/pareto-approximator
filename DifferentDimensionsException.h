@@ -22,11 +22,20 @@
 namespace pareto_approximator {
 
 
-//! Exception thrown by Point::operator<() and Point::ratioDistance().
 /*! 
- *  An exception thrown when two Point instances or two Hyperplane instances 
- *  were supposed to be compared but they have different dimensions.
- *  (they belong to spaces of different dimensions)
+ *  \brief Exception thrown by Point::operator<(), Point::ratioDistance(),
+ *         Hyperplane::ratioDistance() and Hyperplane::init().
+ *
+ *  An exception thrown when:
+ *  - Two Point instances were supposed to be compared but they have 
+ *    different dimensions. (they belong to spaces of different dimensions)
+ *  - We were trying to compute the ratio distance between two Point 
+ *    instances or a Point instance and a Hyperplane instance but they 
+ *    had different dimensions. (they belong to spaces of different 
+ *    dimensions)
+ *  - We were trying to initialize a Hyperplane from a given set of 
+ *    n Point instances but not all the Point instances had dimension n.
+ *    (they belong to spaces of different dimensions)
  */
 class DifferentDimensionsException : public std::exception
 {

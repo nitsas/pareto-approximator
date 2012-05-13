@@ -14,7 +14,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
-#include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/graph/bellman_ford_shortest_paths.hpp>
 #include <boost/graph/breadth_first_search.hpp>
 #include <boost/property_map/vector_property_map.hpp>
 
@@ -192,16 +192,24 @@ RandomGraphProblem::comb(std::vector<double>::const_iterator first,
   xWeight = *first;
   yWeight = *(first + 1);
 
-  // Make the weight property map.
+  // weight property map
   map<Edge, double> weight;
   EdgeIterator ei, ei_end;
   for (tie(ei, ei_end) = edges(g_); ei != ei_end; ++ei)
     weight[*ei] = xWeight * g_[*ei].black + yWeight * g_[*ei].red;
   boost::associative_property_map< map<Edge, double> > w_map(weight);
 
-  // Find all shortest paths from s.
+  // predecessor property map
   vector<Vertex> p_map(num_vertices(g_));
-  boost::dijkstra_shortest_paths(g_, s_, weight_map(w_map).predecessor_map(&p_map[0]));
+  // distance property map
+  boost::vector_property_map<double> d_map(boost::num_vertices(g_));
+
+  // Find all shortest paths from s.
+  boost::bellman_ford_shortest_paths(g_, boost::num_vertices(g_), 
+                                     weight_map(w_map).
+                                     predecessor_map(&p_map[0]).
+                                     distance_map(d_map).
+                                     root_vertex(s_));
 
   double xDistance = 0;
   double yDistance = 0;
