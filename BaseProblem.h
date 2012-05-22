@@ -15,9 +15,9 @@
 #include "Point.h"
 #include "Hyperplane.h"
 #include "PointAndSolution.h"
+#include "NonDominatedSet.h"
+#include "NotEnoughBasePointsException.h"
 
-
-using std::list;
 
 using pareto_approximator::PointAndSolution;
 
@@ -88,8 +88,8 @@ class BaseProblem
      *  approximation of the Pareto curve.
      *  
      *  BaseProblem's comb() is declared pure virtual (doesn't do anything).
-     *  The user is expected to derive a class from the BaseProblem class 
-     *  and implement its comb() method.
+     *  The user is expected to derive a class from BaseProblem and 
+     *  implement its comb() method.
      *  
      *  /sa BaseProblem(), ~BaseProblem() and operator()()
      */
@@ -120,24 +120,30 @@ class BaseProblem
      *  computeConvexParetoSet() will use the comb() method the user 
      *  implemented. That is why comb() is declared virtual.
      *
+     *  Possible exceptions:
+     *  - May throw a NotEnoughBasePointsException exception if at some step
+     *    the number of points for the new base are less than #numObjectives.
+     *  
      *  \sa BaseProblem, PointAndSolution and Point
      */
-    list< PointAndSolution<S> > 
+    std::list< PointAndSolution<S> > 
     computeConvexParetoSet(unsigned int numObjectives, double eps=0.0);
 
   private:
     /*! \brief A recursive function called by computeConvexParetoSet() to do 
      *         the bulk of the work.
      * 
+     *  \param numObjectives The number of objectives to minimize. Note: The 
+     *                       user's comb() routine should be able to handle a 
+     *                       std::vector<double> of \#numObjectives weights.
      *  \param base A std::vector of PointAndSolution<S> instances (where S is 
      *              the type of the problem solutions).
-     *  \param tip A Point instance which, together with the points in "west" 
-     *             and "south" forms the triangle inside which doChord() will 
-     *             search for points of the (1+eps)-convex Pareto set.
+     *  \param pointToMoveAwayFrom A Point instance. Helps us determine the 
+     *                             right direction to minimize towards.
      *  \param eps The degree of approximation. doChord() will find a subset 
      *             of an (1+eps)-convex Pareto set of the problem.
      *  \return The part of the problem's (1+eps)-convex Pareto set between 
-     *          the point "tip", the point in "west" and the one in "south".
+     *          the points in base and 0.
      *  
      *  Users don't need to use doChord() - that is why it's declared private. 
      *  It's just a recursive routine the computeConvexParetoSet() method uses 
@@ -153,11 +159,16 @@ class BaseProblem
      *  Daskalakis, Ilias Diakonikolas and Mihalis Yannakakis for in-depth 
      *  info on how the chord algorithm works.
      *  
+     *  Possible exceptions:
+     *  - May throw a NotEnoughBasePointsException exception if at some step
+     *    the number of points for the new base are less than #numObjectives.
+     *  
      *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
      */
-    list< PointAndSolution<S> > 
-    doChord(std::vector< PointAndSolution<S> > base, const Point & tip, 
-            double eps);
+    std::list< PointAndSolution<S> > 
+    doChord(unsigned int numObjectives, 
+            std::vector< PointAndSolution<S> > base, 
+            const Point & pointToMoveAwayFrom, double eps);
 };
 
 

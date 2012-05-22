@@ -22,10 +22,11 @@
 namespace pareto_approximator {
 
 
-//! Exception thrown by the Line2D(const Point&, const Point&) constructor.
+//! Exception thrown by some Hyperplane constructors.
 /*! 
- *  An exception thrown when two different Point instances were expected 
- *  but they turn out to be the same point.
+ *  An exception thrown when some of the given Point instances represent 
+ *  the same point. (unique Point instances are expected when creating a 
+ *  Hyperplane instance)
  */
 class SamePointsException : public std::exception
 {
@@ -33,7 +34,7 @@ class SamePointsException : public std::exception
     //! Return a simple char* message.
     const char* what() const throw() 
     {
-      return "The points given are the same point.";
+      return "Encountered two Point instances that represent the same point. (expected unique points!)";
     }
 };
 

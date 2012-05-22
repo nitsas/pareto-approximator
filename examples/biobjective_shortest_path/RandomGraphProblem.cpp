@@ -46,6 +46,9 @@ using pareto_approximator::Point;
  */
 
 
+namespace biobjective_shortest_path_example {
+
+
 //! A random number generator for uniformly distributed random integers.
 /*!
  *  variate_generator template arguments:
@@ -268,7 +271,7 @@ RandomGraphProblem::printPath(const PredecessorMap& pred) const
     cout << "t was unreachable!" << endl;
   else {
     // there is a path from s to t, print it
-    list< Edge > path;
+    std::list< Edge > path;
     Vertex v;
     Edge e;
     bool exists;
@@ -280,7 +283,7 @@ RandomGraphProblem::printPath(const PredecessorMap& pred) const
       v = pred[v];
     }
 
-    list< Edge >::iterator li;
+    std::list< Edge >::iterator li;
     cout << s_;
     for (li = path.begin(); li != path.end(); ++li)
       cout << "--(" << g_[*li].black << "," << g_[*li].red << ")-->" << boost::target(*li, g_);
@@ -311,6 +314,9 @@ RandomGraphProblem::target()
 {
   return t_;
 }
+
+
+}  // namespace biobjective_shortest_path_example
 
 
 /*!

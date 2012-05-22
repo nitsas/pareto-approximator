@@ -29,6 +29,9 @@ using pareto_approximator::BaseProblem;
  */
 
 
+namespace biobjective_shortest_path_example {
+
+
 //! A boost graph bundled edge property.
 class EdgeProperty 
 {
@@ -231,6 +234,9 @@ class RandomGraphProblem : public BaseProblem<PredecessorMap>
     //! The target vertex (t).
     Vertex t_;
 };
+
+
+}  // namespace biobjective_shortest_path_example
 
 
 /*! 

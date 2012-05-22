@@ -304,7 +304,7 @@ class Point {
      *  - May throw a DifferentDimensionsException exception if the two 
      *    Point instances are of different dimensions (can't be compared).
      *
-     *  \sa Point, Point::dominates() and Line2D::ratioDistance()
+     *  \sa Point and Point::dominates()
      */
     double ratioDistance(const Point& q) const;
 
@@ -312,13 +312,13 @@ class Point {
     /*! 
      *  \param q A Point instance with \f$ q_{i} \ge 0 \f$ for all i.
      *  \param eps An approximation factor.
-     *  \return true if p eps-covers q, false otherwise.
+     *  \return true if p eps-covers q; false otherwise.
      *  
-     *  Note that both p and q must be greater than zero (dominated by 0),
+     *  Note that both p and q must be greater than zero (dominated by 0);
      *  that is both \f$ p_{i} \ge 0 \f$ and \f$ q_{i} \ge 0 \f$ must hold
      *  for all i.
      *  
-     *  We say that p \f$ \epsilon \f$-covers q (\f$\epsilon \ge 0 \f$) if 
+     *  We say that p \f$ \epsilon \f$-covers q (\f$\epsilon \ge 0 \f$) iff 
      *  \f$ p_{i} \le (1 + \epsilon) q_{i} \f$, for all i. Both p and 
      *  q must be of the same dimension.
      *  
@@ -329,8 +329,8 @@ class Point {
      *  - May throw a NotPositivePointException if either p or q is not 
      *    greater than 0 (dominated by 0).
      *  - May throw a NegativeApproximationRatioException if \f$ eps < 0 \f$.
-     *  - May throw a DifferentDimensionsException if p and q are of different 
-     *    dimensions.
+     *  - May throw a DifferentDimensionsException if p and q are of 
+     *    different dimensions.
      *  
      *  \sa Point and Point::ratioDistance()
      */

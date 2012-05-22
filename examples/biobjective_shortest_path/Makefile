@@ -28,7 +28,7 @@ Point.o: ../../Point.h ../../Point.cpp ../../DifferentDimensionsException.h ../.
 	$(CC) $(CPPFLAGS) -c ../../Point.cpp -o $@
 
 # Make Hyperplane.o
-Hyperplane.o: ../../Hyperplane.h ../../Hyperplane.cpp ../../Point.h Point.o ../../DifferentDimensionsException.h ../../SamePointsException.h ../../Not2DPointsException.h ../../Not2DHyperplanesException.h ../../NonExistentCoefficientException.h ../../ParallelHyperplanesException.h
+Hyperplane.o: ../../Hyperplane.h ../../Hyperplane.cpp ../../Point.h Point.o ../../DifferentDimensionsException.h ../../NonExistentCoefficientException.h ../../PointIsOnTheHyperplaneException.h
 	$(CC) $(CPPFLAGS) -c ../../Hyperplane.cpp -o $@
 
 

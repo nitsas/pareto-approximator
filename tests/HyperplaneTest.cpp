@@ -218,20 +218,6 @@ TEST_F(HyperplaneTest, HyperplaneParallelThroughAndIsParallelWork)
 }
 
 
-TEST_F(HyperplaneTest, HyperplaneIntersectionWorksFor2Hyperplanes) 
-{
-  Hyperplane h1(1.0, -1.0, 0.0);
-  Hyperplane h2(5.0, 2.0, 0.0);
-  EXPECT_EQ(h1.intersection(h2), Point(0.0, 0.0));
-
-  Hyperplane h3(-2.0, 1.0, -1.0);
-  EXPECT_EQ(h3.intersection(h1), Point(1.0, 1.0));
-
-  Hyperplane h4(0.0, 1.0, 3.3);
-  EXPECT_EQ(h4.intersection(h1), Point(3.3, 3.3));
-}
-
-
 TEST_F(HyperplaneTest, HyperplaneReverseCoefficientSignsWorks) 
 {
   Hyperplane h1(1.0, -1.0, 1.0);
@@ -246,6 +232,33 @@ TEST_F(HyperplaneTest, HyperplaneReverseCoefficientSignsWorks)
   EXPECT_EQ(h2[1], 0.0);
   EXPECT_EQ(h2[2], 4.0);
   EXPECT_EQ(h2.b(), 4.0);
+}
+
+
+// Test that Hyperplane::toVec() and Hyperplane::toRowVec() work.
+TEST_F(HyperplaneTest, HyperplaneToArmadilloVectorMethodsWork) 
+{
+  Hyperplane h1(1.0, 2.0, 4.0);
+  arma::vec h1v = h1.toVec();
+  EXPECT_EQ(h1v.size(), 2);
+  EXPECT_EQ(h1v(0), 1.0);
+  EXPECT_EQ(h1v(1), 2.0);
+  arma::rowvec h1rv = h1.toRowVec();
+  EXPECT_EQ(h1rv.size(), 2);
+  EXPECT_EQ(h1rv(0), 1.0);
+  EXPECT_EQ(h1rv(1), 2.0);
+
+  Hyperplane h2(-1.0, 0.0, 1.0, 4.0);
+  arma::vec h2v = h2.toVec();
+  EXPECT_EQ(h2v.size(), 3);
+  EXPECT_EQ(h2v(0), -1.0);
+  EXPECT_EQ(h2v(1), 0.0);
+  EXPECT_EQ(h2v(2), 1.0);
+  arma::rowvec h2rv = h2.toRowVec();
+  EXPECT_EQ(h2rv.size(), 3);
+  EXPECT_EQ(h2v(0), -1.0);
+  EXPECT_EQ(h2v(1), 0.0);
+  EXPECT_EQ(h2v(2), 1.0);
 }
 
 

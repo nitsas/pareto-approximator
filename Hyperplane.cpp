@@ -9,6 +9,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <iterator>
 #include <cmath>
 #include <armadillo>
 
@@ -184,19 +185,81 @@ Hyperplane::Hyperplane(const double * first, const double * last,
  *  Possible exceptions:
  *  - May throw a SamePointsException exception if p1 and p2 represent 
  *    the same point.
- *  - May throw a Not2DPointsException exception if either p1 or p2 is 
- *    not a 2D point.
+ *  - May throw a DifferentDimensionsException exception if a given 
+ *    point's dimension is not 2.
+ *  
+ *  \sa Hyperplane, init() and Point
  */
 Hyperplane::Hyperplane(const Point & p1, const Point & p2)
 {
   if (p1 == p2)
     throw SamePointsException();
-  if (p1.dimension() != 2 || p2.dimension() != 2)
-    throw Not2DPointsException();
 
   std::set<Point> points;
   points.insert(p1);
   points.insert(p2);
+  init(points);
+}
+
+
+//! Constructor for a hyperplane on a 3D space. (line)
+/*!
+ *  \param p1 A 3D Point instance.
+ *  \param p2 A 3D Point instance.
+ *  \param p3 A 3D Point instance.
+ *  
+ *  Constructs a 3-hyperplane (line) that passes through points p1, p2 
+ *  and p3.
+ *  
+ *  Possible exceptions:
+ *  - May throw a SamePointsException exception if two of the given Point 
+ *    instances represent the same point.
+ *  - May throw a DifferentDimensionsException exception if a given 
+ *    point's dimension is not 3.
+ *  
+ *  \sa Hyperplane, init() and Point
+ */
+Hyperplane::Hyperplane(const Point & p1, const Point & p2, const Point & p3)
+{
+  std::set<Point> points;
+  points.insert(p1);
+  points.insert(p2);
+  points.insert(p3);
+  if (points.size() < 3)
+    throw SamePointsException();
+
+  init(points);
+}
+
+//! Constructor for a hyperplane on a 4D space. (line)
+/*!
+ *  \param p1 A 4D Point instance.
+ *  \param p2 A 4D Point instance.
+ *  \param p3 A 4D Point instance.
+ *  \param p4 A 4D Point instance.
+ *  
+ *  Constructs a 4-hyperplane (line) that passes through points p1, p2, 
+ *  p3 and p4.
+ *  
+ *  Possible exceptions:
+ *  - May throw a SamePointsException exception if two of the given Point 
+ *    instances represent the same point.
+ *  - May throw a DifferentDimensionsException exception if a given 
+ *    point's dimension is not 4.
+ *  
+ *  \sa Hyperplane, init() and Point
+ */
+Hyperplane::Hyperplane(const Point & p1, const Point & p2, 
+                       const Point & p3, const Point & p4)
+{
+  std::set<Point> points;
+  points.insert(p1);
+  points.insert(p2);
+  points.insert(p3);
+  points.insert(p4);
+  if (points.size() < 4)
+    throw SamePointsException();
+
   init(points);
 }
 
@@ -212,12 +275,20 @@ Hyperplane::Hyperplane(const Point & p1, const Point & p2)
  *  Constructs an n-hyperplane that passes through all the points in the 
  *  std::vector<Point> that first and last refer to.
  *  
+ *  Possible exceptions:
+ *  - May throw a SamePointsException exception if two of the given Point 
+ *    instances represent the same point.
+ *  - May throw a DifferentDimensionsException exception if a given 
+ *    point's dimension is not n.
+ *  
  *  \sa Hyperplane, init() and Point
  */
 Hyperplane::Hyperplane(std::vector<Point>::const_iterator first, 
                        std::vector<Point>::const_iterator last)
 {
   std::set<Point> points(first, last);
+  if ( ((int) points.size()) < std::distance(first, last))
+    throw SamePointsException();
   init(points);
 }
 
@@ -235,11 +306,19 @@ Hyperplane::Hyperplane(std::vector<Point>::const_iterator first,
  *  Constructs an n-hyperplane that passes through all the points in 
  *  array of Point instances that first and last refer to.
  *  
+ *  Possible exceptions:
+ *  - May throw a SamePointsException exception if two of the given Point 
+ *    instances represent the same point.
+ *  - May throw a DifferentDimensionsException exception if a given 
+ *    point's dimension is not n.
+ *  
  *  \sa Hyperplane, init() and Point
  */
 Hyperplane::Hyperplane(const Point * first, const Point * last)
 {
   std::set<Point> points(first, last);
+  if ( ((int) points.size()) < std::distance(first, last))
+    throw SamePointsException();
   init(points);
 }
 
@@ -252,7 +331,7 @@ Hyperplane::Hyperplane(const Point * first, const Point * last)
  *  refers to.
  *  
  *  Initializes the current instance to an n-hyperplane that passes 
- *  through all the points in the std::set<Point> that points refer to.
+ *  through all the points in the std::set<Point> that "points" refers to.
  *  
  *  Possible exceptions:
  *  - May throw a DifferentDimensionsException exception if a given 
@@ -289,17 +368,6 @@ Hyperplane::init(const std::set<Point> points)
 
   // find the hyperplane's b coefficient
   b_ = arma::det(M.cols(0, M.n_cols - 2));
-
-  // if every coefficient is negative make them all positive
-  // (flip b's sign as well to keep the equation the same)
-  bool allNegative = true;
-  for (unsigned int i = 0; i != n; ++i) 
-    if (coefficients_[i] > 0) {
-      allNegative = false;
-      break;
-    }
-  if (allNegative)
-    reverseCoefficientSigns();
 }
 
 
@@ -366,9 +434,10 @@ Hyperplane::begin()
 }
 
 
-//! Return const iterator to beginning of the vector of a_{i} coefficients.
+//! Return const_iterator to beginning of the vector of a_{i} coefficients.
 /*!
- *  \return An iterator referring to the first of the a_{i} coefficients.
+ *  \return A const_iterator referring to the first of the a_{i} 
+ *          coefficients.
  *  
  *  \sa Hyperplane
  */
@@ -392,9 +461,10 @@ Hyperplane::end()
 }
 
 
-//! Return const iterator to end of the vector of a_{i} coefficients.
+//! Return const_iterator to end of the vector of a_{i} coefficients.
 /*!
- *  \return An iterator pointing just after the last a_{i} coefficient.
+ *  \return A const_iterator pointing just after the last a_{i} 
+ *          coefficient.
  *  
  *  \sa Hyperplane
  */
@@ -433,6 +503,36 @@ Hyperplane::str() const
 
     return ss.str();
   }
+}
+
+
+/*!
+ *  \brief Return the hyperplane's \f$ a_{i} \f$ coefficients as an 
+ *         arma::vec (armadillo vector).
+ */
+arma::vec 
+Hyperplane::toVec() const
+{
+  arma::vec coefficients(coefficients_.size());
+  for (unsigned int i = 0; i != coefficients_.size(); ++i)
+    coefficients(i) = coefficients_[i];
+
+  return coefficients;
+}
+
+
+/*!
+ *  \brief Return the hyperplane's \f$ a_{i} \f$ coefficients as an
+ *         arma::rowvec (armadillo row vector).
+ */
+arma::rowvec 
+Hyperplane::toRowVec() const
+{
+  arma::rowvec coefficients(coefficients_.size());
+  for (unsigned int i = 0; i != coefficients_.size(); ++i)
+    coefficients(i) = coefficients_[i];
+
+  return coefficients;
 }
 
 
@@ -593,39 +693,6 @@ Hyperplane::isParallel(const Hyperplane & hyperplane) const
 }
 
 
-//! Find the point where two 2-hyperplanes (lines) intersect.
-/*!
- *  \param hyperplane A Hyperplane instance.
- *  \return A Point instance that represents the point where the given  
- *          hyperplane instance intersects with the current one.
- *  
- *  Possible exceptions:
- *  - May throw a Not2DHyperplanesException exception if either of the 
- *    two Hyperplane instances is not a 2-hyperplane (line).
- *  - May throw a ParallelHyperplanesException exception if the two 
- *    hyperplanes are parallel (or the same).
- *  
- *  \sa Hyperplane and Point
- */
-Point 
-Hyperplane::intersection(const Hyperplane & hyperplane) const
-{
-  if (space_dimension() != 2 || hyperplane.space_dimension() != 2)
-    throw Not2DHyperplanesException();
-  // else
-  if (isParallel(hyperplane))
-    throw ParallelHyperplanesException();
-  double x0 = ( coefficients_[1] * hyperplane.b() - b() * hyperplane[1] ) / ( coefficients_[1] * hyperplane[0] - coefficients_[0] * hyperplane[1] );
-  double y0;
-  if (coefficients_[1] != 0.0)
-    y0 = ( b_ - coefficients_[0] * x0 ) / coefficients_[1];
-  else
-    y0 = ( hyperplane.b() - hyperplane[0] * x0 ) / hyperplane[1];
-  
-  return Point(x0, y0);
-}
-
-
 //! Reverse the sign of all of the Hyperplane's coefficients.
 /*!
  *  Reverse the sign of all the \f$ a_{i} \f$ and b coefficients.
@@ -636,6 +703,8 @@ Hyperplane::intersection(const Hyperplane & hyperplane) const
  *  A hyperplane on an n-dimensional space can be described by an 
  *  equation of the form:
  *  \f$ a_{1} x_{1} + a_{2} x_{2} + ... + a_{n} x_{n} = b \f$
+ *  
+ *  \sa Hyperplane
  */
 void 
 Hyperplane::reverseCoefficientSigns()
@@ -643,6 +712,53 @@ Hyperplane::reverseCoefficientSigns()
   for (unsigned int i = 0; i != space_dimension(); ++i)
     coefficients_[i] = -coefficients_[i];
   b_ = -b_;
+}
+
+
+//! Make sure the hyperplane faces away from the given point.
+/*!
+ *  \param p A Point instance to face away from.
+ *  
+ *  Reminder:
+ *  A hyperplane on an n-dimensional space can be described by an 
+ *  equation of the form:
+ *  \f$ a_{1} x_{1} + a_{2} x_{2} + ... + a_{n} x_{n} = b \f$
+ *
+ *  Make sure using the current instance's \f$ a_{i} \f$ coefficients 
+ *  as weights in a weighted sum and minimizing "combs" away from p.
+ *  
+ *  The problem:
+ *  If we reverse the sign of all \f$ a_{i} \f$ and b coefficients
+ *  of the hyperplane the hyperplane equation doesn't change. The points
+ *  that satisfy the equation stay the same. On first glance it seems 
+ *  that it doesn't matter which version of the hyperplane equation 
+ *  we'll use. 
+ *  
+ *  But when using the hyperplane's \f$ a_{i} \f$ coefficients as the 
+ *  weights of a weighted sum (let's call it WS) their sign matters. 
+ *  Minimizing WS graphically means we are "combing" the space with 
+ *  the hyperplane i.e. moving the hyperplane in one of the two 
+ *  perpendicular to the hyperplane directions. Reversing all 
+ *  \f$ a_{i}'s \f$ signs means reversing the direction the hyperplane 
+ *  moves ("combs") towards while minimizing.
+ *
+ *  We'll make sure that minimizing WS will "comb" away from p.
+ *  
+ *  Possible exceptions:
+ *  - May throw a PointIsOnTheHyperplaneException exception if the given 
+ *    point satisfies the hyperplane equation. (can't face away from it)
+ *  
+ *  \sa Hyperplane
+ */
+void 
+Hyperplane::faceAwayFrom(const Point & p)
+{
+  double ws = arma::as_scalar(this->toRowVec() * p.toVec());
+  if (ws == this->b())
+    throw PointIsOnTheHyperplaneException();
+  // else
+  if (ws < this->b())
+    this->reverseCoefficientSigns();
 }
 
 

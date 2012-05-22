@@ -43,7 +43,7 @@ class DifferentDimensionsException : public std::exception
     //! Return a simple char* message.
     const char* what() const throw() 
     {
-      return "The instances have different dimensions.";
+      return "The given instances have different/incompatible dimensions.";
     }
 };
 

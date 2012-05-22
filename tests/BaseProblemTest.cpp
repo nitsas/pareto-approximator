@@ -37,6 +37,7 @@ class BaseProblemTest : public ::testing::Test
     static const double bigEps       = 0.5;
     static const double smallEps     = 0.1;
     static const double verySmallEps = 0.001;
+    static const double zeroEps      = 0.0;
 };
 
 
@@ -45,21 +46,39 @@ class BaseProblemTest : public ::testing::Test
 // points that dominate them are found.
 TEST_F(BaseProblemTest, ChordForNonOptimalStartingPointsProblem) 
 {
+  using non_optimal_starting_points_problem::NonOptimalStartingPointsProblem;
+
   NonOptimalStartingPointsProblem nospp;
   std::list< PointAndSolution<string> > paretoSet;
-  unsigned int numObjectives = 2;
-  paretoSet = nospp.computeConvexParetoSet(numObjectives, verySmallEps);
+  unsigned int numObjectives = 3;
+  paretoSet = nospp.computeConvexParetoSet(numObjectives, zeroEps);
 
-  EXPECT_EQ(3, paretoSet.size());
+  ASSERT_EQ(6, paretoSet.size());
   std::list< PointAndSolution<string> >::iterator psi = paretoSet.begin();
-  EXPECT_EQ(Point(1.0, 4.0), psi->point);
-  EXPECT_EQ("west", psi->solution);
+  EXPECT_EQ(Point(1.0, 4.0, 4.0), psi->point);
+  EXPECT_EQ("best-on-x", psi->solution);
   ++psi;
-  EXPECT_EQ(Point(2.0, 2.0), psi->point);
-  EXPECT_EQ("southwest", psi->solution);
+  EXPECT_EQ(Point(2.0, 2.0, 3.0), psi->point);
+  EXPECT_EQ("other", psi->solution);
   ++psi;
-  EXPECT_EQ(Point(4.0, 1.0), psi->point);
-  EXPECT_EQ("south", psi->solution);
+  EXPECT_EQ(Point(2.0, 3.0, 2.0), psi->point);
+  EXPECT_EQ("other", psi->solution);
+  ++psi;
+  /*
+  EXPECT_EQ(Point(2.5, 2.5, 2.5), psi->point);
+  EXPECT_EQ("other", psi->solution);
+  ++psi;
+  */
+  EXPECT_EQ(Point(3.0, 2.0, 2.0), psi->point);
+  EXPECT_EQ("other", psi->solution);
+  ++psi;
+  EXPECT_EQ(Point(5.0, 1.0, 6.0), psi->point);
+  EXPECT_EQ("best-on-y", psi->solution);
+  ++psi;
+  EXPECT_EQ(Point(5.0, 3.0, 1.0), psi->point);
+  EXPECT_EQ("best-on-z", psi->solution);
+  ++psi;
+  EXPECT_TRUE(psi == paretoSet.end());
 }
 
 

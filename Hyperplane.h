@@ -16,10 +16,8 @@
 #include "Point.h"
 #include "DifferentDimensionsException.h"
 #include "SamePointsException.h"
-#include "Not2DPointsException.h"
-#include "Not2DHyperplanesException.h"
 #include "NonExistentCoefficientException.h"
-#include "ParallelHyperplanesException.h"
+#include "PointIsOnTheHyperplaneException.h"
 
 
 /*!
@@ -176,12 +174,52 @@ class Hyperplane
      *  Possible exceptions:
      *  - May throw a SamePointsException exception if p1 and p2 represent 
      *    the same point.
-     *  - May throw a Not2DPointsException exception if either p1 or p2 is 
-     *    not a 2D point.
+     *  - May throw a DifferentDimensionsException exception if a given 
+     *    point's dimension is not 2.
      *  
      *  \sa Hyperplane, init() and Point
      */
     Hyperplane(const Point & p1, const Point & p2);
+
+    //! Constructor for a hyperplane on a 3D space. (line)
+    /*!
+     *  \param p1 A 3D Point instance.
+     *  \param p2 A 3D Point instance.
+     *  \param p3 A 3D Point instance.
+     *  
+     *  Constructs a 3-hyperplane (line) that passes through points p1, p2 
+     *  and p3.
+     *  
+     *  Possible exceptions:
+     *  - May throw a SamePointsException exception if two of the given Point 
+     *    instances represent the same point.
+     *  - May throw a DifferentDimensionsException exception if a given 
+     *    point's dimension is not 3.
+     *  
+     *  \sa Hyperplane, init() and Point
+     */
+    Hyperplane(const Point & p1, const Point & p2, const Point & p3);
+
+    //! Constructor for a hyperplane on a 4D space. (line)
+    /*!
+     *  \param p1 A 4D Point instance.
+     *  \param p2 A 4D Point instance.
+     *  \param p3 A 4D Point instance.
+     *  \param p4 A 4D Point instance.
+     *  
+     *  Constructs a 4-hyperplane (line) that passes through points p1, p2, 
+     *  p3 and p4.
+     *  
+     *  Possible exceptions:
+     *  - May throw a SamePointsException exception if two of the given Point 
+     *    instances represent the same point.
+     *  - May throw a DifferentDimensionsException exception if a given 
+     *    point's dimension is not 4.
+     *  
+     *  \sa Hyperplane, init() and Point
+     */
+    Hyperplane(const Point & p1, const Point & p2, 
+               const Point & p3, const Point & p4);
 
     //! Constructor for a hyperplane on an n-dimensional space.
     /*!
@@ -194,6 +232,12 @@ class Hyperplane
      *  
      *  Constructs an n-hyperplane that passes through all the points in the 
      *  std::vector<Point> that first and last refer to.
+     *  
+     *  Possible exceptions:
+     *  - May throw a SamePointsException exception if two of the given Point 
+     *    instances represent the same point.
+     *  - May throw a DifferentDimensionsException exception if a given 
+     *    point's dimension is not n.
      *  
      *  \sa Hyperplane, init() and Point
      */
@@ -212,6 +256,12 @@ class Hyperplane
      *  
      *  Constructs an n-hyperplane that passes through all the points in 
      *  array of Point instances that first and last refer to.
+     *  
+     *  Possible exceptions:
+     *  - May throw a SamePointsException exception if two of the given Point 
+     *    instances represent the same point.
+     *  - May throw a DifferentDimensionsException exception if a given 
+     *    point's dimension is not n.
      *  
      *  \sa Hyperplane, init() and Point
      */
@@ -250,9 +300,10 @@ class Hyperplane
      */
     iterator begin();
     
-    //! Return const iterator to beginning of the vector of a_{i} coefficients.
+    //! Return const_iterator to beginning of the vector of a_{i} coefficients.
     /*!
-     *  \return An iterator referring to the first of the a_{i} coefficients.
+     *  \return A const_iterator referring to the first of the a_{i} 
+     *          coefficients.
      *  
      *  \sa Hyperplane
      */
@@ -266,9 +317,10 @@ class Hyperplane
      */
     iterator end();
 
-    //! Return const iterator to end of the vector of a_{i} coefficients.
+    //! Return const_iterator to end of the vector of a_{i} coefficients.
     /*!
-     *  \return An iterator pointing just after the last a_{i} coefficient.
+     *  \return A const_iterator pointing just after the last a_{i} 
+     *          coefficient.
      *  
      *  \sa Hyperplane
      */
@@ -285,6 +337,18 @@ class Hyperplane
      *  \sa Hyperplane
      */
     std::string str() const;
+
+    /*!
+     *  \brief Return the hyperplane's \f$ a_{i} \f$ coefficients as an 
+     *         arma::vec (armadillo vector).
+     */
+    arma::vec toVec() const;
+
+    /*!
+     *  \brief Return the hyperplane's \f$ a_{i} \f$ coefficients as an
+     *         arma::rowvec (armadillo row vector).
+     */
+    arma::rowvec toRowVec() const;
 
     //! The Hyperplane equality operator.
     /*!
@@ -376,22 +440,6 @@ class Hyperplane
      */
     bool isParallel(const Hyperplane & hyperplane) const;
 
-    //! Find the point where two 2-hyperplanes (lines) intersect.
-    /*!
-     *  \param hyperplane A Hyperplane instance.
-     *  \return A Point instance that represents the point where the given  
-     *          hyperplane instance intersects with the current one.
-     *  
-     *  Possible exceptions:
-     *  - May throw a Not2DHyperplanesException exception if either of the 
-     *    two Hyperplane instances is not a 2-hyperplane (line).
-     *  - May throw a ParallelHyperplanesException exception if the two 
-     *    hyperplanes are parallel (or the same).
-     *  
-     *  \sa Hyperplane and Point
-     */
-    Point intersection(const Hyperplane & hyperplane) const;
-
     //! Reverse the sign of all of the Hyperplane's coefficients.
     /*!
      *  Reverse the sign of all the \f$ a_{i} \f$ and b coefficients.
@@ -402,8 +450,43 @@ class Hyperplane
      *  A hyperplane on an n-dimensional space can be described by an 
      *  equation of the form:
      *  \f$ a_{1} x_{1} + a_{2} x_{2} + ... + a_{n} x_{n} = b \f$
+     *  
+     *  \sa Hyperplane
      */
     void reverseCoefficientSigns();
+
+    //! Make sure the hyperplane faces away from the given point.
+    /*!
+     *  \param p A Point instance to face away from.
+     *  
+     *  Reminder:
+     *  A hyperplane on an n-dimensional space can be described by an 
+     *  equation of the form:
+     *  \f$ a_{1} x_{1} + a_{2} x_{2} + ... + a_{n} x_{n} = b \f$
+     *
+     *  Make sure using the current instance's \f$ a_{i} \f$ coefficients 
+     *  as weights in a weighted sum and minimizing "combs" away from p.
+     *  
+     *  The problem:
+     *  If we reverse the sign of all \f$ a_{i} \f$ and b coefficients
+     *  of the hyperplane the hyperplane equation doesn't change. The points
+     *  that satisfy the equation stay the same. On first glance it seems 
+     *  that it doesn't matter which version of the hyperplane equation 
+     *  we'll use. 
+     *  
+     *  But when using the hyperplane's \f$ a_{i} \f$ coefficients as the 
+     *  weights of a weighted sum (let's call it WS) their sign matters. 
+     *  Minimizing WS graphically means we are "combing" the space with 
+     *  the hyperplane i.e. moving the hyperplane in one of the two 
+     *  perpendicular to the hyperplane directions. Reversing all 
+     *  \f$ a_{i}'s \f$ signs means reversing the direction the hyperplane 
+     *  moves ("combs") towards while minimizing.
+     *
+     *  We'll make sure that minimizing WS will "comb" away from p.
+     *  
+     *  \sa Hyperplane
+     */
+    void faceAwayFrom(const Point & p);
 
   private:
     //! Initializer for a hyperplane on an n-dimensional space.

@@ -264,8 +264,7 @@ TEST_F(PointTest, PointToArmadilloVectorMethodsWork)
   EXPECT_EQ(p1rv.size(), 1);
   EXPECT_EQ(p1rv(0), 1.4);
 
-  double coords[4] = {-1.0, 0.0, 1.0, 2.0};
-  Point p2(coords, coords + 4);
+  Point p2(-1.0, 0.0, 1.0, 2.0);
   arma::vec p2v = p2.toVec();
   EXPECT_EQ(p2v.size(), 4);
   EXPECT_EQ(p2v(0), -1.0);

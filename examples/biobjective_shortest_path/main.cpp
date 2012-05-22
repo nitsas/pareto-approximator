@@ -36,6 +36,9 @@ using std::endl;
 int 
 main(void)
 {
+  using biobjective_shortest_path_example::RandomGraphProblem;
+  using biobjective_shortest_path_example::PredecessorMap;
+
   // Initializations
   // =======================
   // Make a RandomGraphProblem instance with 1000 vertices and 100000 edges.
@@ -79,14 +82,14 @@ main(void)
   // BaseProblem) to find the approximate Pareto set.
   unsigned int numObjectives = 2;
   double approximationRatio = 0.001;
-  list< PointAndSolution<PredecessorMap> > paretoSet;
+  std::list< PointAndSolution<PredecessorMap> > paretoSet;
   paretoSet = rgp.computeConvexParetoSet(numObjectives, approximationRatio);
 
   // Output
   // =======================
   cout << "A. (approximate) Pareto set size: " << paretoSet.size() << endl;
   cout << endl << "B. (approximate) Pareto (set) points: " << endl;
-  list< PointAndSolution<PredecessorMap> >::iterator li;
+  std::list< PointAndSolution<PredecessorMap> >::iterator li;
   // Print each Pareto optimal point and the corresponding solution (path).
   for (li = paretoSet.begin(); li != paretoSet.end(); ++li) {
     cout << li->point << endl;

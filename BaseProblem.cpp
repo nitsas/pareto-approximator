@@ -10,6 +10,7 @@
 
 
 #include <assert.h>
+#include <algorithm>
 
 
 using std::min;
@@ -42,7 +43,8 @@ BaseProblem<S>::~BaseProblem() { }
  *                       std::vector<double> of \#numObjectives weights.
  *  \param eps The degree of approximation. computeConvexParetoSet() will 
  *             find an (1+eps)-convex Pareto set of the problem.
- *  \return An (1+eps)-convex Pareto set of the problem whose linear 
+ *  \return A NonDominatedSet< PointAndSolution<S> > instance containing 
+ *          a (1+eps)-convex Pareto set of the problem whose linear 
  *          combinations of objectives comb optimizes.
  *  
  *  How to use:
@@ -58,52 +60,70 @@ BaseProblem<S>::~BaseProblem() { }
  *  computeConvexParetoSet() will use the comb() method the user 
  *  implemented. That is why comb() is declared virtual.
  *
+ *  Possible exceptions:
+ *  - May throw a NotEnoughBasePointsException exception if at some step
+ *    the number of points for the new base are less than #numObjectives.
+ *  
  *  \sa BaseProblem, PointAndSolution and Point
  */
 template <class S> 
-list< PointAndSolution<S> > 
+std::list< PointAndSolution<S> > 
 BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
 {
   // reminder: comb's arguments are a set of iterators over a 
   // std::vector<double> of weights (one for each objective)
 
-  assert(numObjectives == 2);
+  assert(numObjectives <= 3);
 
-  // find the westmost (best on x objective) and the southmost (best on y
-  // objective) solutions (and their corresponding points in objective space)
-  std::vector<double> weightsWest, weightsSouth;
-  weightsWest.push_back(1.0);
-  weightsWest.push_back(0.0);
-  weightsSouth.push_back(0.0);
-  weightsSouth.push_back(1.0);
-  PointAndSolution<S> west = comb(weightsWest.begin(), weightsWest.end());
-  PointAndSolution<S> south = comb(weightsSouth.begin(), weightsSouth.end());
-
-  // find that point in objective space which corresponds to the best possible 
-  // solution we could expect (we'll pass it to doChord as a sort of lower 
-  // limit on the search space)
-  Point tip(min(west.point[0], south.point[0]), min(west.point[1], south.point[1]));
-
-  // let doChord do all the work (it's recursive)
+  // Find a best solution for each objective. We'll end up with up to  
+  // \#numObjectives (possibly less) different solutions.
+  std::vector<double> weights(numObjectives, 0.0);
   std::vector< PointAndSolution<S> > base;
-  base.push_back(west);
-  base.push_back(south);
-  return doChord(base, tip, eps);
+  for (unsigned int i = 0; i != numObjectives; ++i) {
+    weights[i] = 1.0;
+    base.push_back(comb(weights.begin(), weights.end()));
+    weights[i] = 0.0;
+  }
+
+  NonDominatedSet< PointAndSolution<S> > nds(base.begin(), base.end());
+  if (nds.size() < numObjectives)
+    throw NotEnoughBasePointsException();
+
+  // make a point with the worst (biggest) of the base points' coordinates
+  // (will need it as a direction to avoid when minimizing the weighted sum) 
+  std::vector<double> maxCoords(numObjectives, 0.0);
+  typename std::vector< PointAndSolution<S> >::iterator bi;
+  for (bi = base.begin(); bi != base.end(); ++bi)
+    for (unsigned int i = 0; i != numObjectives; ++i)
+      if (bi->point[i] > maxCoords[i])
+        maxCoords[i] = bi->point[i];
+  Point pointToMoveAwayFrom(maxCoords.begin(), maxCoords.end());
+  
+  // let doChord do all the work (it's recursive)
+  NonDominatedSet< PointAndSolution<S> > resultSet(base.begin(), base.end());
+  std::list< PointAndSolution<S> > resultsFromDoChord;
+  resultsFromDoChord = doChord(numObjectives, base, pointToMoveAwayFrom, eps);
+  resultSet.insert(resultsFromDoChord.begin(), resultsFromDoChord.end());
+  std::list< PointAndSolution<S> > resultList(resultSet.begin(), resultSet.end());
+
+  return resultList;
 }
 
 
 /*! \brief A recursive function called by computeConvexParetoSet() to do 
  *         the bulk of the work.
  * 
+ *  \param numObjectives The number of objectives to minimize. Note: The 
+ *                       user's comb() routine should be able to handle a 
+ *                       std::vector<double> of \#numObjectives weights.
  *  \param base A std::vector of PointAndSolution<S> instances (where S is 
  *              the type of the problem solutions).
- *  \param tip A Point instance which, together with the points in "west" 
- *             and "south" forms the triangle inside which doChord() will 
- *             search for points of the (1+eps)-convex Pareto set.
+ *  \param pointToMoveAwayFrom A Point instance. Helps us determine the 
+ *                             right direction to minimize towards.
  *  \param eps The degree of approximation. doChord() will find a subset 
  *             of an (1+eps)-convex Pareto set of the problem.
  *  \return The part of the problem's (1+eps)-convex Pareto set between 
- *          the point "tip", the point in "west" and the one in "south".
+ *          the points in base and 0.
  *  
  *  Users don't need to use doChord() - that is why it's declared private. 
  *  It's just a recursive routine the computeConvexParetoSet() method uses 
@@ -118,84 +138,94 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  *  Please read "How good is the Chord Algorithm?" by Constantinos 
  *  Daskalakis, Ilias Diakonikolas and Mihalis Yannakakis for in-depth 
  *  info on how the chord algorithm works.
+ *
+ *  Possible exceptions:
+ *  - May throw a NotEnoughBasePointsException exception if at some step
+ *    the number of points for the new base are less than #numObjectives.
  *  
  *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
  */
 template <class S> 
-list< PointAndSolution<S> > 
-BaseProblem<S>::doChord(std::vector< PointAndSolution<S> > base, 
-                        const Point & tip, double eps)
+std::list< PointAndSolution<S> > 
+BaseProblem<S>::doChord(unsigned int numObjectives, 
+                        std::vector< PointAndSolution<S> > base, 
+                        const Point & pointToMoveAwayFrom, double eps)
 {
-  // reminder: comb's arguments are x objective's weight and y's weight
+  // reminder: comb accepts a set of iterators to the objectives' weights
 
-  assert(base.size() == 2);
+  assert(base.size() <= 3);
+  assert(numObjectives <= 3);
+  assert(base.size() == numObjectives);
 
-  PointAndSolution<S> west = *base.begin();
-  PointAndSolution<S> south = *(base.begin() + 1);
+  // make a \#numObjectives-dimensional hyperplane that passes 
+  // through all the points in base
+  std::vector<Point> basePoints;
+  typename std::vector< PointAndSolution<S> >::iterator bi;
+  for (bi = base.begin(); bi != base.end(); ++bi)
+    basePoints.push_back(bi->point);
+  Hyperplane baseHyperplane(basePoints.begin(), basePoints.end());
 
-  // check if the westmost or the southmost point given is the same as
-  // the tip (ideal point) and if either is stop searching and return 
-  // the west and south objects
-  if (west.point.dominates(south.point)) {
-    list< PointAndSolution<S> > resultList;
-    // if west.point is better than (dominates) south.point return 
-    // only the west object
-    resultList.push_back(west);
-    return resultList;
-  }
-  else if (south.point.dominates(west.point)) {
-    list< PointAndSolution<S> > resultList;
-    // if south.point is better than (dominates) west.point return 
-    // only the south object
-    resultList.push_back(south);
-    return resultList;
-  }
+  // Make sure the hyperplane faces in the right direction (away from 
+  // pointToMoveAwayFrom). That is, when we'll call comb to minimize a 
+  // weighted sum of the objectives (with the hyperplane's coefficients 
+  // as the weights) minimizing will move us away from pointToMoveAwayFrom.
+  baseHyperplane.faceAwayFrom(pointToMoveAwayFrom);
 
-  // check if the best possible point is approximately dominated by the 
-  // points we have so far
-  Hyperplane ws(west.point, south.point);
-  if (ws.ratioDistance(tip) <= eps) {
-    list< PointAndSolution<S> > resultList;
-    resultList.push_back(west);
-    resultList.push_back(south);
-    return resultList;
-  }
-  // else
-
-  // call comb using ws's coefficients (essentially ws's slope) as weights 
-  PointAndSolution<S> southwest = comb(ws.begin(), ws.end());
+  // call comb using baseHyperplane's coefficients (essentially 
+  // baseHyperplane's slope) as weights 
+  PointAndSolution<S> opt = comb(baseHyperplane.begin(), baseHyperplane.end());
 
   // check if the point we just found is approximately dominated by the 
   // points we have so far
-  if (ws.ratioDistance(southwest.point) <= eps) {
-    list< PointAndSolution<S> > resultList;
-    resultList.push_back(west);
-    resultList.push_back(south);
-    return resultList;
-  }
+  if (baseHyperplane.ratioDistance(opt.point) <= eps)
+    return std::list< PointAndSolution<S> >();
   // else
 
-  // split the problem into two subproblems, the west one and the south one
-  Hyperplane parallel = ws.parallelThrough(southwest.point);
-  Hyperplane wt(west.point, tip);
-  Hyperplane ts(tip, south.point);
-  Point westTip  = parallel.intersection(wt);
-  Point southTip = parallel.intersection(ts);
-  list< PointAndSolution<S> > westList, southList;
-  // call chord on the two subproblems
-  std::vector< PointAndSolution<S> > westBase, southBase;
-  westBase.push_back(west); 
-  westBase.push_back(southwest);
-  westList  = doChord(westBase, westTip,  eps);
-  southBase.push_back(southwest);
-  southBase.push_back(south);
-  southList = doChord(southBase, southTip, eps);
-  // remove southList's first element (it's the same as westList's last one)
-  // and merge the lists
-  southList.pop_front();
-  westList.merge(southList);
+  // keep (for the new base) only those base points that opt doesn't dominate
+  std::vector< PointAndSolution<S> > newBase;
+  Point newPointToMoveAwayFrom;
+  for (bi = base.begin(); bi != base.end(); ++bi)
+    if (!opt.dominates(*bi))
+      newBase.push_back(*bi);
+    else
+      // won't use it for the new base since opt dominates it but we can 
+      // use it as a point to move away from (when "combing")
+      newPointToMoveAwayFrom = bi->point;
 
-  return westList;
+  // split the problem into subproblems and call doChord() on each of them
+  std::list< PointAndSolution<S> > resultList;
+  resultList.push_back(opt);
+  if (newBase.size() < numObjectives - 1)
+    // not enough points to form a new #numObjectives-hyperplane
+    throw NotEnoughBasePointsException();
+  else if (newBase.size() == numObjectives - 1) {
+    // enough points (with opt) for exactly one subproblem
+    newBase.push_back(opt);
+    std::list< PointAndSolution<S> > subproblemResults;
+    subproblemResults = doChord(numObjectives, newBase, newPointToMoveAwayFrom, eps);
+    resultList.splice(resultList.end(), subproblemResults);
+  }
+  else {
+    // enough points (with opt) for #numObjectives subproblems
+    assert(newBase.size() == numObjectives);
+    // opt is not yet included in newBase - newBase is the same as base
+    for (unsigned int i = 0; i != numObjectives; ++i) {
+      // use the point that will not be in the new base as a 
+      // point to move away from
+      newPointToMoveAwayFrom = newBase[i].point;
+      // temporarily replace one of the old base points with opt 
+      newBase[i] = opt;
+      // call doChord on the subproblem 
+      std::list< PointAndSolution<S> > subproblemResults;
+      subproblemResults = doChord(numObjectives, newBase, newPointToMoveAwayFrom, eps);
+      // append the subproblem results to resultList
+      resultList.splice(resultList.end(), subproblemResults);
+      // restore newBase (replace opt with the old base point)
+      newBase[i] = base[i];
+    }
+  }
+
+  return resultList;
 }
 
 

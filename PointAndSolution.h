@@ -58,7 +58,7 @@ class PointAndSolution
     //! PointAndSolution's default constructor. (empty)
     PointAndSolution();
     //! A constructor initializing PointAndSolution's attributes.
-    PointAndSolution(const Point& p, const S& s);
+    PointAndSolution(const Point & p, const S & s);
     //! PointAndSolution's default destructor. (empty)
     ~PointAndSolution();
 
@@ -73,7 +73,7 @@ class PointAndSolution
      *  
      *  \sa PointAndSolution
      */
-    inline bool operator==(const PointAndSolution& pas) const;
+    inline bool operator== (const PointAndSolution & pas) const;
 
     //! The PointAndSolution less-than operator. 
     /*! 
@@ -90,7 +90,41 @@ class PointAndSolution
      *  
      *  \sa PointAndSolution and Point::operator<()
      */
-    inline bool operator< (const PointAndSolution<S>& pas) const;
+    inline bool operator< (const PointAndSolution<S> & pas) const;
+
+    //! Check if this instance's point eps-covers the given instance's point.
+    /*!
+     *  \param pas A PointAndSolution<S> instance whose point (q) has 
+     *             \f$ q_{i} \ge 0 \f$ for all i.
+     *  \param eps An approximation factor.
+     *  \return true if this instance's point (p) eps-covers the given 
+     *          instance's point (q); false otherwise.
+     *  
+     *  From here on down, we'll call this instance's point p and the given 
+     *  instance's point q for convenience.
+     *  
+     *  Note that both p and q must be greater than zero (dominated by 0);
+     *  that is both \f$ p_{i} \ge 0 \f$ and \f$ q_{i} \ge 0 \f$ must hold
+     *  for all i.
+     *  
+     *  We say that p \f$ \epsilon \f$-covers q (\f$\epsilon \ge 0 \f$) if 
+     *  \f$ p_{i} \le (1 + \epsilon) q_{i} \f$, for all i. Both p and 
+     *  q must be of the same dimension.
+     *  
+     *  If eps=0.0 the method simply checks whether or not p dominates 
+     *  q and that is how it got its name.
+     *  
+     *  Possible exceptions:
+     *  - May throw a NotPositivePointException if either p or q is not 
+     *    greater than 0 (dominated by 0).
+     *  - May throw a NegativeApproximationRatioException if \f$ eps < 0 \f$.
+     *  - May throw a DifferentDimensionsException if p and q are of 
+     *    different dimensions.
+     *  
+     *  \sa PointAndSolution and Point::dominates()
+     */
+    inline bool dominates(const PointAndSolution<S> & pas, 
+                          double eps=0.0) const;
 
     //! A point in objective space.
     Point point;

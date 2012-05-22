@@ -1,9 +1,9 @@
-Approximate the Pareto set of a  multiobjective optimization problem 
-using the Chord Algorithm. 
+Approximate the Pareto set of a multiobjective optimization problem 
+using the Chord Algorithm. (an algorithm based on the weighted sum method)
 
 Please read "How Good is the Chord Algorithm?" by C. Daskalakis, 
 I. Diakonikolas and M. Yannakakis [SODA 2010] for more info on the 
-Chord Algorithm.
+Chord Algorithm. (only describes the biobjective case though)
 
 
 In-code comments follow the Doxygen QT style so if you don't understand some

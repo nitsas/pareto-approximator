@@ -474,7 +474,7 @@ Point::toRowVec() const
  *  - May throw a DifferentDimensionsException exception if the two 
  *    Point instances are of different dimensions (can't be compared).
  *
- *  \sa Point, Point::dominates() and Line2D::ratioDistance()
+ *  \sa Point and Point::dominates() 
  */
 double 
 Point::ratioDistance(const Point& q) const 
