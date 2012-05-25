@@ -33,6 +33,13 @@ FloodVisitor::FloodVisitor(const Vertex & source,
 }
 
 
+//! Initialize a vertex's vertexDistances_.
+/*!
+ *  \param u A vertex of the graph.
+ *  \param g The graph.
+ *  
+ *  \sa FloodVisitor and FloodVisitor::vertexDistances_.
+ */
 void 
 FloodVisitor::initializeVertex(const Vertex & u, const Graph &)
 {
@@ -44,6 +51,18 @@ FloodVisitor::initializeVertex(const Vertex & u, const Graph &)
 }
 
 
+//! Broadcast distances over edge.
+/*!
+ *  \param e An edge of the graph.
+ *  \param g The graph.
+ *  \return true if some of v's distances actually needed an update;
+ *          false if nothing changed.
+ *  
+ *  Let's call e's source u and e's target v. Update v's distances 
+ *  using u's distances plus e's weights.
+ *  
+ *  \sa FloodVisitor, FloodVisitor::vertexDistances_ and EdgeProperty.
+ */
 bool 
 FloodVisitor::broadcastDistances(const Edge & e, const Graph & g)
 {
@@ -62,6 +81,12 @@ FloodVisitor::broadcastDistances(const Edge & e, const Graph & g)
 }
 
 
+//! Get the exact Pareto set as recorded in the visitor.
+/*!
+ *  \return The exact Pareto set (as recorded in the visitor).
+ *
+ *  The Pareto set will be vertexDistances_[target_].
+ */
 NonDominatedSet<Point> 
 FloodVisitor::getParetoPoints()
 {

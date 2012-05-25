@@ -62,7 +62,7 @@ BaseProblem<S>::~BaseProblem() { }
  *
  *  Possible exceptions:
  *  - May throw a NotEnoughBasePointsException exception if at some step
- *    the number of points for the new base are less than #numObjectives.
+ *    the number of points for the new base are less than \#numObjectives.
  *  
  *  \sa BaseProblem, PointAndSolution and Point
  */
@@ -141,7 +141,7 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  *
  *  Possible exceptions:
  *  - May throw a NotEnoughBasePointsException exception if at some step
- *    the number of points for the new base are less than #numObjectives.
+ *    the number of points for the new base are less than \#numObjectives.
  *  
  *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
  */

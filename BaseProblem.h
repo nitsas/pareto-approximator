@@ -122,7 +122,7 @@ class BaseProblem
      *
      *  Possible exceptions:
      *  - May throw a NotEnoughBasePointsException exception if at some step
-     *    the number of points for the new base are less than #numObjectives.
+     *    the number of points for the new base are less than \#numObjectives.
      *  
      *  \sa BaseProblem, PointAndSolution and Point
      */
