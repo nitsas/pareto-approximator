@@ -1,5 +1,5 @@
 /*! \file Point.cpp
- *  \brief The declaration of Point. (a simple point class)
+ *  \brief The implementation of Point. (a simple point class)
  *  \author Christos Nitsas
  *  \date 2012
  */
@@ -271,12 +271,12 @@ Point::operator[] (unsigned int pos) const
  *      std::istream& operator>>(std::istream&, Point&)
  */
 bool 
-Point::operator== (const Point& p) const
+Point::operator== (const Point & p) const
 {
   if (dimension() != p.dimension())
     return false;
 
-  for (unsigned int i=0; i<dimension(); i++) 
+  for (unsigned int i=0; i<dimension(); ++i) 
     if (coordinates_[i] != p[i]) 
       return false;
 
@@ -298,12 +298,12 @@ Point::operator== (const Point& p) const
  *      std::istream& operator>>(std::istream&, Point&)
  */
 bool 
-Point::operator!= (const Point& p) const
+Point::operator!= (const Point & p) const
 {
   if (dimension() != p.dimension())
     return true;
 
-  for (unsigned int i=0; i<dimension(); i++) 
+  for (unsigned int i=0; i<dimension(); ++i) 
     if (coordinates_[i] != p[i]) 
       return true;
 
@@ -331,12 +331,12 @@ Point::operator!= (const Point& p) const
  *      std::istream& operator>>(std::istream&, Point&)
  */
 bool 
-Point::operator< (const Point& p) const 
+Point::operator< (const Point & p) const 
 {
   if (dimension() != p.dimension()) 
     throw DifferentDimensionsException();
   // else
-  for (unsigned int i=0; i<dimension(); i++) {
+  for (unsigned int i=0; i<dimension(); ++i) {
     if (coordinates_[i] < p[i])
       return true;
     else if (coordinates_[i] > p[i])
@@ -346,6 +346,31 @@ Point::operator< (const Point& p) const
   }
 
   return false;
+}
+
+
+//! The Point plus operator.
+/*!
+ *  \param p A Point instance.
+ *  \return A new Point instance, having the same dimensions as the 
+ *          current instance and p.
+ *
+ *  The new point's i'th coordinate (for all \f$ 1 \le i \le dimension()\f$)
+ *  will be the sum of the i'th coordinate of p and the i'th coordinate 
+ *  of the current instance.
+ *  
+ *  \sa Point
+ */
+Point 
+Point::operator+ (const Point & p) const
+{
+  if (dimension() != p.dimension()) 
+    throw DifferentDimensionsException();
+  // else
+  std::vector<double> newCoords(dimension());
+  for (unsigned int i = 0; i < dimension(); ++i) 
+    newCoords[i] = coordinates_[i] + p[i];
+  return Point(newCoords.begin(), newCoords.end());
 }
 
 
@@ -370,8 +395,8 @@ Point::operator< (const Point& p) const
  *      Point::operator<(), Point::operator[]() and 
  *      std::istream& operator>>(std::istream&, Point&)
  */
-std::ostream& 
-operator<< (std::ostream& out, const Point& p)
+std::ostream & 
+operator<< (std::ostream & out, const Point & p)
 {
   return out << p.str();
 }
@@ -386,8 +411,8 @@ operator<< (std::ostream& out, const Point& p)
  *      Point::operator<(), Point::operator[]() and 
  *      std::ostream& operator<<(std::ostream&, Point&)
  */
-std::istream& 
-operator>> (std::istream& istr, Point& p)
+std::istream & 
+operator>> (std::istream & istr, Point & p)
 {
   char c;
   double d;
@@ -426,7 +451,7 @@ Point::str() const
     std::stringstream ss;
 
     ss << "(" << coordinates_[0];
-    for (unsigned int i=1; i<dimension(); i++) 
+    for (unsigned int i=1; i<dimension(); ++i) 
       ss << ", " << coordinates_[i];
     ss << ")";
 
@@ -477,13 +502,13 @@ Point::toRowVec() const
  *  \sa Point and Point::dominates() 
  */
 double 
-Point::ratioDistance(const Point& q) const 
+Point::ratioDistance(const Point & q) const 
 {
   if (dimension() != q.dimension())
     throw DifferentDimensionsException();
   // else
   double max = 0.0;
-  for (unsigned int i=0; i<dimension(); i++) {
+  for (unsigned int i=0; i<dimension(); ++i) {
     double r = (q[i] - coordinates_[i]) / coordinates_[i];
     if (r > max) 
       max = r;
@@ -520,18 +545,18 @@ Point::ratioDistance(const Point& q) const
  *  \sa Point and Point::ratioDistance()
  */
 bool 
-Point::dominates(const Point& q, double eps) const
+Point::dominates(const Point & q, double eps) const
 {
   if (dimension() != q.dimension())
     throw DifferentDimensionsException();
   if (eps < 0.0)
     throw NegativeApproximationRatioException();
-  for (unsigned int i=0; i<dimension(); i++) 
+  for (unsigned int i=0; i<dimension(); ++i) 
     if (coordinates_[i] < 0.0 || q[i] < 0.0) 
       throw NotPositivePointException();
 
   double r = 1+eps;
-  for (unsigned int i=0; i<dimension(); i++) 
+  for (unsigned int i=0; i<dimension(); ++i) 
     if (coordinates_[i] > r * q[i])
       return false;
 

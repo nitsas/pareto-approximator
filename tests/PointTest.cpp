@@ -253,6 +253,20 @@ TEST_F(PointTest, PointAccessOperatorWorks)
   EXPECT_THROW(p1[3], NonExistentCoordinateException);
 }
 
+// Test that Point::operator+() works as expected.
+TEST_F(PointTest, PointPlusOperatorWorks) 
+{
+  Point p1(4.0, 3.5, -4.0);
+  Point p2(2.0, 2.0, 2.0);
+  Point p3 = p1 + p2;
+  EXPECT_EQ(p3[0], 6.0);
+  EXPECT_EQ(p3[1], 5.5);
+  EXPECT_EQ(p3[2], -2.0);
+
+  Point p4(1.0, 1.0);
+  EXPECT_THROW(p1 + p4, DifferentDimensionsException);
+}
+
 // Test that Point::toVec() and Point::toRowVec() work.
 TEST_F(PointTest, PointToArmadilloVectorMethodsWork) 
 {

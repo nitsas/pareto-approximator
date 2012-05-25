@@ -6,8 +6,13 @@
 
 
 #include <assert.h>
+#include <iostream>
+#include <iterator>
+#include <sstream>
 #include <map>
 #include <list>
+#include <vector>
+#include <queue>
 #include <time.h>
 #include <boost/config.hpp>
 #include <boost/graph/random.hpp>
@@ -17,9 +22,10 @@
 #include <boost/graph/bellman_ford_shortest_paths.hpp>
 #include <boost/graph/breadth_first_search.hpp>
 #include <boost/property_map/vector_property_map.hpp>
+#include <boost/graph/graphviz.hpp>
 
 #include "RandomGraphProblem.h"
-#include "../../Point.h"
+#include "FloodVisitor.h"
 
 
 using std::cout;
@@ -36,6 +42,7 @@ using boost::graph_traits;
 using boost::num_vertices;
 
 using pareto_approximator::Point;
+using pareto_approximator::NonDominatedSet;
 
 
 /*!
@@ -155,6 +162,9 @@ RandomGraphProblem::makeGraph(int numVertices, int numEdges,
   while (ei != ei_end) {
     g_[*ei].black = randBlack();
     g_[*ei].red = randRed();
+    std::stringstream ss;
+    ss << "(" << g_[*ei].black << ", " << g_[*ei].red << ")";
+    g_[*ei].label = ss.str();
     ++ei;
   }
 }
@@ -189,7 +199,7 @@ PointAndSolution<PredecessorMap>
 RandomGraphProblem::comb(std::vector<double>::const_iterator first, 
                          std::vector<double>::const_iterator last)
 {
-  assert(last == first + 2);
+  assert(std::distance(first, last) == 2);
 
   double xWeight, yWeight;
   xWeight = *first;
@@ -292,6 +302,42 @@ RandomGraphProblem::printPath(const PredecessorMap& pred) const
 }
 
 
+//! Find the exact Pareto set.
+/*!
+ *  We will just flood the graph with distances from the source starting
+ *  from the source vertex.
+ */
+NonDominatedSet<Point> 
+RandomGraphProblem::findExactParetoSet()
+{
+  using biobjective_shortest_path_example::FloodVisitor;
+
+  // Flood the graph with distances from s_ (starting on s_).
+  // We keep distances inside a FloodVisitor instance.
+  std::queue<Vertex> q;
+  FloodVisitor vis(s_, t_, boost::num_vertices(g_));
+  
+  VertexIterator vi, vi_end;
+  for (tie(vi, vi_end) = boost::vertices(g_); vi != vi_end; ++vi) 
+    vis.initializeVertex(*vi, g_);
+  q.push(s_);
+  while (q.size() > 0) {
+    Vertex u = q.front(); q.pop();
+    boost::graph_traits<Graph>::out_edge_iterator oei, oei_end;
+    tie(oei, oei_end) = boost::out_edges(u, g_);
+    for (; oei != oei_end; ++oei) {
+      bool insertedAtLeastOne = vis.broadcastDistances(*oei, g_);
+      Vertex v = boost::target(*oei, g_);
+      assert(u != v);
+      if (insertedAtLeastOne)
+        q.push(v);
+    }
+  }
+
+  return vis.getParetoPoints();
+}
+
+
 //! Return a reference to the underlying graph.
 Graph& 
 RandomGraphProblem::graph() 
@@ -313,6 +359,18 @@ Vertex&
 RandomGraphProblem::target() 
 {
   return t_;
+}
+
+
+//! Print the graph to a dot (Graphviz) file.
+void 
+RandomGraphProblem::printGraphToDotFile(const char* filename)
+{
+  std::ofstream dotFile(filename);
+  boost::dynamic_properties dp;
+  dp.property("node_id", get(boost::vertex_index, g_));
+  dp.property("label", get(&EdgeProperty::label, g_));
+  write_graphviz_dp(dotFile, g_, dp);
 }
 
 

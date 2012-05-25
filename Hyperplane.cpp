@@ -1,5 +1,5 @@
 /*! \file Hyperplane.cpp
- *  \brief The declaration of the Hyperplane class.
+ *  \brief The implementation of the Hyperplane class.
  *  \author Christos Nitsas
  *  \date 2012
  */

@@ -14,17 +14,24 @@
 
 
 #include <iostream>
-#include <ctime>
 #include <list>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graphviz.hpp>
 
+#include "../../Point.h"
 #include "../../PointAndSolution.h"
+#include "../../NonDominatedSet.h"
 #include "RandomGraphProblem.h"
 
 
 using std::cout;
 using std::endl;
+
+using pareto_approximator::Point;
+using pareto_approximator::PointAndSolution;
+using pareto_approximator::NonDominatedSet;
+using biobjective_shortest_path_example::RandomGraphProblem;
+using biobjective_shortest_path_example::PredecessorMap;
+
 
 
 //! The example's main function.
@@ -36,16 +43,13 @@ using std::endl;
 int 
 main(void)
 {
-  using biobjective_shortest_path_example::RandomGraphProblem;
-  using biobjective_shortest_path_example::PredecessorMap;
-
   // Initializations
-  // =======================
+  // =========================================
   // Make a RandomGraphProblem instance with 1000 vertices and 100000 edges.
   // - "black" edge weights should be random integers in [1, 100] (uniformly)
   // - "red" edge weights should be random integers in [1, 100] (uniformly)
   // Reminder: All instances are created randomly so even instances with 
-  // the same number of vertices and edges will probably be different.
+  // the same number of vertices and edges will almost surely be different.
   RandomGraphProblem rgp(1000, 100000, 1, 100, 1, 100);
 
   // Print problem info.
@@ -62,12 +66,18 @@ main(void)
        << "  (let P be an s-t path)" << endl
        << "  + Black(P): sum of \"black\" weights of all edges in P" << endl
        << "  + Red(P): sum of \"red\" weights of all edges in P" << endl
-       << "- find a convex 1.001-approximation to the Pareto set" << endl
+       << "- find a convex Pareto set" << endl
        << endl;
+
+  /*
+  cout << "Printing graph as a dot file (graph.dot)..." << endl;
+  rgp.printGraphToDotFile();
+  cout << "Done!" << endl << endl;
+  */
 
   // Check whether or not t is reachable (from s).
   if (rgp.isTargetReachable())
-    cout << "Vertex t is reachable." << endl;
+    cout << "Vertex t is reachable." << endl << endl;
   else {
     // If it's not, don't bother trying to find shortest paths.
     cout << "Vertex t is not reachable! ";
@@ -75,26 +85,36 @@ main(void)
     return 1;
   }
 
-  cout << "(computing... please wait a few seconds)" << endl << endl;
+  cout << "(computing approximate convex Pareto set... please wait a few seconds)" << endl << endl;
   // All the work (essentially 2 lines!)
-  // =======================
+  // =========================================
   // Use RandomGraphProblem::computeConvexParetoSet() (inherited from 
   // BaseProblem) to find the approximate Pareto set.
   unsigned int numObjectives = 2;
-  double approximationRatio = 0.001;
+  double approximationRatio = 0.0;
   std::list< PointAndSolution<PredecessorMap> > paretoSet;
   paretoSet = rgp.computeConvexParetoSet(numObjectives, approximationRatio);
 
-  // Output
-  // =======================
-  cout << "A. (approximate) Pareto set size: " << paretoSet.size() << endl;
-  cout << endl << "B. (approximate) Pareto (set) points: " << endl;
+  // Output (approximate convex Pareto set)
+  // =========================================
+  cout << "A. (approximate) convex Pareto set size: " << paretoSet.size() << endl;
+  cout << endl << "B. (approximate) convex Pareto (set) points: " << endl;
   std::list< PointAndSolution<PredecessorMap> >::iterator li;
   // Print each Pareto optimal point and the corresponding solution (path).
   for (li = paretoSet.begin(); li != paretoSet.end(); ++li) {
     cout << li->point << endl;
     rgp.printPath(li->solution);
   }
+
+  // Exact Pareto set
+  // =========================================
+  cout << endl << "(computing exact Pareto set... please wait a few seconds)" << endl << endl;
+  NonDominatedSet<Point> exactParetoSet = rgp.findExactParetoSet();
+  cout << "C. exact Pareto set size: " << exactParetoSet.size() << endl;
+  cout << endl << "D. exact Pareto set points: " << endl;
+  NonDominatedSet<Point>::iterator epsi;
+  for (epsi = exactParetoSet.begin(); epsi != exactParetoSet.end(); ++epsi)
+    cout << *epsi << endl;
 
   return 0;
 }

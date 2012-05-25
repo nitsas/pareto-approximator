@@ -1,5 +1,5 @@
 /*! \file NonDominatedSet.cpp
- *  \brief The definition of the NonDominatedSet<T> class template.
+ *  \brief The implementation of the NonDominatedSet<T> class template.
  *  \author Christos Nitsas
  *  \date 2012
  *  
@@ -157,6 +157,8 @@ NonDominatedSet<T>::size() const
 //! Insert element.
 /*!
  *  \param t The T instance to insert.
+ *  \return true if the element was actually inserted (was not 
+ *          dominated); false otherwise.
  *
  *  Reminder: T instances represent some kind of point. (e.g. the Point 
  *            or PointAndSolution<T> classes)
@@ -171,11 +173,11 @@ NonDominatedSet<T>::size() const
  *  \sa NonDominatedSet
  */
 template <class T> 
-void 
+bool 
 NonDominatedSet<T>::insert(const T & t)
 {
-  bool tIsDominated = this->dominates(t);
-  if (!tIsDominated) {
+  bool isDominated = this->dominates(t);
+  if (!isDominated) {
     // first remove any elements dominated by t
     for (iterator it = contents_.begin(); it != contents_.end(); )
       if (t.dominates(*it)) 
@@ -187,6 +189,7 @@ NonDominatedSet<T>::insert(const T & t)
     // now insert the new element
     contents_.insert(t);
   }
+  return (!isDominated);
 }
 
 
@@ -196,6 +199,8 @@ NonDominatedSet<T>::insert(const T & t)
  *               of T instances.
  *  \param last Input iterator to the past-the-end position in a 
  *              sequence of T instances.
+ *  \return true if at least one element was actually inserted (not 
+ *          dominated); false otherwise.
  *  
  *  Reminder: T instances represent some kind of point. (e.g. the Point 
  *            or PointAndSolution<T> classes)
@@ -216,11 +221,14 @@ NonDominatedSet<T>::insert(const T & t)
  */
 template <class T> 
 template <class InputIterator> 
-void 
+bool 
 NonDominatedSet<T>::insert(InputIterator first, InputIterator last)
 {
+  bool insertedAtLeastOneElement = false;
   for ( ; first != last; ++first)
-    this->insert(*first);
+    insertedAtLeastOneElement |= this->insert(*first);
+
+  return insertedAtLeastOneElement;
 }
 
 

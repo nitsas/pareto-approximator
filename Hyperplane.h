@@ -1,5 +1,5 @@
 /*! \file Hyperplane.h
- *  \brief The declaration of the Hyperplane class.
+ *  \brief The definition of the Hyperplane class.
  *  \author Christos Nitsas
  *  \date 2012
  */

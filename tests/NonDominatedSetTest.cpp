@@ -93,7 +93,9 @@ TEST_F(NonDominatedSetTest, NonDominatedSetInsertWorks)
   elements.push_back(p1);
   elements.push_back(p2);
   elements.push_back(p3);
-  emptyNds.insert(elements.begin(), elements.end());
+  bool inserted;
+  inserted = emptyNds.insert(elements.begin(), elements.end());
+  EXPECT_TRUE(inserted);
   EXPECT_EQ(emptyNds.size(), 2);
   NonDominatedSet<Point>::iterator it = emptyNds.begin();
   EXPECT_EQ(*it, Point(1, 2));
@@ -105,11 +107,14 @@ TEST_F(NonDominatedSetTest, NonDominatedSetInsertWorks)
   Point p4(1, 4);
   Point p5(1, 2);
   Point p6(1.5, 1.5);
-  nds.insert(p4);
+  inserted = nds.insert(p4);
+  EXPECT_FALSE(inserted);
   EXPECT_EQ(nds.size(), 2);
-  nds.insert(p5);
+  inserted = nds.insert(p5);
+  EXPECT_FALSE(inserted);
   EXPECT_EQ(nds.size(), 2);
-  nds.insert(p6);
+  inserted = nds.insert(p6);
+  EXPECT_TRUE(inserted);
   EXPECT_EQ(nds.size(), 3);
   NonDominatedSet<Point>::iterator it2 = nds.begin();
   EXPECT_EQ(*it2, Point(1, 2));

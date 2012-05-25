@@ -1,5 +1,5 @@
 /*! \file Point.h
- *  \brief The declaration of Point. (a simple point class)
+ *  \brief The definition of Point. (a simple point class)
  *  \author Christos Nitsas
  *  \date 2012
  */
@@ -170,7 +170,7 @@ class Point {
      *      std::ostream& operator<<(std::ostream&, Point&) and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
-    bool operator== (const Point& p) const;
+    bool operator== (const Point & p) const;
     
     //! The Point inequality operator.
     /*! 
@@ -185,7 +185,7 @@ class Point {
      *      std::ostream& operator<<(std::ostream&, Point&) and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
-    bool operator!= (const Point& p) const;
+    bool operator!= (const Point & p) const;
 
     //! The Point less-than operator.
     /*! 
@@ -206,7 +206,21 @@ class Point {
      *      std::ostream& operator<<(std::ostream&, Point&) and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
-    bool operator<  (const Point& p) const;
+    bool operator< (const Point & p) const;
+
+    //! The Point plus operator.
+    /*!
+     *  \param p A Point instance.
+     *  \return A new Point instance, having the same dimensions as the 
+     *          current instance and p.
+     *
+     *  The new point's i'th coordinate (for all \f$ 1 \le i \le dimension()\f$)
+     *  will be the sum of the i'th coordinate of p and the i'th coordinate 
+     *  of the current instance.
+     *  
+     *  \sa Point
+     */
+    Point operator+ (const Point & p) const;
 
     //! The Point output stream operator. A friend of the Point class.
     /*! 
@@ -229,7 +243,7 @@ class Point {
      *      Point::operator<(), Point::operator[]() and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
-    friend std::ostream& operator<< (std::ostream& out, const Point& p);
+    friend std::ostream & operator<< (std::ostream & out, const Point & p);
 
     //! The Point input stream operator. A friend of the Point class.
     /*! 
@@ -240,7 +254,7 @@ class Point {
      *      Point::operator<(), Point::operator[]() and 
      *      std::ostream& operator<<(std::ostream&, Point&)
      */
-    friend std::istream& operator>> (std::istream& istr, Point& p);
+    friend std::istream & operator>> (std::istream & istr, Point & p);
 
     //! Get a Point instance's dimension. (1D, 2D or 3D point)
     /*! 
@@ -306,7 +320,7 @@ class Point {
      *
      *  \sa Point and Point::dominates()
      */
-    double ratioDistance(const Point& q) const;
+    double ratioDistance(const Point & q) const;
 
     //! Check if the current point (p) eps-covers the given point (q).
     /*! 
@@ -334,7 +348,7 @@ class Point {
      *  
      *  \sa Point and Point::ratioDistance()
      */
-    bool dominates(const Point& q, double eps=0.0) const;
+    bool dominates(const Point & q, double eps=0.0) const;
 
   private:
     //! The Point instance's coordinates. The instance's dimension will 

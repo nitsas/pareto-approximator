@@ -1,5 +1,5 @@
 /*! \file NonDominatedSet.h
- *  \brief The declaration of the NonDominatedSet<T> class template.
+ *  \brief The definition of the NonDominatedSet<T> class template.
  *  \author Christos Nitsas
  *  \date 2012
  */
@@ -155,9 +155,11 @@ class NonDominatedSet
      */
     size_type size() const;
 
-    //! Insert element.
+    //! Insert element. 
     /*!
      *  \param t The T instance to insert.
+     *  \return true if the element was actually inserted (was not 
+     *          dominated); false otherwise.
      *
      *  Reminder: T instances represent some kind of point. (e.g. the Point 
      *            or PointAndSolution<T> classes)
@@ -171,7 +173,7 @@ class NonDominatedSet
      *  
      *  \sa NonDominatedSet
      */
-    void insert(const T & t);
+    bool insert(const T & t);
 
     //! Insert elements.
     /*!
@@ -179,6 +181,8 @@ class NonDominatedSet
      *               of T instances.
      *  \param last Input iterator to the past-the-end position in a 
      *              sequence of T instances.
+     *  \return true if at least one element was actually inserted (not 
+     *          dominated); false otherwise.
      *  
      *  Reminder: T instances represent some kind of point. (e.g. the Point 
      *            or PointAndSolution<T> classes)
@@ -198,7 +202,7 @@ class NonDominatedSet
      *  \sa NonDominatedSet
      */
     template <class InputIterator> 
-    void insert(InputIterator first, InputIterator last);
+    bool insert(InputIterator first, InputIterator last);
 
     //! Check if some element in the set dominates the given instance.
     /*!
