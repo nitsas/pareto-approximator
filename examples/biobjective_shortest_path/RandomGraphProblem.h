@@ -52,17 +52,17 @@ namespace biobjective_shortest_path_example {
  *  - Red: The sum of "red" weights for all the path's edges.
  *  
  *  It is easy to see that every problem solution corresponds to a point 
- *  in objective space. RandomGraphProblem::approximateParetoSet() will 
+ *  in objective space. RandomGraphProblem::computeConvexParetoSet() will 
  *  try to find a set of points whose convex combinations approximately 
  *  dominate every point in the problem's Pareto set (the set of 
  *  non-dominated points).
  *  
  *  Reminder: The user can set the degree of approximation when he calls 
- *  RandomGraphProblem::approximateParetoSet().
+ *  RandomGraphProblem::computeConvexParetoSet().
  *  
  *  What we had to do
  *  --------------------
- *  RandomGraphProblem instances inherit BaseProblem::approximateParetoSet() 
+ *  RandomGraphProblem instances inherit BaseProblem::computeConvexParetoSet() 
  *  directly from BaseProblem so the only thing we had to implement was 
  *  the RandomGraphProblem::comb() method (!) which is declared virtual in 
  *  BaseProblem. 
@@ -112,6 +112,27 @@ class RandomGraphProblem : public BaseProblem<PredecessorMap>
      */
     ~RandomGraphProblem();
 
+    //! Make an undirected random boost graph with no parallel edges. 
+    /*!
+     *  \param numVertices The number of vertices.
+     *  \param numEdges The number of edges.
+     *  \param minBlackWeight The lowest possible "black" edge weight.
+     *  \param maxBlackWeight The maximum possible "black" edge weight.
+     *  \param minRedWeight The lowest possible "red" edge weight.
+     *  \param maxRedWeight The maximum possible "red" edge weight.
+     *  
+     *  - Two integer weights on each edge, called "black" and "red".
+     *  - "black" weights are random integers chosen uniformly from 
+     *    [minBlackWeight, maxBlackWeight].
+     *  - "red" weights are random integers chosen uniformly from 
+     *    [minRedWeight, maxRedWeight].
+     *  
+     *  \sa RandomGraphProblem and RandomGraphProblem()
+     */
+    void makeGraph(int numVertices, int numEdges, 
+                   int minBlackWeight, int maxBlackWeight, 
+                   int minRedWeight, int maxRedWeight);
+
     //! The comb routine we had to implement. 
     /*!
      *  \param first Iterator to the initial position in an 
@@ -135,31 +156,10 @@ class RandomGraphProblem : public BaseProblem<PredecessorMap>
      *  \$f w_{0} * Black(P) + w_{1} * Red(P) \$f,
      *  where P is an s-t path.
      *  
-     *  \sa RandomGraphProblem, RandomGraphProblem() and BaseProblem::comb()
+     *  \sa RandomGraphProblem and RandomGraphProblem::RandomGraphProblem().
      */
     PointAndSolution<PredecessorMap> comb(std::vector<double>::const_iterator first, 
                                           std::vector<double>::const_iterator last);
-
-    //! Make an undirected random boost graph with no parallel edges. 
-    /*!
-     *  \param numVertices The number of vertices.
-     *  \param numEdges The number of edges.
-     *  \param minBlackWeight The lowest possible "black" edge weight.
-     *  \param maxBlackWeight The maximum possible "black" edge weight.
-     *  \param minRedWeight The lowest possible "red" edge weight.
-     *  \param maxRedWeight The maximum possible "red" edge weight.
-     *  
-     *  - Two integer weights on each edge, called "black" and "red".
-     *  - "black" weights are random integers chosen uniformly from 
-     *    [minBlackWeight, maxBlackWeight].
-     *  - "red" weights are random integers chosen uniformly from 
-     *    [minRedWeight, maxRedWeight].
-     *  
-     *  \sa RandomGraphProblem and RandomGraphProblem()
-     */
-    void makeGraph(int numVertices, int numEdges, 
-                   int minBlackWeight, int maxBlackWeight, 
-                   int minRedWeight, int maxRedWeight);
 
     //! Check if the target (t) is reachable.
     /*!

@@ -5,6 +5,10 @@
  */
 
 
+#ifndef EXAMPLE_CLASS_FLOOD_VISITOR_H
+#define EXAMPLE_CLASS_FLOOD_VISITOR_H
+
+
 #include "biobjective_shortest_path_example_common.h"
 #include "../../Point.h"
 #include "../../NonDominatedSet.h"
@@ -12,6 +16,13 @@
 
 using pareto_approximator::Point;
 using pareto_approximator::NonDominatedSet;
+
+
+/*!
+ *  \defgroup BiobjectiveShortestPathExample An example biobjective shortest path problem.
+ *  
+ *  @{
+ */
 
 
 namespace biobjective_shortest_path_example {
@@ -87,3 +98,11 @@ class FloodVisitor
 
 
 }  // namespace biobjective_shortest_path_example
+
+
+/*! 
+ *  @}
+ */
+
+
+#endif  // EXAMPLE_CLASS_FLOOD_VISITOR_H

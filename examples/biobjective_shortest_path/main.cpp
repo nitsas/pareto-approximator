@@ -34,11 +34,18 @@ using biobjective_shortest_path_example::PredecessorMap;
 
 
 
+/*!
+ *  \defgroup BiobjectiveShortestPathExample An example biobjective shortest path problem.
+ *  
+ *  @{
+ */
+
+
 //! The example's main function.
 /*!
  *  Will make a RandomGraphProblem instance and, if t is reachable, will 
- *  find a convex 0.001-approximate Pareto set and print its size, its 
- *  points and the problem solutions corresponding to those points.
+ *  find a convex Pareto set and print its size, its points and the 
+ *  problem solutions corresponding to those points.
  */
 int 
 main(void)
@@ -85,20 +92,20 @@ main(void)
     return 1;
   }
 
-  cout << "(computing approximate convex Pareto set... please wait a few seconds)" << endl << endl;
+  cout << "(computing convex Pareto set... please wait a few seconds)" << endl << endl;
   // All the work (essentially 2 lines!)
   // =========================================
   // Use RandomGraphProblem::computeConvexParetoSet() (inherited from 
-  // BaseProblem) to find the approximate Pareto set.
+  // BaseProblem) to find the convex Pareto set.
   unsigned int numObjectives = 2;
   double approximationRatio = 0.0;
   std::list< PointAndSolution<PredecessorMap> > paretoSet;
   paretoSet = rgp.computeConvexParetoSet(numObjectives, approximationRatio);
 
-  // Output (approximate convex Pareto set)
+  // Output (convex Pareto set)
   // =========================================
-  cout << "A. (approximate) convex Pareto set size: " << paretoSet.size() << endl;
-  cout << endl << "B. (approximate) convex Pareto (set) points: " << endl;
+  cout << "A. convex Pareto set size: " << paretoSet.size() << endl;
+  cout << endl << "B. convex Pareto (set) points: " << endl;
   std::list< PointAndSolution<PredecessorMap> >::iterator li;
   // Print each Pareto optimal point and the corresponding solution (path).
   for (li = paretoSet.begin(); li != paretoSet.end(); ++li) {
@@ -120,3 +127,6 @@ main(void)
 }
 
 
+/*! 
+ *  @}
+ */

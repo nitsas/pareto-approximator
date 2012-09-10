@@ -1,6 +1,6 @@
 Problem description
 ---------------------------------
-A Multi-Objective Shortest Path (MOSP) example.
+A Bi-Objective Shortest Path (BOSP) example.
 
 Find a shortest s-t path on a random boost graph with two sets of 
 weights/costs (called black and red) for the edges. Weights will be 

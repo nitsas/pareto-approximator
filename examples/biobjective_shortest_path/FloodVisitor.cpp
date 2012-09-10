@@ -15,6 +15,14 @@ using pareto_approximator::Point;
 using pareto_approximator::NonDominatedSet;
 
 
+/*!
+ *  \weakgroup BiobjectiveShortestPathExample
+ *  An example biobjective shortest path problem.
+ *  
+ *  @{
+ */
+
+
 namespace biobjective_shortest_path_example {
 
 
@@ -95,3 +103,8 @@ FloodVisitor::getParetoPoints()
 
 
 }  // namespace biobjective_shortest_path_example
+
+
+/*!
+ *  @}
+ */

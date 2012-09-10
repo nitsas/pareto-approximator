@@ -28,8 +28,6 @@
 #include "FloodVisitor.h"
 
 
-using std::cout;
-using std::endl;
 using std::map;
 using std::vector;
 
@@ -193,7 +191,7 @@ RandomGraphProblem::makeGraph(int numVertices, int numEdges,
  *  \$f w_{0} * Black(P) + w_{1} * Red(P) \$f,
  *  where P is an s-t path.
  *  
- *  \sa RandomGraphProblem, RandomGraphProblem() and BaseProblem::comb()
+ *  \sa RandomGraphProblem and RandomGraphProblem::RandomGraphProblem().
  */
 PointAndSolution<PredecessorMap> 
 RandomGraphProblem::comb(std::vector<double>::const_iterator first, 
@@ -275,10 +273,10 @@ RandomGraphProblem::isTargetReachable()
 void 
 RandomGraphProblem::printPath(const PredecessorMap& pred) const
 {
-  cout << "    ";
+  std::cout << "    ";
   if (pred[t_] == t_)
     // t was unreachable
-    cout << "t was unreachable!" << endl;
+    std::cout << "t was unreachable!" << std::endl;
   else {
     // there is a path from s to t, print it
     std::list< Edge > path;
@@ -294,10 +292,10 @@ RandomGraphProblem::printPath(const PredecessorMap& pred) const
     }
 
     std::list< Edge >::iterator li;
-    cout << s_;
+    std::cout << s_;
     for (li = path.begin(); li != path.end(); ++li)
-      cout << "--(" << g_[*li].black << "," << g_[*li].red << ")-->" << boost::target(*li, g_);
-    cout << endl;
+      std::cout << "--(" << g_[*li].black << "," << g_[*li].red << ")-->" << boost::target(*li, g_);
+    std::cout << std::endl;
   }
 }
 

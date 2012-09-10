@@ -12,6 +12,13 @@
 #include <boost/graph/adjacency_list.hpp>
 
 
+/*!
+ *  \defgroup BiobjectiveShortestPathExample An example biobjective shortest path problem.
+ *  
+ *  @{
+ */
+
+
 namespace biobjective_shortest_path_example {
 
 
@@ -64,6 +71,11 @@ typedef std::vector<Vertex>                    PredecessorMap;
 
 
 }  // namespace biobjective_shortest_path_example
+
+
+/*! 
+ *  @}
+ */
 
 
 #endif  // BIOBJECTIVE_SHORTEST_PATH_EXAMPLE_COMMON_H
