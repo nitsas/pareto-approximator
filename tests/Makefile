@@ -6,7 +6,9 @@
 # - BaseProblemTest.cpp  &  NonOptimalStartingPointsProblem.h  &  
 #		NonOptimalStartingPointsProblem.cpp  &  SmallBiobjectiveSPProblem.h  &  
 #		SmallBiobjectiveSPProblem.cpp $ SmallTripleobjectiveSPProblem.h & 
-#   SmallTrimpleobjectiveSPProblem.cpp
+#   SmallTrimpleobjectiveSPProblem.cpp & 
+#   TripleobjectiveWithNegativeWeightsProblem.cpp & 
+#   TripleobjectiveWithNegativeWeightsProblem.h
 # 
 # Author:  Christos Nitsas
 # Date:    2012
@@ -34,12 +36,12 @@ NonDominatedSetTest.out: NonDominatedSetTest.o Point.o
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o NonDominatedSetTest.o -o $@
 
 # Make BaseProblemTest.out
-BaseProblemTest.out: BaseProblemTest.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o NonOptimalStartingPointsProblem.o Point.o Hyperplane.o
-	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o NonOptimalStartingPointsProblem.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o BaseProblemTest.o -o $@
+BaseProblemTest.out: BaseProblemTest.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o NonOptimalStartingPointsProblem.o TripleobjectiveWithNegativeWeightsProblem.o Point.o Hyperplane.o
+	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o NonOptimalStartingPointsProblem.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o TripleobjectiveWithNegativeWeightsProblem.o BaseProblemTest.o -o $@
 
 
 # Make BaseProblemTest.o
-BaseProblemTest.o: BaseProblemTest.cpp ../Point.h ../PointAndSolution.h ../PointAndSolution.cpp NonOptimalStartingPointsProblem.h SmallBiobjectiveSPProblem.h SmallTripleobjectiveSPProblem.h ../BaseProblem.h ../BaseProblem.cpp ../NonDominatedSet.h ../NonDominatedSet.cpp
+BaseProblemTest.o: BaseProblemTest.cpp ../Point.h ../PointAndSolution.h ../PointAndSolution.cpp NonOptimalStartingPointsProblem.h SmallBiobjectiveSPProblem.h SmallTripleobjectiveSPProblem.h TripleobjectiveWithNegativeWeightsProblem.h ../BaseProblem.h ../BaseProblem.cpp ../NonDominatedSet.h ../NonDominatedSet.cpp
 	$(CC) $(CPPFLAGS) -c BaseProblemTest.cpp -o $@
 
 # Make NonDominatedSetTest.o
@@ -58,6 +60,10 @@ SmallTripleobjectiveSPProblem.o: SmallTripleobjectiveSPProblem.cpp SmallTripleob
 NonOptimalStartingPointsProblem.o: NonOptimalStartingPointsProblem.cpp NonOptimalStartingPointsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughBasePointsException.h
 	$(CC) $(CPPFLAGS) -c NonOptimalStartingPointsProblem.cpp -o $@
 
+# Make TripleobjectiveWithNegativeWeightsProblem.o
+TripleobjectiveWithNegativeWeightsProblem.o: TripleobjectiveWithNegativeWeightsProblem.cpp TripleobjectiveWithNegativeWeightsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughBasePointsException.h
+	$(CC) $(CPPFLAGS) -c TripleobjectiveWithNegativeWeightsProblem.cpp -o $@
+
 # Make Point.o
 Point.o: ../Point.h ../Point.cpp ../DifferentDimensionsException.h ../NegativeApproximationRatioException.h ../NotPositivePointException.h
 	$(CC) $(CPPFLAGS) -c ../Point.cpp -o $@
@@ -68,5 +74,5 @@ Hyperplane.o: ../Hyperplane.h ../Hyperplane.cpp ../Point.h Point.o ../DifferentD
 
 # Clean object files and executables
 clean: 
-	rm -f Point.o Hyperplane.o BaseProblemTest.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o NonOptimalStartingPointsProblem.o NonDominatedSetTest.o PointTest.out HyperplaneTest.out BaseProblemTest.out NonDominatedSetTest.out
+	rm -f Point.o Hyperplane.o BaseProblemTest.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o NonOptimalStartingPointsProblem.o TripleobjectiveWithNegativeWeightsProblem.o NonDominatedSetTest.o PointTest.out HyperplaneTest.out BaseProblemTest.out NonDominatedSetTest.out
 

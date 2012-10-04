@@ -8,6 +8,8 @@
 #ifndef POINT_AND_SOLUTION_H
 #define POINT_AND_SOLUTION_H
 
+#include <vector>
+
 #include "Point.h"
 
 
@@ -22,25 +24,27 @@ namespace pareto_approximator {
 
 
 /*! 
- *  \brief A template for a class containing a point in objective space 
- *         and a problem solution. 
+ *  \brief A template for a class containing a point in objective space, 
+ *         a problem solution and the weights used to obtain that solution.
  *  
  *  PointAndSolution instances are a simple way of wrapping together a 
- *  problem solution and the corresponding point in objective space.
- *  
+ *  problem solution, the corresponding point in objective space and the 
+ *  weights used (inside comb()) to obtain that solution.
+ *
  *  Examples of instances:
  *  - Say the problem is a linear programming problem with two objective 
  *    functions. A solution will be a set of values V for the problem's 
  *    variables (which optimizes some linear combination of the objective 
- *    functions). The corresponding PointAndSolution instance will contain 
- *    V and a 2-dimensional Point with coordinates the values of the two 
- *    objective functions for the values in V.
+ *    functions L). The corresponding PointAndSolution instance will contain 
+ *    V, a 2-dimensional Point with coordinates the values of the two 
+ *    objective functions for the values in V and the weights used in the 
+ *    linear combination L.
  *  - Say the problem is finding a minimum spanning tree of a graph with 
  *    two functions C1 and C2 mapping each edge to a cost. A solution will 
  *    be a set of edges K forming a minimum spanning tree of the same graph 
- *    for some linear combination of C1 and C2. The corresponding 
- *    PointAndSolution instance will contain K and a 2-dimensional Point 
- *    with coordinates: 
+ *    for some linear combination L of C1 and C2. The corresponding 
+ *    PointAndSolution instance will contain K, the weights used in the 
+ *    linear combination L and a 2-dimensional Point with coordinates:
  *      - the sum of the costs of the edges in K with respect to C1 and 
  *      - the sum of the costs of the edges in K with respect to C2
  *  - etc
@@ -49,6 +53,9 @@ namespace pareto_approximator {
  *  representation of a problem solution (it depends on the problem).
  *  e.g. a list of edges (for the second example above)
  *
+ *  Chord's users don't have to set the weights themselves - the algorithm 
+ *  is going to do it automatically after comb() returns.
+ *  
  *  \sa PointAndSolution(), ~PointAndSolution() and operator<()
  */
 template <class S> 
@@ -57,8 +64,21 @@ class PointAndSolution
   public:
     //! PointAndSolution's default constructor. (empty)
     PointAndSolution();
-    //! A constructor initializing PointAndSolution's attributes.
+    //! A constructor initializing all attributes except weightsUsed.
     PointAndSolution(const Point & p, const S & s);
+    //! A constructor initializing PointAndSolution's attributes.
+    /*! 
+     *  \param p A Point object.
+     *  \param s An S object. A problem solution.
+     *  \param first Iterator to the initial position in a std::vector<double> 
+     *               containing the weights used to obtain p and s.
+     *  \param last Iterator to the final (past-the-end) position in a 
+     *              std::vector<double> containing the weights used to 
+     *              obtain p and s.
+     */
+    PointAndSolution(const Point & p, const S & s, 
+                     std::vector<double>::const_iterator first,
+                     std::vector<double>::const_iterator last);
     //! PointAndSolution's default destructor. (empty)
     ~PointAndSolution();
 
@@ -130,6 +150,8 @@ class PointAndSolution
     Point point;
     //! A problem solution (its type is the template argument).
     S solution;
+    //! The weights used (inside comb()) to obtain the solution.
+    std::vector<double> weightsUsed;
 };
 
 

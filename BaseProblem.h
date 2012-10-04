@@ -80,8 +80,9 @@ class BaseProblem
      *            linear combination:
      *            \f$ w_{1} * f_{1} + w_{2} * f_{2} + ... + w_{n} * f_{n} \f$ 
      *            of the objectives (f_{i}) and the weights (w_{i}).
-     *          - the corresponding point in objective space. Points returned 
+     *          - The corresponding point in objective space. Points returned 
      *            by comb() must have positive coordinates.
+     *          - The weights w_{i} used in the linear combination.
      *
      *  computeConvexParetoSet() uses the instance's comb() to optimize linear 
      *  combinations of the objectives in order to come up with an 
@@ -127,19 +128,17 @@ class BaseProblem
      *  \sa BaseProblem, PointAndSolution and Point
      */
     std::list< PointAndSolution<S> > 
-    computeConvexParetoSet(unsigned int numObjectives, double eps=0.0);
+    computeConvexParetoSet(unsigned int numObjectives, double eps=1e-12);
 
   private:
     /*! \brief A recursive function called by computeConvexParetoSet() to do 
-     *         the bulk of the work.
+     *         most of the work.
      * 
      *  \param numObjectives The number of objectives to minimize. Note: The 
      *                       user's comb() routine should be able to handle a 
      *                       std::vector<double> of \#numObjectives weights.
      *  \param base A std::vector of PointAndSolution<S> instances (where S is 
      *              the type of the problem solutions).
-     *  \param pointToMoveAwayFrom A Point instance. Helps us determine the 
-     *                             right direction to minimize towards.
      *  \param eps The degree of approximation. doChord() will find a subset 
      *             of an (1+eps)-convex Pareto set of the problem.
      *  \return The part of the problem's (1+eps)-convex Pareto set between 
@@ -147,7 +146,7 @@ class BaseProblem
      *  
      *  Users don't need to use doChord() - that is why it's declared private. 
      *  It's just a recursive routine the computeConvexParetoSet() method uses 
-     *  to do the bulk of the work.
+     *  to do most of the work.
      *  
      *  Each time it's called doChord() finds at most one new (1+eps)-convex 
      *  Pareto set point (inside the convex polytope defined by the given 
@@ -167,8 +166,20 @@ class BaseProblem
      */
     std::list< PointAndSolution<S> > 
     doChord(unsigned int numObjectives, 
-            std::vector< PointAndSolution<S> > base, 
-            const Point & pointToMoveAwayFrom, double eps);
+            std::vector< PointAndSolution<S> > base, double eps);
+
+    //! Computes the mean of all the weight vectors in "base".
+    /*!
+     *  \param base A std::vector of PointAndSolution<S> instances (where S is 
+     *              the type of the problem solutions).
+     *  \return A weight vector W of size base.size(). Each element W_{j} is
+     *          the mean of all w_{ij}'s, where w_{i} is the weight vector 
+     *          inside the i'th element of "base".
+     *  
+     *  \sa BaseProblem and PointAndSolution
+     */
+    std::vector<double>
+    computeMeanWeights(std::vector< PointAndSolution<S> > base);
 };
 
 

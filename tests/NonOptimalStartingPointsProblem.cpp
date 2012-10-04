@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <iterator>
 #include <algorithm>
+#include <iostream>
 
 #include "../Point.h"
 #include "NonOptimalStartingPointsProblem.h"
@@ -39,7 +40,11 @@ NonOptimalStartingPointsProblem::NonOptimalStartingPointsProblem()
   PointAndSolution<string> pas8(Point(2.0, 3.0, 2.0), "other");
   PointAndSolution<string> pas9(Point(3.0, 2.0, 2.0), "other");
   
+  // This one is Pareto optimal but inside the convex hull of the Pareto set.
+  // Algorithms that find Pareto optimal points by minimizing weighted linear 
+  // combinations of the objectives should not be able to find it.
   PointAndSolution<string> pas10(Point(2.5, 2.5, 2.5), "other");
+
   optimalPoints_.push_back(pas4);
   optimalPoints_.push_back(pas5);
   optimalPoints_.push_back(pas6);
@@ -67,23 +72,26 @@ NonOptimalStartingPointsProblem::comb(std::vector<double>::const_iterator first,
   if (yWeight == 0.0 && xWeight == 0.0 && zWeight == 0.0)
     return PointAndSolution<string>(Point(0.0, 0.0, 0.0), "error: all weights were 0");
   
+  PointAndSolution<string> result;
   if (xWeight == 0.0 && yWeight == 0.0)
     // return a weakly optimal (starting) point with respect to z
-    return weaklyOptimalPoints_[2];
+    result = weaklyOptimalPoints_[2];
   else if (xWeight == 0.0 && zWeight == 0.0)
     // return a weakly optimal (starting) point with respect to y
-    return weaklyOptimalPoints_[1];
+    result = weaklyOptimalPoints_[1];
   else if (yWeight == 0.0 && zWeight == 0.0)
     // return a weakly optimal (starting) point with respect to x
-    return weaklyOptimalPoints_[0];
+    result = weaklyOptimalPoints_[0];
   else {
     // return the best point from the optimalPoints_ vector
     // use a CompareUsingWeights object to compare PointAndSolution instances
     CompareUsingWeightsFunctor comp(xWeight, yWeight, zWeight);
     std::vector< PointAndSolution<string> >::iterator min;
     min = std::min_element(optimalPoints_.begin(), optimalPoints_.end(), comp);
-    return *min;
+    result = *min;
   }
+
+  return result;
 }
 
 

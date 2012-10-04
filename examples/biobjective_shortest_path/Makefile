@@ -10,7 +10,7 @@ CPPFLAGS=-Wall -Wextra -Werror -g
 CPPLIBS=-larmadillo
 
 
-# Link everything and make example1
+# Link everything and make bosp_example.out
 bosp_example.out: main.o ../../Point.h Point.o ../../Hyperplane.h Hyperplane.o ../../BaseProblem.h ../../BaseProblem.cpp RandomGraphProblem.h RandomGraphProblem.o ../../PointAndSolution.h ../../PointAndSolution.cpp FloodVisitor.o FloodVisitor.h
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o RandomGraphProblem.o main.o FloodVisitor.o -o $@
 

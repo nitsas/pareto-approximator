@@ -43,8 +43,7 @@ BaseProblem<S>::~BaseProblem() { }
  *                       std::vector<double> of \#numObjectives weights.
  *  \param eps The degree of approximation. computeConvexParetoSet() will 
  *             find an (1+eps)-convex Pareto set of the problem.
- *  \return A NonDominatedSet< PointAndSolution<S> > instance containing 
- *          a (1+eps)-convex Pareto set of the problem whose linear 
+ *  \return An (1+eps)-convex Pareto set of the problem whose linear 
  *          combinations of objectives comb optimizes.
  *  
  *  How to use:
@@ -81,7 +80,9 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
   std::vector< PointAndSolution<S> > base;
   for (unsigned int i = 0; i != numObjectives; ++i) {
     weights[i] = 1.0;
-    base.push_back(comb(weights.begin(), weights.end()));
+    PointAndSolution<S> pas = comb(weights.begin(), weights.end());
+    pas.weightsUsed.assign(weights.begin(), weights.end());
+    base.push_back(pas);
     weights[i] = 0.0;
   }
 
@@ -89,20 +90,10 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
   if (nds.size() < numObjectives)
     throw NotEnoughBasePointsException();
 
-  // make a point with the worst (biggest) of the base points' coordinates
-  // (will need it as a direction to avoid when minimizing the weighted sum) 
-  std::vector<double> maxCoords(numObjectives, 0.0);
-  typename std::vector< PointAndSolution<S> >::iterator bi;
-  for (bi = base.begin(); bi != base.end(); ++bi)
-    for (unsigned int i = 0; i != numObjectives; ++i)
-      if (bi->point[i] > maxCoords[i])
-        maxCoords[i] = bi->point[i];
-  Point pointToMoveAwayFrom(maxCoords.begin(), maxCoords.end());
-  
   // let doChord do all the work (it's recursive)
   NonDominatedSet< PointAndSolution<S> > resultSet(base.begin(), base.end());
   std::list< PointAndSolution<S> > resultsFromDoChord;
-  resultsFromDoChord = doChord(numObjectives, base, pointToMoveAwayFrom, eps);
+  resultsFromDoChord = doChord(numObjectives, base, eps);
   resultSet.insert(resultsFromDoChord.begin(), resultsFromDoChord.end());
   std::list< PointAndSolution<S> > resultList(resultSet.begin(), resultSet.end());
 
@@ -111,15 +102,13 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
 
 
 /*! \brief A recursive function called by computeConvexParetoSet() to do 
- *         the bulk of the work.
+ *         most of the work.
  * 
  *  \param numObjectives The number of objectives to minimize. Note: The 
  *                       user's comb() routine should be able to handle a 
  *                       std::vector<double> of \#numObjectives weights.
  *  \param base A std::vector of PointAndSolution<S> instances (where S is 
  *              the type of the problem solutions).
- *  \param pointToMoveAwayFrom A Point instance. Helps us determine the 
- *                             right direction to minimize towards.
  *  \param eps The degree of approximation. doChord() will find a subset 
  *             of an (1+eps)-convex Pareto set of the problem.
  *  \return The part of the problem's (1+eps)-convex Pareto set between 
@@ -127,9 +116,9 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  *  
  *  Users don't need to use doChord() - that is why it's declared private. 
  *  It's just a recursive routine the computeConvexParetoSet() method uses 
- *  to do the bulk of the work.
+ *  to do most of the work.
  *  
- *  Each time it's called doChord() finds at most one new (1+eps)-convex 
+ *  Each time it's called, doChord() finds at most one new (1+eps)-convex 
  *  Pareto set point (inside the convex polytope defined by the given 
  *  points: tip and the points in base), splits the problem into 
  *  subproblems and calls itself recursivelly on the subproblems until 
@@ -148,8 +137,7 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
 template <class S> 
 std::list< PointAndSolution<S> > 
 BaseProblem<S>::doChord(unsigned int numObjectives, 
-                        std::vector< PointAndSolution<S> > base, 
-                        const Point & pointToMoveAwayFrom, double eps)
+                        std::vector< PointAndSolution<S> > base, double eps)
 {
   // reminder: comb accepts a set of iterators to the objectives' weights
 
@@ -165,15 +153,28 @@ BaseProblem<S>::doChord(unsigned int numObjectives,
     basePoints.push_back(bi->point);
   Hyperplane baseHyperplane(basePoints.begin(), basePoints.end());
 
-  // Make sure the hyperplane faces in the right direction (away from 
-  // pointToMoveAwayFrom). That is, when we'll call comb to minimize a 
-  // weighted sum of the objectives (with the hyperplane's coefficients 
-  // as the weights) minimizing will move us away from pointToMoveAwayFrom.
-  baseHyperplane.faceAwayFrom(pointToMoveAwayFrom);
+  PointAndSolution<S> opt;
+  if (baseHyperplane.hasAllAiCoefficientsNonNegative()) {
+    // Call comb using baseHyperplane's coefficients (essentially 
+    // baseHyperplane's slope) as weights.
+    baseHyperplane.normalizeAiCoefficients();
+    opt = comb(baseHyperplane.begin(), baseHyperplane.end());
+    opt.weightsUsed.assign(baseHyperplane.begin(), baseHyperplane.end());
+  }
+  else {
+    // "meanWeights" is a std::vector<double> of weights mw_{i}, where:
+    // /f$ mw_{i} = sum_{j=1}^{j=base.size()} ( w_{ij} ) /f$,
+    // where w_{ij} is the i'th of the weights used to obtain the j'th 
+    // point in "base".
 
-  // call comb using baseHyperplane's coefficients (essentially 
-  // baseHyperplane's slope) as weights 
-  PointAndSolution<S> opt = comb(baseHyperplane.begin(), baseHyperplane.end());
+    std::vector<double> meanWeights = computeMeanWeights(base);
+    Hyperplane meanHyperplane(meanWeights.begin(), meanWeights.end(), 1.0);
+    meanHyperplane.normalizeAiCoefficients();
+
+    // Now call comb() using meanHyperplane's coefficients.
+    opt = comb(meanHyperplane.begin(), meanHyperplane.end());
+    opt.weightsUsed.assign(meanHyperplane.begin(), meanHyperplane.end());
+  }
 
   // check if the point we just found is approximately dominated by the 
   // points we have so far
@@ -183,14 +184,9 @@ BaseProblem<S>::doChord(unsigned int numObjectives,
 
   // keep (for the new base) only those base points that opt doesn't dominate
   std::vector< PointAndSolution<S> > newBase;
-  Point newPointToMoveAwayFrom;
   for (bi = base.begin(); bi != base.end(); ++bi)
     if (!opt.dominates(*bi))
       newBase.push_back(*bi);
-    else
-      // won't use it for the new base since opt dominates it but we can 
-      // use it as a point to move away from (when "combing")
-      newPointToMoveAwayFrom = bi->point;
 
   // split the problem into subproblems and call doChord() on each of them
   std::list< PointAndSolution<S> > resultList;
@@ -202,7 +198,7 @@ BaseProblem<S>::doChord(unsigned int numObjectives,
     // enough points (with opt) for exactly one subproblem
     newBase.push_back(opt);
     std::list< PointAndSolution<S> > subproblemResults;
-    subproblemResults = doChord(numObjectives, newBase, newPointToMoveAwayFrom, eps);
+    subproblemResults = doChord(numObjectives, newBase, eps);
     resultList.splice(resultList.end(), subproblemResults);
   }
   else {
@@ -210,14 +206,11 @@ BaseProblem<S>::doChord(unsigned int numObjectives,
     assert(newBase.size() == numObjectives);
     // opt is not yet included in newBase - newBase is the same as base
     for (unsigned int i = 0; i != numObjectives; ++i) {
-      // use the point that will not be in the new base as a 
-      // point to move away from
-      newPointToMoveAwayFrom = newBase[i].point;
       // temporarily replace one of the old base points with opt 
       newBase[i] = opt;
       // call doChord on the subproblem 
       std::list< PointAndSolution<S> > subproblemResults;
-      subproblemResults = doChord(numObjectives, newBase, newPointToMoveAwayFrom, eps);
+      subproblemResults = doChord(numObjectives, newBase, eps);
       // append the subproblem results to resultList
       resultList.splice(resultList.end(), subproblemResults);
       // restore newBase (replace opt with the old base point)
@@ -226,6 +219,33 @@ BaseProblem<S>::doChord(unsigned int numObjectives,
   }
 
   return resultList;
+}
+
+
+//! Computes the mean of all the weight vectors in "base".
+/*!
+ *  \param base A std::vector of PointAndSolution<S> instances (where S is 
+ *              the type of the problem solutions).
+ *  \return A weight vector W of size base.size(). Each element W_{j} is
+ *          the mean of all w_{ij}'s, where w_{i} is the weight vector 
+ *          inside the i'th element of "base".
+ *  
+ *  \sa BaseProblem and PointAndSolution
+ */
+template <class S>
+std::vector<double>
+BaseProblem<S>::computeMeanWeights(std::vector< PointAndSolution<S> > base)
+{
+  typename std::vector< PointAndSolution<S> >::iterator bi;
+
+  std::vector<double> meanWeights(base.size(), 0.0);
+  for (unsigned int i = 0; i != base.size(); ++i) {
+    for (bi = base.begin(); bi != base.end(); ++bi)
+      meanWeights[i] += bi->weightsUsed[i];
+    meanWeights[i] = meanWeights[i] / base.size();
+  }
+  
+  return meanWeights;
 }
 
 

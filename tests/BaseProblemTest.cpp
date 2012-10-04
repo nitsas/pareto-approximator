@@ -14,6 +14,7 @@
 #include "NonOptimalStartingPointsProblem.h"
 #include "SmallBiobjectiveSPProblem.h"
 #include "SmallTripleobjectiveSPProblem.h"
+#include "TripleobjectiveWithNegativeWeightsProblem.h"
 
 
 using std::string;
@@ -34,24 +35,22 @@ class BaseProblemTest : public ::testing::Test
     
     ~BaseProblemTest() { }
 
-    static const double bigEps       = 0.5;
-    static const double smallEps     = 0.1;
-    static const double verySmallEps = 0.001;
-    static const double zeroEps      = 0.0;
+    static const double smallEpsilon = 0.001;
+    static const double verySmallEpsilon = 1e-12;
 };
 
 
 // Test computeConvexParetoSet().
 // Test that non-optimal starting points are correctly deleted when 
 // points that dominate them are found.
-TEST_F(BaseProblemTest, ChordForNonOptimalStartingPointsProblem) 
+TEST_F(BaseProblemTest, NonOptimalStartingPointsProblem) 
 {
   using non_optimal_starting_points_problem::NonOptimalStartingPointsProblem;
 
   NonOptimalStartingPointsProblem nospp;
   std::list< PointAndSolution<string> > paretoSet;
   unsigned int numObjectives = 3;
-  paretoSet = nospp.computeConvexParetoSet(numObjectives, zeroEps);
+  paretoSet = nospp.computeConvexParetoSet(numObjectives, verySmallEpsilon);
 
   ASSERT_EQ(6, paretoSet.size());
   std::list< PointAndSolution<string> >::iterator psi = paretoSet.begin();
@@ -64,11 +63,6 @@ TEST_F(BaseProblemTest, ChordForNonOptimalStartingPointsProblem)
   EXPECT_EQ(Point(2.0, 3.0, 2.0), psi->point);
   EXPECT_EQ("other", psi->solution);
   ++psi;
-  /*
-  EXPECT_EQ(Point(2.5, 2.5, 2.5), psi->point);
-  EXPECT_EQ("other", psi->solution);
-  ++psi;
-  */
   EXPECT_EQ(Point(3.0, 2.0, 2.0), psi->point);
   EXPECT_EQ("other", psi->solution);
   ++psi;
@@ -82,11 +76,12 @@ TEST_F(BaseProblemTest, ChordForNonOptimalStartingPointsProblem)
 }
 
 
-// Test that the computeConvexParetoSet() method does what's expected for 
-// the SmallBiobjectiveSPProblem class (child of BaseProblem). 
+// Test that the computeConvexParetoSet() method finds the correct 
+// (approximate) convex Pareto set for the SmallBiobjectiveSPProblem problem 
+// class (child of BaseProblem). 
 // SmallBiobjectiveSPProblem is a biobjective shortest path problem on a 
 // small boost graph.
-TEST_F(BaseProblemTest, ChordForSmallBiobjectiveSPProblem)
+TEST_F(BaseProblemTest, SmallBiobjectiveSPProblem)
 {
   using small_biobjective_sp_problem::SmallBiobjectiveSPProblem;
   using small_biobjective_sp_problem::PredecessorMap;
@@ -94,7 +89,7 @@ TEST_F(BaseProblemTest, ChordForSmallBiobjectiveSPProblem)
   SmallBiobjectiveSPProblem sbspp;
   std::list< PointAndSolution<PredecessorMap> > paretoSet;
   unsigned int numObjectives = 2;
-  paretoSet = sbspp.computeConvexParetoSet(numObjectives, 0.0);
+  paretoSet = sbspp.computeConvexParetoSet(numObjectives, verySmallEpsilon);
 
   EXPECT_EQ(4, paretoSet.size());
   std::list< PointAndSolution<PredecessorMap> >::iterator psi = paretoSet.begin();
@@ -105,11 +100,12 @@ TEST_F(BaseProblemTest, ChordForSmallBiobjectiveSPProblem)
 }
 
 
-// Test that the computeConvexParetoSet() method does what's expected for 
-// the SmallTripleobjectiveSPProblem class (child of BaseProblem). 
-// SmallTripleobjectiveSPProblem is a biobjective shortest path problem 
+// Test that the computeConvexParetoSet() method finds the correct 
+// (approximate) convex Pareto set for the SmallTripleobjectiveSPProblem 
+// problem class (child of BaseProblem). 
+// SmallTripleobjectiveSPProblem is a triple-objective shortest path problem 
 // on a small boost graph.
-TEST_F(BaseProblemTest, ChordForSmallTripleobjectiveSPProblem)
+TEST_F(BaseProblemTest, SmallTripleobjectiveSPProblem)
 {
   using small_tripleobjective_sp_problem::SmallTripleobjectiveSPProblem;
   using small_tripleobjective_sp_problem::PredecessorMap;
@@ -117,7 +113,7 @@ TEST_F(BaseProblemTest, ChordForSmallTripleobjectiveSPProblem)
   SmallTripleobjectiveSPProblem stspp;
   std::list< PointAndSolution<PredecessorMap> > paretoSet;
   unsigned int numObjectives = 3;
-  paretoSet = stspp.computeConvexParetoSet(numObjectives, 0.0);
+  paretoSet = stspp.computeConvexParetoSet(numObjectives, verySmallEpsilon);
 
   EXPECT_EQ(4, paretoSet.size());
   std::list< PointAndSolution<PredecessorMap> >::iterator psi = paretoSet.begin();
@@ -125,6 +121,44 @@ TEST_F(BaseProblemTest, ChordForSmallTripleobjectiveSPProblem)
   EXPECT_EQ(Point(5, 5, 5), (++psi)->point);
   EXPECT_EQ(Point(9, 1, 9), (++psi)->point);
   EXPECT_EQ(Point(9, 9, 1), (++psi)->point);
+}
+
+
+// Test that computeConvexParetoSet() can detect and avoid using negative 
+// weights.
+// We do that by testing if the computeConvexParetoSet() doesn't return 
+// the specially placed dominated point in the 
+// TripleobjectiveWithNegativeWeightsProblem problem (child class of 
+// BaseProblem). 
+// TripleobjectiveWithNegativeWeightsProblem is a very simple triple-objective 
+// problem (child of BaseProblem) that leads to negative weights (and they 
+// to a specially placed dominated point) if we use the simple version of the 
+// Chord algorithm. 
+TEST_F(BaseProblemTest, TripleobjectiveWithNegativeWeightsProblem)
+{
+  using tripleobjective_with_negative_weights_problem::TripleobjectiveWithNegativeWeightsProblem;
+
+  TripleobjectiveWithNegativeWeightsProblem twnwp;
+  std::list< PointAndSolution<string> > paretoSet;
+  unsigned int numObjectives = 3;
+
+  ASSERT_NO_THROW(paretoSet = twnwp.computeConvexParetoSet(numObjectives, verySmallEpsilon));
+
+  ASSERT_EQ(4, paretoSet.size());
+  std::list< PointAndSolution<string> >::iterator psi = paretoSet.begin();
+  EXPECT_EQ(Point(36.0, 349.0, 280.0), psi->point);
+  EXPECT_EQ("best-on-x", psi->solution);
+  ++psi;
+  EXPECT_EQ(Point(92.0, 142.0, 42.0), psi->point);
+  EXPECT_EQ("best-other", psi->solution);
+  ++psi;
+  EXPECT_EQ(Point(221.0, 54.0, 261.0), psi->point);
+  EXPECT_EQ("best-on-y", psi->solution);
+  ++psi;
+  EXPECT_EQ(Point(342.0, 351.0, 37.0), psi->point);
+  EXPECT_EQ("best-on-z", psi->solution);
+  ++psi;
+  EXPECT_TRUE(psi == paretoSet.end());
 }
 
 

@@ -24,9 +24,30 @@ template<class S>
 PointAndSolution<S>::PointAndSolution() { }
 
 
-//! A constructor initializing PointAndSolution's attributes.
+//! A constructor initializing all attributes except weightsUsed.
 template<class S> 
-PointAndSolution<S>::PointAndSolution(const Point& p, const S& s) : point(p), solution(s) { }
+PointAndSolution<S>::PointAndSolution(const Point & p, const S & s) : 
+                                      point(p), solution(s) { }
+
+
+//! A constructor initializing PointAndSolution's attributes.
+/*! 
+ *  \param p A Point object.
+ *  \param s An S object. A problem solution.
+ *  \param first Iterator to the initial position in a std::vector<double> 
+ *               containing the weights used to obtain p and s.
+ *  \param last Iterator to the final (past-the-end) position in a 
+ *              std::vector<double> containing the weights used to 
+ *              obtain p and s.
+ */
+template<class S> 
+PointAndSolution<S>::PointAndSolution(const Point & p, const S & s, 
+                                 std::vector<double>::const_iterator first,
+                                 std::vector<double>::const_iterator last) :
+                                      point(p), solution(s)
+{
+  weightsUsed.assign(first, last);
+}
 
 
 //! PointAndSolution's default destructor. (empty)

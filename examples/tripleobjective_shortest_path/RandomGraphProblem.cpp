@@ -43,14 +43,14 @@ using pareto_approximator::NonDominatedSet;
 
 
 /*!
- *  \weakgroup BiobjectiveShortestPathExample
- *  An example biobjective shortest path problem.
+ *  \weakgroup TripleobjectiveShortestPathExample
+ *  An example tripleobjective shortest path problem.
  *  
  *  @{
  */
 
 
-namespace biobjective_shortest_path_example {
+namespace tripleobjective_shortest_path_example {
 
 
 //! A random number generator for uniformly distributed random integers.
@@ -62,48 +62,48 @@ namespace biobjective_shortest_path_example {
 typedef variate_generator< mt19937&, uniform_int<> > UniformRandomIntGenerator;
 
 
-//! Constructor. Make a biobjective shortest path problem instance.
+//! Constructor. Make a tripleobjective shortest path problem instance.
 /*!
  *  \param numVertices The number of vertices.
  *  \param numEdges The number of edges.
- *  \param minBlackWeight The lowest possible "black" edge weight. 
- *                        (must be \f$ \ge 0\f$ or the concepts of approximation
- *                        and of points dominating other points break down)
+ *  \param minBlackWeight The lowest possible "black" edge weight.
  *  \param maxBlackWeight The maximum possible "black" edge weight.
  *  \param minRedWeight The lowest possible "red" edge weight.
- *                      (must be \f$ \ge 0\f$ or the concepts of approximation
- *                      and of points dominating other points break down)
  *  \param maxRedWeight The maximum possible "red" edge weight.
+ *  \param minGreenWeight The lowest possible "green" edge weight.
+ *  \param maxGreenWeight The maximum possible "green" edge weight.
  *  \param seed The random number generator's seed.
  *  
- *  A simple constructor for biobjective shortest path problems. (of the 
+ *  A simple constructor for tripleobjective shortest path problems. (of the 
  *  type we described in RandomGraphProblem)
- *  - Makes an undirected random boost graph with no parallel edges. Two 
- *    integer weights on each edge called "black" and "red".
+ *  - Makes an undirected random boost graph with no parallel edges. Three 
+ *    integer weights on each edge called "black", "red" and "green".
  *  - "black" weights are random integers chosen uniformly from 
  *    [minBlackWeight, maxBlackWeight].
  *  - "red" weights are random integers chosen uniformly from 
  *    [minRedWeight, maxRedWeight].
- *  - Singles out two vertices (the first and last one created), the 
- *    source (s) and target (t).
- *  - Two objective functions to minimize: 
- *    (let P be an s-t path)
- *    + Black(P): the sum of "black" weights of all the edges in P.
- *    + Red(P): the sum of "red" weights of all the edges in P.
+ *  - "green" weights are random integers chosen uniformly from 
+ *    [minGreenWeight, maxGreenWeight].
+ *  - Three objective functions to minimize:
+ *    + Black: the sum of all "black" weights in an s-t path.
+ *    + Red: the sum of all "red" weights in an s-t path.
+ *    + Green: the sum of all "green" weights in an s-t path.
  *  
  *  \sa ~RandomGraphProblem() and makeGraph()
  */
 RandomGraphProblem::RandomGraphProblem(int numVertices, int numEdges, 
                                        int minBlackWeight, int maxBlackWeight, 
-                                       int minRedWeight, int maxRedWeight, 
-                                       int seed) 
+                                       int minRedWeight, int maxRedWeight,
+                                       int minGreenWeight, int maxGreenWeight, 
+                                       int seed)
 {
   // Make a random graph.
-  // - two weights on each edge
+  // - three weights on each edge
   // - "black" edge weights random integers in [minBlackWeight, maxBlackWeight]
   // - "red" edge weights random integers in [minRedWeight, maxRedWeight]
+  // - "green" edge weights random integers in [minGreenWeight, maxGreenWeight]
   makeGraph(numVertices, numEdges, minBlackWeight, maxBlackWeight, 
-            minRedWeight, maxRedWeight, seed);
+            minRedWeight, maxRedWeight, minGreenWeight, maxGreenWeight, seed);
 
   // Designate a source and a target vertex. 
   // - the first and last vertex created
@@ -129,13 +129,18 @@ RandomGraphProblem::~RandomGraphProblem() { }
  *  \param maxBlackWeight The maximum possible "black" edge weight.
  *  \param minRedWeight The lowest possible "red" edge weight.
  *  \param maxRedWeight The maximum possible "red" edge weight.
+ *  \param minGreenWeight The lowest possible "green" edge weight.
+ *  \param maxGreenWeight The maximum possible "green" edge weight.
  *  \param seed The random number generator's seed.
  *  
- *  - Two integer weights on each edge, called "black" and "red".
+ *  - Three integer weights on each edge, called "black", "red" 
+ *    and "green".
  *  - "black" weights are random integers chosen uniformly from 
  *    [minBlackWeight, maxBlackWeight].
  *  - "red" weights are random integers chosen uniformly from 
  *    [minRedWeight, maxRedWeight].
+ *  - "green" weights are random integers chosen uniformly from 
+ *    [minGreenWeight, maxGreenWeight].
  *  
  *  \sa RandomGraphProblem and RandomGraphProblem()
  */
@@ -143,6 +148,7 @@ void
 RandomGraphProblem::makeGraph(int numVertices, int numEdges, 
                               int minBlackWeight, int maxBlackWeight, 
                               int minRedWeight, int maxRedWeight, 
+                              int minGreenWeight, int maxGreenWeight, 
                               int seed)
 {
   // Generate a random graph with numVertices vertices and numEdges edges.
@@ -152,19 +158,24 @@ RandomGraphProblem::makeGraph(int numVertices, int numEdges,
   // The random integer weight distributions and generators.
   uniform_int<> blackDistribution(minBlackWeight, maxBlackWeight);
   uniform_int<> redDistribution(minRedWeight, maxRedWeight);
+  uniform_int<> greenDistribution(minGreenWeight, maxGreenWeight);
   UniformRandomIntGenerator randBlack(generator, blackDistribution);
   UniformRandomIntGenerator randRed(generator, redDistribution);
+  UniformRandomIntGenerator randGreen(generator, greenDistribution);
 
-  //  Give each edge two weights ("black" and "red")
+  //  Give each edge three weights ("black", "red" and "green")
   //  - "black": an integer in [minBlackWeight, maxBlackWeight]
   //  - "red": an integer in [minRedWeight, maxRedWeight]
+  //  - "green": an integer in [minGreenWeight, maxGreenWeight]
   EdgeIterator ei, ei_end;
   tie(ei, ei_end) = boost::edges(g_);
   while (ei != ei_end) {
     g_[*ei].black = randBlack();
     g_[*ei].red = randRed();
+    g_[*ei].green = randGreen();
     std::stringstream ss;
-    ss << "(" << g_[*ei].black << ", " << g_[*ei].red << ")";
+    ss << "(" << g_[*ei].black << ", " << g_[*ei].red << ", " 
+       << g_[*ei].green << ")";
     g_[*ei].label = ss.str();
     ++ei;
   }
@@ -182,16 +193,18 @@ RandomGraphProblem::makeGraph(int numVertices, int numEdges,
  *              objectives (in the linear combination of objective 
  *              functions).
  *  \return A PointAndSolution object containing an s-t path (P) that 
- *          minimizes \$f w_{0} * Black(P) + w_{1} * Red(P) \$f and the 
- *          corresponding point in objective space.
+ *          minimizes \$f w_{0} * Black(P) + w_{1} * Red(P) + 
+ *          w_{2} * Green(P) \$f and the corresponding point in objective 
+ *          space.
  *  
- *  The vector of weights will only contain two weights for this example, 
- *  w_{0} (the Black objective function weight) and w_{1} (the Red 
- *  objective function weight).
+ *  The vector of weights will only contain three weights for this 
+ *  example, w_{0} (the Black objective function weight), w_{1} (the 
+ *  Red objective function weight) and w_{2} (the Green objective 
+ *  function weight.
  *  
  *  Minimizes linear combinations of the objective functions of the 
  *  following form:
- *  \$f w_{0} * Black(P) + w_{1} * Red(P) \$f,
+ *  \$f w_{0} * Black(P) + w_{1} * Red(P) + w_{2} * Green(P) \$f,
  *  where P is an s-t path.
  *  
  *  \sa RandomGraphProblem and RandomGraphProblem::RandomGraphProblem().
@@ -200,20 +213,19 @@ PointAndSolution<PredecessorMap>
 RandomGraphProblem::comb(std::vector<double>::const_iterator first, 
                          std::vector<double>::const_iterator last)
 {
-  assert(std::distance(first, last) == 2);
+  assert(std::distance(first, last) == 3);
 
-  double xWeight, yWeight;
+  double xWeight, yWeight, zWeight;
   xWeight = *first;
   yWeight = *(first + 1);
-
-  assert(xWeight >= 0.0);
-  assert(yWeight >= 0.0);
+  zWeight = *(first + 2);
 
   // weight property map
   map<Edge, double> weight;
   EdgeIterator ei, ei_end;
   for (tie(ei, ei_end) = edges(g_); ei != ei_end; ++ei)
-    weight[*ei] = xWeight * g_[*ei].black + yWeight * g_[*ei].red;
+    weight[*ei] = xWeight * g_[*ei].black + yWeight * g_[*ei].red + 
+                  zWeight * g_[*ei].green;
   boost::associative_property_map< map<Edge, double> > w_map(weight);
 
   // predecessor property map
@@ -228,6 +240,7 @@ RandomGraphProblem::comb(std::vector<double>::const_iterator first,
 
   double xDistance = 0;
   double yDistance = 0;
+  double zDistance = 0;
   Vertex v, w;
   w = t_;
   v = p_map[w];
@@ -238,11 +251,13 @@ RandomGraphProblem::comb(std::vector<double>::const_iterator first,
     tie(e, ok) = boost::edge(v, w, g_);
     xDistance += g_[e].black;
     yDistance += g_[e].red;
+    zDistance += g_[e].green;
     w = v;
     v = p_map[w];
   }
 
-  return PointAndSolution<PredecessorMap>(Point(xDistance, yDistance), p_map);
+  Point point(xDistance, yDistance, zDistance);
+  return PointAndSolution<PredecessorMap>(point, p_map);
 }
 
 
@@ -298,7 +313,8 @@ RandomGraphProblem::printPath(const PredecessorMap& pred) const
     std::list< Edge >::iterator li;
     std::cout << s_;
     for (li = path.begin(); li != path.end(); ++li)
-      std::cout << "--(" << g_[*li].black << "," << g_[*li].red << ")-->" << boost::target(*li, g_);
+      std::cout << "--(" << g_[*li].black << "," << g_[*li].red << ", "
+                << g_[*li].green << ")-->" << boost::target(*li, g_);
     std::cout << std::endl;
   }
 }
@@ -312,7 +328,7 @@ RandomGraphProblem::printPath(const PredecessorMap& pred) const
 NonDominatedSet<Point> 
 RandomGraphProblem::findExactParetoSet()
 {
-  using biobjective_shortest_path_example::FloodVisitor;
+  using tripleobjective_shortest_path_example::FloodVisitor;
 
   // Flood the graph with distances from s_ (starting on s_).
   // We keep distances inside a FloodVisitor instance.
@@ -376,7 +392,7 @@ RandomGraphProblem::printGraphToDotFile(const char* filename)
 }
 
 
-}  // namespace biobjective_shortest_path_example
+}  // namespace tripleobjective_shortest_path_example
 
 
 /*!

@@ -270,7 +270,7 @@ class Hyperplane
     //! A simple (and empty) destructor.
     ~Hyperplane();
 
-    //! Access operator for the hyperplane's coefficients (except b).
+    //! Access the instance's a_{i} coefficients. 
     /*!
      *  \param pos The position (in the coefficients vector) to access.
      *  \return The hyperplane's a_{pos+1} coefficient. Remember coefficients 
@@ -281,11 +281,16 @@ class Hyperplane
      *  
      *  \sa Hyperplane
      */
-    double operator[](unsigned int pos) const;
+    double a(unsigned int pos) const;
 
+    //! Access the instance's b coefficient. (equation's right hand side)
     /*!
-     *  \brief Return the Hyperplane instance's b coefficient. (the hyperplane 
-     *         equation's right hand side)
+     *  Return the Hyperplane instance's b coefficient, that is, the 
+     *  hyperplane equation's right hand side.
+     *  
+     *  Cannot change b. It's not returned as a reference.
+     *  
+     *  \sa Hyperplane
      */
     double b() const;
 
@@ -440,6 +445,32 @@ class Hyperplane
      */
     bool isParallel(const Hyperplane & hyperplane) const;
 
+    //! Check if every a_{i} coefficient is non-positive.
+    /*! 
+     *  \return true if every a_{i} coefficient is either negative or zero;
+     *          false otherwise.
+     *  
+     *  Each a_{i} coefficient must be non-positive. 
+     *  
+     *  Does not check the b coefficient.
+     *  
+     *  \sa Hyperplane
+     */
+    bool hasAllAiCoefficientsNonPositive() const;
+
+    //! Check if every a_{i} coefficient is non-negative.
+    /*! 
+     *  \return true if every a_{i} coefficient is either positive or zero;
+     *          false otherwise.
+     *  
+     *  Each a_{i} coefficient must be non-negative. 
+     *  
+     *  Does not check the b coefficient.
+     *  
+     *  \sa Hyperplane
+     */
+    bool hasAllAiCoefficientsNonNegative() const;
+
     //! Reverse the sign of all of the Hyperplane's coefficients.
     /*!
      *  Reverse the sign of all the \f$ a_{i} \f$ and b coefficients.
@@ -455,38 +486,20 @@ class Hyperplane
      */
     void reverseCoefficientSigns();
 
-    //! Make sure the hyperplane faces away from the given point.
-    /*!
-     *  \param p A Point instance to face away from.
+    //! Normalizes the hyperplane's a_{i} coefficients. (+ updates b)
+    /*! 
+     *  Normalizes the hyperplane's a_{i} coefficients so that:
+     *  \f$ \sqrt ( \sum_{i} a_{i}^2 ) = 1 \f$
      *  
-     *  Reminder:
-     *  A hyperplane on an n-dimensional space can be described by an 
-     *  equation of the form:
-     *  \f$ a_{1} x_{1} + a_{2} x_{2} + ... + a_{n} x_{n} = b \f$
+     *  First compute "l2Norm", which is the current L2-norm of the vector of 
+     *  a_{i} coefficients.
      *
-     *  Make sure using the current instance's \f$ a_{i} \f$ coefficients 
-     *  as weights in a weighted sum and minimizing "combs" away from p.
-     *  
-     *  The problem:
-     *  If we reverse the sign of all \f$ a_{i} \f$ and b coefficients
-     *  of the hyperplane the hyperplane equation doesn't change. The points
-     *  that satisfy the equation stay the same. On first glance it seems 
-     *  that it doesn't matter which version of the hyperplane equation 
-     *  we'll use. 
-     *  
-     *  But when using the hyperplane's \f$ a_{i} \f$ coefficients as the 
-     *  weights of a weighted sum (let's call it WS) their sign matters. 
-     *  Minimizing WS graphically means we are "combing" the space with 
-     *  the hyperplane i.e. moving the hyperplane in one of the two 
-     *  perpendicular to the hyperplane directions. Reversing all 
-     *  \f$ a_{i}'s \f$ signs means reversing the direction the hyperplane 
-     *  moves ("combs") towards while minimizing.
-     *
-     *  We'll make sure that minimizing WS will "comb" away from p.
+     *  Then divide each a_{i} coefficient (and b so that the hyperplane 
+     *  equation still holds) with "l2Norm".
      *  
      *  \sa Hyperplane
      */
-    void faceAwayFrom(const Point & p);
+    void normalizeAiCoefficients();
 
   private:
     //! Initializer for a hyperplane on an n-dimensional space.
@@ -497,7 +510,12 @@ class Hyperplane
      *  refers to.
      *  
      *  Initializes the current instance to an n-hyperplane that passes 
-     *  through all the points in the std::set<Point> that points refer to.
+     *  through all the points in the std::set<Point> that "points" refers to.
+     *  
+     *  Will make a hyperplane with all a_{i} coefficients positive (if all 
+     *  a_{i} coefficients have the same sign).
+     *  
+     *  Uses the [Armadillo C++ linear algebra library](http://arma.sourceforge.net/).
      *  
      *  Possible exceptions:
      *  - May throw a DifferentDimensionsException exception if a given 

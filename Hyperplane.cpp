@@ -333,6 +333,11 @@ Hyperplane::Hyperplane(const Point * first, const Point * last)
  *  Initializes the current instance to an n-hyperplane that passes 
  *  through all the points in the std::set<Point> that "points" refers to.
  *  
+ *  Will make a hyperplane with all a_{i} coefficients positive (if all 
+ *  a_{i} coefficients have the same sign).
+ *  
+ *  Uses the [Armadillo C++ linear algebra library](http://arma.sourceforge.net/).
+ *  
  *  Possible exceptions:
  *  - May throw a DifferentDimensionsException exception if a given 
  *    point's dimension is not n.
@@ -368,6 +373,9 @@ Hyperplane::init(const std::set<Point> points)
 
   // find the hyperplane's b coefficient
   b_ = arma::det(M.cols(0, M.n_cols - 2));
+
+  if (hasAllAiCoefficientsNonPositive())
+    reverseCoefficientSigns();
 }
 
 
@@ -375,16 +383,11 @@ Hyperplane::init(const std::set<Point> points)
 Hyperplane::~Hyperplane() { }
 
 
-//! Access operator for the hyperplane's coefficients (except b).
+//! Access the instance's a_{i} coefficients. 
 /*!
  *  \param pos The position (in the coefficients vector) to access.
- *  \return The hyperplane's a_{pos+1} coefficient. 
- *  
- *  Remember that in the hyperplane equation we labeled the coefficients 
- *  a_{1}, a_{2}, ..., a_{n}. When accessing them though we'll be refering 
- *  to them starting from 0 to n-1 to comply with C++'s array notation. 
- *  So, for example to access the a_{1} coefficient of the myPlane Hyperplane 
- *  instance we'll have to use myPlane[0].
+ *  \return The hyperplane's a_{pos+1} coefficient. Remember coefficients 
+ *          are labeled a_{1}, a_{2}, ..., a_{n}.
  *  
  *  - May throw a NonExistentCoefficientException if the requested 
  *    coefficient does not exist (pos is out of bounds).
@@ -392,7 +395,7 @@ Hyperplane::~Hyperplane() { }
  *  \sa Hyperplane
  */
 double 
-Hyperplane::operator[](unsigned int pos) const
+Hyperplane::a(unsigned int pos) const
 {
   if (pos >= space_dimension())
     throw NonExistentCoefficientException();
@@ -403,8 +406,12 @@ Hyperplane::operator[](unsigned int pos) const
 
 //! Access the instance's b coefficient. (equation's right hand side)
 /*!
- *  Return the Hyperplane instance's b coefficient, the hyperplane 
- *  equation's right hand side.
+ *  Return the Hyperplane instance's b coefficient, that is, the 
+ *  hyperplane equation's right hand side.
+ *  
+ *  Cannot change b. It's not returned as a reference.
+ *  
+ *  \sa Hyperplane
  */
 double 
 Hyperplane::b() const
@@ -559,7 +566,7 @@ Hyperplane::operator== (const Hyperplane & hyperplane) const
     return false;
   // else
   for (unsigned int i=0; i!=space_dimension(); ++i)
-    if (coefficients_[i] * hyperplane.b() != hyperplane[i] * b_)
+    if (coefficients_[i] * hyperplane.b() != hyperplane.a(i) * b_)
       return false;
 
   return true;
@@ -582,7 +589,7 @@ Hyperplane::operator!= (const Hyperplane & hyperplane) const
     return true;
   // else
   for (unsigned int i=0; i!=space_dimension(); ++i)
-    if (coefficients_[i] * hyperplane.b() != hyperplane[i] * b_)
+    if (coefficients_[i] * hyperplane.b() != hyperplane.a(i) * b_)
       return true;
 
   return false;
@@ -686,7 +693,51 @@ Hyperplane::isParallel(const Hyperplane & hyperplane) const
   if (space_dimension() != hyperplane.space_dimension())
     return false;
   for (unsigned int i=0; i!=space_dimension(); ++i) 
-    if (coefficients_[i] * hyperplane[0] != hyperplane[i] * coefficients_[0])
+    if (coefficients_[i] * hyperplane.a(0) != hyperplane.a(i) * coefficients_[0])
+      return false;
+
+  return true;
+}
+
+
+//! Check if every a_{i} coefficient is non-positive.
+/*! 
+ *  \return true if every a_{i} coefficient is either negative or zero;
+ *          false otherwise.
+ *  
+ *  Each a_{i} coefficient must be non-positive. 
+ *  
+ *  Does not check the b coefficient.
+ *  
+ *  \sa Hyperplane
+ */
+bool 
+Hyperplane::hasAllAiCoefficientsNonPositive() const
+{
+  for (unsigned int i = 0; i != space_dimension(); ++i)
+    if (coefficients_[i] > 0.0)
+      return false;
+
+  return true;
+}
+
+
+//! Check if every a_{i} coefficient is non-negative.
+/*! 
+ *  \return true if every a_{i} coefficient is either positive or zero;
+ *          false otherwise.
+ *  
+ *  Each a_{i} coefficient must be non-negative. 
+ *  
+ *  Does not check the b coefficient.
+ *  
+ *  \sa Hyperplane
+ */
+bool 
+Hyperplane::hasAllAiCoefficientsNonNegative() const
+{
+  for (unsigned int i = 0; i != space_dimension(); ++i)
+    if (coefficients_[i] < 0.0)
       return false;
 
   return true;
@@ -715,50 +766,27 @@ Hyperplane::reverseCoefficientSigns()
 }
 
 
-//! Make sure the hyperplane faces away from the given point.
-/*!
- *  \param p A Point instance to face away from.
+//! Normalizes the hyperplane's a_{i} coefficients. (+ updates b)
+/*! 
+ *  Normalizes the hyperplane's a_{i} coefficients so that:
+ *  \f$ \sqrt ( \sum_{i} a_{i}^2 ) = 1 \f$
  *  
- *  Reminder:
- *  A hyperplane on an n-dimensional space can be described by an 
- *  equation of the form:
- *  \f$ a_{1} x_{1} + a_{2} x_{2} + ... + a_{n} x_{n} = b \f$
+ *  First compute "l2Norm", which is the current L2-norm of the vector of 
+ *  a_{i} coefficients.
  *
- *  Make sure using the current instance's \f$ a_{i} \f$ coefficients 
- *  as weights in a weighted sum and minimizing "combs" away from p.
- *  
- *  The problem:
- *  If we reverse the sign of all \f$ a_{i} \f$ and b coefficients
- *  of the hyperplane the hyperplane equation doesn't change. The points
- *  that satisfy the equation stay the same. On first glance it seems 
- *  that it doesn't matter which version of the hyperplane equation 
- *  we'll use. 
- *  
- *  But when using the hyperplane's \f$ a_{i} \f$ coefficients as the 
- *  weights of a weighted sum (let's call it WS) their sign matters. 
- *  Minimizing WS graphically means we are "combing" the space with 
- *  the hyperplane i.e. moving the hyperplane in one of the two 
- *  perpendicular to the hyperplane directions. Reversing all 
- *  \f$ a_{i}'s \f$ signs means reversing the direction the hyperplane 
- *  moves ("combs") towards while minimizing.
- *
- *  We'll make sure that minimizing WS will "comb" away from p.
- *  
- *  Possible exceptions:
- *  - May throw a PointIsOnTheHyperplaneException exception if the given 
- *    point satisfies the hyperplane equation. (can't face away from it)
+ *  Then divide each a_{i} coefficient (and b so that the hyperplane 
+ *  equation still holds) with "l2Norm".
  *  
  *  \sa Hyperplane
  */
 void 
-Hyperplane::faceAwayFrom(const Point & p)
+Hyperplane::normalizeAiCoefficients()
 {
-  double ws = arma::as_scalar(this->toRowVec() * p.toVec());
-  if (ws == this->b())
-    throw PointIsOnTheHyperplaneException();
-  // else
-  if (ws < this->b())
-    this->reverseCoefficientSigns();
+  double l2Norm = arma::norm(this->toVec(), 2);
+
+  for (unsigned int i = 0; i != space_dimension(); ++i)
+    coefficients_[i] /= l2Norm;
+  b_ /= l2Norm;
 }
 
 
