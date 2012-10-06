@@ -1,4 +1,4 @@
-/*! \file FloodVisitor.h
+/*! \file examples/tripleobjective_shortest_path/FloodVisitor.h
  *  \brief The definition of the FloodVisitor class.
  *  \author Christos Nitsas
  *  \date 2012

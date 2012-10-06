@@ -1,4 +1,4 @@
-/*! \file main.cpp
+/*! \file examples/tripleobjective_shortest_path/main.cpp
  *  \brief The main program using RandomGraphProblem::computeConvexParetoSet() 
  *         to solve a tripleobjective shortest path problem.
  *  \author Christos Nitsas

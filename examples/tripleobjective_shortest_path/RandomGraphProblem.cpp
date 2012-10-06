@@ -1,4 +1,4 @@
-/*! \file RandomGraphProblem.cpp
+/*! \file examples/tripleobjective_shortest_path/RandomGraphProblem.cpp
  *  \brief The implementation of the RandomGraphProblem class.
  *  \author Christos Nitsas
  *  \date 2012

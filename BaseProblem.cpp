@@ -60,7 +60,7 @@ BaseProblem<S>::~BaseProblem() { }
  *  implemented. That is why comb() is declared virtual.
  *
  *  Possible exceptions:
- *  - May throw a NotEnoughBasePointsException exception if at some step
+ *  - May throw a NotEnoughAncorPointsException exception if at some step
  *    the number of points for the new base are less than \#numObjectives.
  *  
  *  \sa BaseProblem, PointAndSolution and Point
@@ -75,7 +75,8 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
   assert(numObjectives <= 3);
 
   // Find a best solution for each objective. We'll end up with up to  
-  // \#numObjectives (possibly less) different solutions.
+  // \#numObjectives (possibly less) different solutions. 
+  // Let's call the corresponding points (in objective space) ancor points.
   std::vector<double> weights(numObjectives, 0.0);
   std::vector< PointAndSolution<S> > base;
   for (unsigned int i = 0; i != numObjectives; ++i) {
@@ -88,7 +89,7 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
 
   NonDominatedSet< PointAndSolution<S> > nds(base.begin(), base.end());
   if (nds.size() < numObjectives)
-    throw NotEnoughBasePointsException();
+    throw NotEnoughAncorPointsException();
 
   // let doChord do all the work (it's recursive)
   NonDominatedSet< PointAndSolution<S> > resultSet(base.begin(), base.end());
@@ -129,7 +130,7 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  *  info on how the chord algorithm works.
  *
  *  Possible exceptions:
- *  - May throw a NotEnoughBasePointsException exception if at some step
+ *  - May throw a NotEnoughAncorPointsException exception if at some step
  *    the number of points for the new base are less than \#numObjectives.
  *  
  *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
@@ -193,7 +194,7 @@ BaseProblem<S>::doChord(unsigned int numObjectives,
   resultList.push_back(opt);
   if (newBase.size() < numObjectives - 1)
     // not enough points to form a new #numObjectives-hyperplane
-    throw NotEnoughBasePointsException();
+    throw NotEnoughAncorPointsException();
   else if (newBase.size() == numObjectives - 1) {
     // enough points (with opt) for exactly one subproblem
     newBase.push_back(opt);

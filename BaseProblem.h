@@ -16,7 +16,7 @@
 #include "Hyperplane.h"
 #include "PointAndSolution.h"
 #include "NonDominatedSet.h"
-#include "NotEnoughBasePointsException.h"
+#include "NotEnoughAncorPointsException.h"
 
 
 using pareto_approximator::PointAndSolution;
@@ -122,7 +122,7 @@ class BaseProblem
      *  implemented. That is why comb() is declared virtual.
      *
      *  Possible exceptions:
-     *  - May throw a NotEnoughBasePointsException exception if at some step
+     *  - May throw a NotEnoughAncorPointsException exception if at some step
      *    the number of points for the new base are less than \#numObjectives.
      *  
      *  \sa BaseProblem, PointAndSolution and Point
@@ -159,7 +159,7 @@ class BaseProblem
      *  info on how the chord algorithm works.
      *  
      *  Possible exceptions:
-     *  - May throw a NotEnoughBasePointsException exception if at some step
+     *  - May throw a NotEnoughAncorPointsException exception if at some step
      *    the number of points for the new base are less than #numObjectives.
      *  
      *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point

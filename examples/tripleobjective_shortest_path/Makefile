@@ -19,7 +19,7 @@ main.o: main.cpp ../../BaseProblem.h ../../BaseProblem.cpp RandomGraphProblem.h 
 	$(CC) $(CPPFLAGS) -c main.cpp -o $@
 
 # Make RandomGraphProblem.o
-RandomGraphProblem.o: RandomGraphProblem.h RandomGraphProblem.cpp ../../PointAndSolution.h ../../PointAndSolution.cpp ../../BaseProblem.h ../../BaseProblem.cpp ../../Point.h tripleobjective_shortest_path_example_common.h
+RandomGraphProblem.o: RandomGraphProblem.h RandomGraphProblem.cpp ../../PointAndSolution.h ../../PointAndSolution.cpp ../../BaseProblem.h ../../BaseProblem.cpp ../../NotEnoughAncorPointsException.h ../../Point.h tripleobjective_shortest_path_example_common.h
 	$(CC) $(CPPFLAGS) -c RandomGraphProblem.cpp -o $@
 
 # Make FloodVisitor.o
@@ -32,7 +32,7 @@ Point.o: ../../Point.h ../../Point.cpp ../../DifferentDimensionsException.h ../.
 	$(CC) $(CPPFLAGS) -c ../../Point.cpp -o $@
 
 # Make Hyperplane.o
-Hyperplane.o: ../../Hyperplane.h ../../Hyperplane.cpp ../../Point.h Point.o ../../DifferentDimensionsException.h ../../NonExistentCoefficientException.h ../../PointIsOnTheHyperplaneException.h
+Hyperplane.o: ../../Hyperplane.h ../../Hyperplane.cpp ../../Point.h Point.o ../../DifferentDimensionsException.h ../../NonExistentCoefficientException.h ../../PointIsOnTheHyperplaneException.h ../../SamePointsException.h
 	$(CC) $(CPPFLAGS) -c ../../Hyperplane.cpp -o $@
 
 

@@ -1,4 +1,4 @@
-/*! \file RandomGraphProblem.h
+/*! \file examples/tripleobjective_shortest_path/RandomGraphProblem.h
  *  \brief The declaration of the RandomGraphProblem class. 
  *  \author Christos Nitsas
  *  \date 2012

@@ -1,4 +1,4 @@
-/*! \file biobjective_shortest_path_example_common.h
+/*! \file examples/biobjective_shortest_path/biobjective_shortest_path_example_common.h
  *  \brief Common classes and typedefs used throughout the example.
  *  \author Christos Nitsas
  *  \date 2012

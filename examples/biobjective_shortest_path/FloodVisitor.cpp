@@ -1,4 +1,4 @@
-/*! \file FloodVisitor.cpp
+/*! \file examples/biobjective_shortest_path/FloodVisitor.cpp
  *  \brief The implementation of the FloodVisitor class.
  *  \author Christos Nitsas
  *  \date 2012
