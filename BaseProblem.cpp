@@ -57,12 +57,12 @@ BaseProblem<S>::~BaseProblem() { }
  *  instance and call its computeConvexParetoSet() method with the eps 
  *  they want.
  *
- *  computeConvexParetoSet() will use the comb() method the user 
+ *  computeConvexParetoSet() will use the comb() method that the user 
  *  implemented. That is why comb() is declared virtual.
  *
  *  Possible exceptions:
  *  - May throw a NotEnoughAnchorPointsException exception if at some step
- *    the number of points for the new base are less than \#numObjectives.
+ *    the number of points for a newFacet are less than \#numObjectives.
  *  
  *  \sa BaseProblem, PointAndSolution and Point
  */
@@ -93,7 +93,7 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
   if (nds.size() < numObjectives)
     throw NotEnoughAnchorPointsException();
 
-  // let doChord do all the work (it's recursive)
+  // Let doChord do all the work.
   NonDominatedSet< PointAndSolution<S> > filter(anchors.begin(), anchors.end());
   std::list< PointAndSolution<S> > resultsFromDoChord;
   resultsFromDoChord = doChord(numObjectives, anchors, eps);
@@ -104,31 +104,37 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
 }
 
 
-/*! \brief A recursive function called by computeConvexParetoSet() to do 
- *         most of the work.
+/*! \brief A function called by computeConvexParetoSet() to do most of 
+ *         the work.
  * 
- *  \param numObjectives The number of objectives to minimize. Note: The 
- *                       user's comb() routine should be able to handle a 
- *                       std::vector<double> of \#numObjectives weights.
- *  \param base A facet of the current approximation. 
- *  \param eps The degree of approximation. doChord() will find a subset 
- *             of an (1+eps)-convex Pareto set of the problem.
- *  \return The part of the problem's (1+eps)-convex Pareto set between 
- *          the points in base and 0.
+ *  \param numObjectives The number of objectives to minimize. 
+ *                       Note: The user's comb() routine should be able to 
+ *                       handle a std::vector<double> of \#numObjectives 
+ *                       weights.
+ *  \param anchors The Facet defined by the anchor points.
+ *  \param eps The degree of approximation. 
+ *  \return A list of Pareto optimal points (PointAndSolution instances).
+ *          BaseProblem::computeConvexParetoSet() will filter them to make 
+ *          the (1+eps)-approximate convex Pareto set.
  *  
  *  Users don't need to use doChord() - that is why it's declared private. 
- *  It's just a recursive routine the computeConvexParetoSet() method uses 
+ *  It's just a routine that BaseProblem::computeConvexParetoSet() uses 
  *  to do most of the work.
  *  
- *  Each time it's called, doChord() finds at most one new (1+eps)-convex 
- *  Pareto set point (inside the convex polytope defined by the given 
- *  points: tip and the points in base), splits the problem into 
- *  subproblems and calls itself recursivelly on the subproblems until 
- *  the requested degree of approximation is met.
+ *  doChord() has a big while loop that processes facets (from a stack). 
+ *  On each iteration doChord() finds at most one new Pareto optimal point, 
+ *  makes new facets using that point and pushes the new facets on the 
+ *  stack (iff they improve the approximation; if the requested degree of 
+ *  approximation has been met, no new facets are pushed onto the stack).
  *  
  *  Please read "How good is the Chord Algorithm?" by Constantinos 
  *  Daskalakis, Ilias Diakonikolas and Mihalis Yannakakis for in-depth 
  *  info on how the chord algorithm works.
+ *  
+ *  You can also read "Approximating convex Pareto surfaces in 
+ *  multiobjective radiotherapy planning" by David L. Craft et al. for 
+ *  info on how we handle facets whose normal vector has both positive 
+ *  and negative components.
  *
  *  Possible exceptions:
  *  - May throw a NotEnoughAnchorPointsException exception if at some step
@@ -138,86 +144,96 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  */
 template <class S> 
 std::list< PointAndSolution<S> > 
-BaseProblem<S>::doChord(unsigned int numObjectives, Facet base, double eps)
+BaseProblem<S>::doChord(unsigned int numObjectives, Facet anchors, double eps)
 {
   // reminder: comb accepts a set of iterators to the objectives' weights
 
-  assert(base.size() <= 3);
+  assert(anchors.size() <= 3);
   assert(numObjectives <= 3);
-  assert(base.size() == numObjectives);
+  assert(anchors.size() == numObjectives);
 
-  // make a \#numObjectives-dimensional hyperplane that passes 
-  // through all the points in base
-  std::vector<Point> basePoints;
-  typename Facet::iterator bi;
-  for (bi = base.begin(); bi != base.end(); ++bi)
-    basePoints.push_back(bi->point);
-  Hyperplane baseHyperplane(basePoints.begin(), basePoints.end());
+  // a stack of Facets to try (for generating new Pareto optimal points)
+  std::stack< Facet > facetsToTry;
+  facetsToTry.push(anchors);
 
-  PointAndSolution<S> opt;
-  if (baseHyperplane.hasAllAiCoefficientsNonNegative()) {
-    // Call comb using baseHyperplane's coefficients (essentially 
-    // baseHyperplane's slope) as weights.
-    baseHyperplane.normalizeAiCoefficients();
-    opt = comb(baseHyperplane.begin(), baseHyperplane.end());
-    opt.weightsUsed.assign(baseHyperplane.begin(), baseHyperplane.end());
-  }
-  else {
-    // "meanWeights" is a std::vector<double> of weights mw_{i}, where:
-    // /f$ mw_{i} = sum_{j=1}^{j=base.size()} ( w_{ij} ) /f$,
-    // where w_{ij} is the i'th of the weights used to obtain the j'th 
-    // point in "base".
-
-    std::vector<double> meanWeights = computeMeanWeights(base);
-    Hyperplane meanHyperplane(meanWeights.begin(), meanWeights.end(), 1.0);
-    meanHyperplane.normalizeAiCoefficients();
-
-    // Now call comb() using meanHyperplane's coefficients.
-    opt = comb(meanHyperplane.begin(), meanHyperplane.end());
-    opt.weightsUsed.assign(meanHyperplane.begin(), meanHyperplane.end());
-  }
-
-  // check if the point we just found is approximately dominated by the 
-  // points we have so far
-  if (baseHyperplane.ratioDistance(opt.point) <= eps)
-    return std::list< PointAndSolution<S> >();
-  // else
-
-  // keep (for the new base) only those base points that opt doesn't dominate
-  Facet newBase;
-  for (bi = base.begin(); bi != base.end(); ++bi)
-    if (!opt.dominates(*bi))
-      newBase.push_back(*bi);
-
-  // split the problem into subproblems and call doChord() on each of them
   std::list< PointAndSolution<S> > resultList;
-  resultList.push_back(opt);
-  if (newBase.size() < numObjectives - 1)
-    // not enough points to form a new #numObjectives-hyperplane
-    throw NotEnoughAnchorPointsException();
-  else if (newBase.size() == numObjectives - 1) {
-    // enough points (with opt) for exactly one subproblem
-    newBase.push_back(opt);
-    std::list< PointAndSolution<S> > subproblemResults;
-    subproblemResults = doChord(numObjectives, newBase, eps);
-    resultList.splice(resultList.end(), subproblemResults);
-  }
-  else {
-    // enough points (with opt) for #numObjectives subproblems
-    assert(newBase.size() == numObjectives);
-    // opt is not yet included in newBase - newBase is the same as base
-    for (unsigned int i = 0; i != numObjectives; ++i) {
-      // temporarily replace one of the old base points with opt 
-      newBase[i] = opt;
-      // call doChord on the subproblem 
-      std::list< PointAndSolution<S> > subproblemResults;
-      subproblemResults = doChord(numObjectives, newBase, eps);
-      // append the subproblem results to resultList
-      resultList.splice(resultList.end(), subproblemResults);
-      // restore newBase (replace opt with the old base point)
-      newBase[i] = base[i];
+  while (not facetsToTry.empty()) {
+    // Get a facet from the stack and try to generate a new Pareto 
+    // optimal point using that facet.
+    Facet generatingFacet = facetsToTry.top();
+    facetsToTry.pop();
+
+    // Make a \#numObjectives-dimensional hyperplane that passes 
+    // through all the points in "anchors".
+    std::vector<Point> facetPoints;
+    typename Facet::iterator fi;
+    for (fi = generatingFacet.begin(); fi != generatingFacet.end(); ++fi)
+      facetPoints.push_back(fi->point);
+    Hyperplane generatingHyperplane(facetPoints.begin(), facetPoints.end());
+
+    PointAndSolution<S> opt;
+    if (generatingHyperplane.hasAllAiCoefficientsNonNegative()) {
+      // Call comb using generatingHyperplane's coefficients (that is, 
+      // generatingHyperplane's slope) as weights.
+      generatingHyperplane.normalizeAiCoefficients();
+      opt = comb(generatingHyperplane.begin(), generatingHyperplane.end());
+      opt.weightsUsed.assign(generatingHyperplane.begin(), 
+                             generatingHyperplane.end());
     }
-  }
+    else {
+      // "meanWeights" is a std::vector<double> of weights mw_{i}, where:
+      // /f$ mw_{i} = sum_{j=1}^{j=generatingFacet.size()} ( w_{ij} ) /f$,
+      // where w_{ij} is the i'th of the weights used to obtain the j'th 
+      // point in "generatingFacet".
+
+      std::vector<double> meanWeights = computeMeanWeights(generatingFacet);
+      Hyperplane meanHyperplane(meanWeights.begin(), meanWeights.end(), 0.0);
+      meanHyperplane.normalizeAiCoefficients();
+
+      // Now call comb() using meanHyperplane's coefficients.
+      opt = comb(meanHyperplane.begin(), meanHyperplane.end());
+      opt.weightsUsed.assign(meanHyperplane.begin(), meanHyperplane.end());
+    }
+
+    // Check if the point we just found is approximately dominated by the 
+    // points we have so far. If it is ignore it. (try the next facet)
+    if (generatingHyperplane.ratioDistance(opt.point) <= eps)
+      continue;
+    // else
+    resultList.push_back(opt);
+
+    // Keep (for the new facet) only those points in generatingFacet 
+    // that opt doesn't dominate.
+    Facet newFacet;
+    for (fi = generatingFacet.begin(); fi != generatingFacet.end(); ++fi)
+      if (!opt.dominates(*fi))
+        newFacet.push_back(*fi);
+
+    // Make the new facets (using generatingFacet and opt) and push them 
+    // onto the stack.
+    if (newFacet.size() < numObjectives - 1)
+      // not enough points to form a new facet
+      throw NotEnoughAnchorPointsException();
+    else if (newFacet.size() == numObjectives - 1) {
+      // enough points (including opt) for exactly one new facet
+      newFacet.push_back(opt);
+      facetsToTry.push(newFacet);
+    }
+    else {
+      // enough points (including opt) for #numObjectives new facets
+      assert(newFacet.size() == numObjectives);
+      // opt is not yet included in newFacet - newFacet is currently 
+      // the same as generatingFacet.
+      for (unsigned int i = 0; i != numObjectives; ++i) {
+        // Temporarily replace one of the old facet points with opt.
+        newFacet[i] = opt;
+        // Push the new facet on top of the stack.
+        facetsToTry.push(newFacet);
+        // Restore newFacet (replace opt with the old facet point).
+        newFacet[i] = generatingFacet[i];
+      }
+    }
+  }   // while (not facetsToTry.empty())
 
   return resultList;
 }

@@ -5,6 +5,10 @@
  */
 
 
+#ifndef EXAMPLE_CLASS_FLOOD_VISITOR_H
+#define EXAMPLE_CLASS_FLOOD_VISITOR_H
+
+
 #include "tripleobjective_shortest_path_example_common.h"
 #include "../../Point.h"
 #include "../../NonDominatedSet.h"
@@ -93,9 +97,12 @@ class FloodVisitor
 };
 
 
+}  // namespace tripleobjective_shortest_path_example
+
+
 /*! 
  *  @}
  */
 
 
-}  // namespace tripleobjective_shortest_path_example
+#endif  // EXAMPLE_CLASS_FLOOD_VISITOR_H
