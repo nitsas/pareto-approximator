@@ -49,19 +49,19 @@ NonDominatedSetTest.o: NonDominatedSetTest.cpp ../Point.h ../PointAndSolution.h 
 	$(CC) $(CPPFLAGS) -c NonDominatedSetTest.cpp -o $@
 
 # Make SmallBiobjectiveSPProblem.o
-SmallBiobjectiveSPProblem.o: SmallBiobjectiveSPProblem.cpp SmallBiobjectiveSPProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAncorPointsException.h
+SmallBiobjectiveSPProblem.o: SmallBiobjectiveSPProblem.cpp SmallBiobjectiveSPProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAnchorPointsException.h
 	$(CC) $(CPPFLAGS) -c SmallBiobjectiveSPProblem.cpp -o $@
 
 # Make SmallTripleobjectiveSPProblem.o
-SmallTripleobjectiveSPProblem.o: SmallTripleobjectiveSPProblem.cpp SmallTripleobjectiveSPProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAncorPointsException.h
+SmallTripleobjectiveSPProblem.o: SmallTripleobjectiveSPProblem.cpp SmallTripleobjectiveSPProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAnchorPointsException.h
 	$(CC) $(CPPFLAGS) -c SmallTripleobjectiveSPProblem.cpp -o $@
 
 # Make NonOptimalStartingPointsProblem.o
-NonOptimalStartingPointsProblem.o: NonOptimalStartingPointsProblem.cpp NonOptimalStartingPointsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAncorPointsException.h
+NonOptimalStartingPointsProblem.o: NonOptimalStartingPointsProblem.cpp NonOptimalStartingPointsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAnchorPointsException.h
 	$(CC) $(CPPFLAGS) -c NonOptimalStartingPointsProblem.cpp -o $@
 
 # Make TripleobjectiveWithNegativeWeightsProblem.o
-TripleobjectiveWithNegativeWeightsProblem.o: TripleobjectiveWithNegativeWeightsProblem.cpp TripleobjectiveWithNegativeWeightsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAncorPointsException.h
+TripleobjectiveWithNegativeWeightsProblem.o: TripleobjectiveWithNegativeWeightsProblem.cpp TripleobjectiveWithNegativeWeightsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAnchorPointsException.h
 	$(CC) $(CPPFLAGS) -c TripleobjectiveWithNegativeWeightsProblem.cpp -o $@
 
 # Make Point.o

@@ -16,7 +16,7 @@
 #include "Hyperplane.h"
 #include "PointAndSolution.h"
 #include "NonDominatedSet.h"
-#include "NotEnoughAncorPointsException.h"
+#include "NotEnoughAnchorPointsException.h"
 
 
 using pareto_approximator::PointAndSolution;
@@ -63,8 +63,12 @@ template <class S>
 class BaseProblem 
 {
   public:
+    //! A set of points representing a facet of the current approximation.
+    typedef typename std::vector< PointAndSolution<S> > Facet;
+
     //! BaseProblem's default constructor. (empty)
     BaseProblem();
+
     //! BaseProblem's default destructor. (virtual and empty)
     virtual ~BaseProblem();
 
@@ -122,7 +126,7 @@ class BaseProblem
      *  implemented. That is why comb() is declared virtual.
      *
      *  Possible exceptions:
-     *  - May throw a NotEnoughAncorPointsException exception if at some step
+     *  - May throw a NotEnoughAnchorPointsException exception if at some step
      *    the number of points for the new base are less than \#numObjectives.
      *  
      *  \sa BaseProblem, PointAndSolution and Point
@@ -137,8 +141,7 @@ class BaseProblem
      *  \param numObjectives The number of objectives to minimize. Note: The 
      *                       user's comb() routine should be able to handle a 
      *                       std::vector<double> of \#numObjectives weights.
-     *  \param base A std::vector of PointAndSolution<S> instances (where S is 
-     *              the type of the problem solutions).
+     *  \param base A facet of the current approximation. 
      *  \param eps The degree of approximation. doChord() will find a subset 
      *             of an (1+eps)-convex Pareto set of the problem.
      *  \return The part of the problem's (1+eps)-convex Pareto set between 
@@ -159,14 +162,13 @@ class BaseProblem
      *  info on how the chord algorithm works.
      *  
      *  Possible exceptions:
-     *  - May throw a NotEnoughAncorPointsException exception if at some step
+     *  - May throw a NotEnoughAnchorPointsException exception if at some step
      *    the number of points for the new base are less than #numObjectives.
      *  
      *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
      */
     std::list< PointAndSolution<S> > 
-    doChord(unsigned int numObjectives, 
-            std::vector< PointAndSolution<S> > base, double eps);
+    doChord(unsigned int numObjectives, Facet base, double eps);
 
     //! Computes the mean of all the weight vectors in "base".
     /*!
@@ -179,7 +181,7 @@ class BaseProblem
      *  \sa BaseProblem and PointAndSolution
      */
     std::vector<double>
-    computeMeanWeights(std::vector< PointAndSolution<S> > base);
+    computeMeanWeights(Facet base);
 };
 
 

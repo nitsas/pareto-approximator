@@ -1,13 +1,13 @@
-/*! \file NotEnoughAncorPointsException.h
- *  \brief The declaration and definition of the NotEnoughAncorPointsException 
+/*! \file NotEnoughAnchorPointsException.h
+ *  \brief The declaration and definition of the NotEnoughAnchorPointsException 
  *         exception class.
  *  \author Christos Nitsas
  *  \date 2012
  */
 
 
-#ifndef NOT_ENOUGH_ANCOR_POINTS_EXCEPTION_H
-#define NOT_ENOUGH_ANCOR_POINTS_EXCEPTION_H
+#ifndef NOT_ENOUGH_ANCHOR_POINTS_EXCEPTION_H
+#define NOT_ENOUGH_ANCHOR_POINTS_EXCEPTION_H
 
 #include <exception>
 
@@ -29,13 +29,13 @@ namespace pareto_approximator {
  *  Thrown when we don't have enough points to form a starting base and 
  *  an n-hyperplane in BaseProblem.
  */
-class NotEnoughAncorPointsException : public std::exception
+class NotEnoughAnchorPointsException : public std::exception
 {
   public:
     //! Return a simple char* message.
     const char* what() const throw() 
     {
-      return "Not enough ancor points to form a hyperplane.";
+      return "Not enough anchor points to form a hyperplane.";
     }
 };
 
@@ -46,4 +46,4 @@ class NotEnoughAncorPointsException : public std::exception
 /*! @} */
 
 
-#endif  // NOT_ENOUGH_ANCOR_POINTS_EXCEPTION_H
+#endif  // NOT_ENOUGH_ANCHOR_POINTS_EXCEPTION_H

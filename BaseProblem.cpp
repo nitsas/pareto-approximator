@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <stack>
 
 
 using std::min;
@@ -60,7 +61,7 @@ BaseProblem<S>::~BaseProblem() { }
  *  implemented. That is why comb() is declared virtual.
  *
  *  Possible exceptions:
- *  - May throw a NotEnoughAncorPointsException exception if at some step
+ *  - May throw a NotEnoughAnchorPointsException exception if at some step
  *    the number of points for the new base are less than \#numObjectives.
  *  
  *  \sa BaseProblem, PointAndSolution and Point
@@ -76,27 +77,28 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
 
   // Find a best solution for each objective. We'll end up with up to  
   // \#numObjectives (possibly less) different solutions. 
-  // Let's call the corresponding points (in objective space) ancor points.
+  // Let's call the corresponding points (in objective space) anchor points
+  // and the PointAndSolution instances that contain them anchors.
   std::vector<double> weights(numObjectives, 0.0);
-  std::vector< PointAndSolution<S> > base;
+  Facet anchors;
   for (unsigned int i = 0; i != numObjectives; ++i) {
     weights[i] = 1.0;
     PointAndSolution<S> pas = comb(weights.begin(), weights.end());
     pas.weightsUsed.assign(weights.begin(), weights.end());
-    base.push_back(pas);
+    anchors.push_back(pas);
     weights[i] = 0.0;
   }
 
-  NonDominatedSet< PointAndSolution<S> > nds(base.begin(), base.end());
+  NonDominatedSet< PointAndSolution<S> > nds(anchors.begin(), anchors.end());
   if (nds.size() < numObjectives)
-    throw NotEnoughAncorPointsException();
+    throw NotEnoughAnchorPointsException();
 
   // let doChord do all the work (it's recursive)
-  NonDominatedSet< PointAndSolution<S> > resultSet(base.begin(), base.end());
+  NonDominatedSet< PointAndSolution<S> > filter(anchors.begin(), anchors.end());
   std::list< PointAndSolution<S> > resultsFromDoChord;
-  resultsFromDoChord = doChord(numObjectives, base, eps);
-  resultSet.insert(resultsFromDoChord.begin(), resultsFromDoChord.end());
-  std::list< PointAndSolution<S> > resultList(resultSet.begin(), resultSet.end());
+  resultsFromDoChord = doChord(numObjectives, anchors, eps);
+  filter.insert(resultsFromDoChord.begin(), resultsFromDoChord.end());
+  std::list< PointAndSolution<S> > resultList(filter.begin(), filter.end());
 
   return resultList;
 }
@@ -108,8 +110,7 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  *  \param numObjectives The number of objectives to minimize. Note: The 
  *                       user's comb() routine should be able to handle a 
  *                       std::vector<double> of \#numObjectives weights.
- *  \param base A std::vector of PointAndSolution<S> instances (where S is 
- *              the type of the problem solutions).
+ *  \param base A facet of the current approximation. 
  *  \param eps The degree of approximation. doChord() will find a subset 
  *             of an (1+eps)-convex Pareto set of the problem.
  *  \return The part of the problem's (1+eps)-convex Pareto set between 
@@ -130,15 +131,14 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  *  info on how the chord algorithm works.
  *
  *  Possible exceptions:
- *  - May throw a NotEnoughAncorPointsException exception if at some step
+ *  - May throw a NotEnoughAnchorPointsException exception if at some step
  *    the number of points for the new base are less than \#numObjectives.
  *  
  *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
  */
 template <class S> 
 std::list< PointAndSolution<S> > 
-BaseProblem<S>::doChord(unsigned int numObjectives, 
-                        std::vector< PointAndSolution<S> > base, double eps)
+BaseProblem<S>::doChord(unsigned int numObjectives, Facet base, double eps)
 {
   // reminder: comb accepts a set of iterators to the objectives' weights
 
@@ -149,7 +149,7 @@ BaseProblem<S>::doChord(unsigned int numObjectives,
   // make a \#numObjectives-dimensional hyperplane that passes 
   // through all the points in base
   std::vector<Point> basePoints;
-  typename std::vector< PointAndSolution<S> >::iterator bi;
+  typename Facet::iterator bi;
   for (bi = base.begin(); bi != base.end(); ++bi)
     basePoints.push_back(bi->point);
   Hyperplane baseHyperplane(basePoints.begin(), basePoints.end());
@@ -184,7 +184,7 @@ BaseProblem<S>::doChord(unsigned int numObjectives,
   // else
 
   // keep (for the new base) only those base points that opt doesn't dominate
-  std::vector< PointAndSolution<S> > newBase;
+  Facet newBase;
   for (bi = base.begin(); bi != base.end(); ++bi)
     if (!opt.dominates(*bi))
       newBase.push_back(*bi);
@@ -194,7 +194,7 @@ BaseProblem<S>::doChord(unsigned int numObjectives,
   resultList.push_back(opt);
   if (newBase.size() < numObjectives - 1)
     // not enough points to form a new #numObjectives-hyperplane
-    throw NotEnoughAncorPointsException();
+    throw NotEnoughAnchorPointsException();
   else if (newBase.size() == numObjectives - 1) {
     // enough points (with opt) for exactly one subproblem
     newBase.push_back(opt);
@@ -235,9 +235,9 @@ BaseProblem<S>::doChord(unsigned int numObjectives,
  */
 template <class S>
 std::vector<double>
-BaseProblem<S>::computeMeanWeights(std::vector< PointAndSolution<S> > base)
+BaseProblem<S>::computeMeanWeights(Facet base)
 {
-  typename std::vector< PointAndSolution<S> >::iterator bi;
+  typename Facet::iterator bi;
 
   std::vector<double> meanWeights(base.size(), 0.0);
   for (unsigned int i = 0; i != base.size(); ++i) {
