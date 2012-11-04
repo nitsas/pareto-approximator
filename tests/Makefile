@@ -21,7 +21,7 @@ CPPLIBS=-lgtest -larmadillo
 
 
 # Make all unit tests
-all: PointTest.out HyperplaneTest.out NonDominatedSetTest.out BaseProblemTest.out
+all: PointTest.out HyperplaneTest.out NonDominatedSetTest.out FacetTest.out BaseProblemTest.out
 
 # Make PointTest.out
 PointTest.out: PointTest.cpp ../Point.h Point.o ../DifferentDimensionsException.h ../NegativeApproximationRatioException.h ../NotPositivePointException.h ../NonExistentCoordinateException.h
@@ -35,10 +35,18 @@ HyperplaneTest.out: HyperplaneTest.cpp ../Point.h Point.o ../Hyperplane.h Hyperp
 NonDominatedSetTest.out: NonDominatedSetTest.o Point.o
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o NonDominatedSetTest.o -o $@
 
+# Make FacetTest.out
+FacetTest.out: FacetTest.o Point.o 
+	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o FacetTest.o -o $@
+
 # Make BaseProblemTest.out
 BaseProblemTest.out: BaseProblemTest.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o NonOptimalStartingPointsProblem.o TripleobjectiveWithNegativeWeightsProblem.o Point.o Hyperplane.o
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o NonOptimalStartingPointsProblem.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o TripleobjectiveWithNegativeWeightsProblem.o BaseProblemTest.o -o $@
 
+
+# Make FacetTest.o
+FacetTest.o: FacetTest.cpp ../Point.h ../PointAndSolution.h ../PointAndSolution.cpp ../Facet.h ../Facet.cpp ../BoundaryFacetException.h
+	$(CC) $(CPPFLAGS) -c FacetTest.cpp -o $@
 
 # Make BaseProblemTest.o
 BaseProblemTest.o: BaseProblemTest.cpp ../Point.h ../PointAndSolution.h ../PointAndSolution.cpp NonOptimalStartingPointsProblem.h SmallBiobjectiveSPProblem.h SmallTripleobjectiveSPProblem.h TripleobjectiveWithNegativeWeightsProblem.h ../BaseProblem.h ../BaseProblem.cpp ../NonDominatedSet.h ../NonDominatedSet.cpp
@@ -72,7 +80,7 @@ Point.o: ../Point.h ../Point.cpp ../DifferentDimensionsException.h ../NegativeAp
 Hyperplane.o: ../Hyperplane.h ../Hyperplane.cpp ../Point.h Point.o ../DifferentDimensionsException.h ../SamePointsException.h ../NonExistentCoefficientException.h ../PointIsOnTheHyperplaneException.h
 	$(CC) $(CPPFLAGS) -c ../Hyperplane.cpp -o $@
 
-# Clean object files and executables
+# Remove object files and executables
 clean: 
 	rm -f Point.o Hyperplane.o BaseProblemTest.o SmallBiobjectiveSPProblem.o SmallTripleobjectiveSPProblem.o NonOptimalStartingPointsProblem.o TripleobjectiveWithNegativeWeightsProblem.o NonDominatedSetTest.o PointTest.out HyperplaneTest.out BaseProblemTest.out NonDominatedSetTest.out
 

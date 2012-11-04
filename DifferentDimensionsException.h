@@ -23,8 +23,10 @@ namespace pareto_approximator {
 
 
 /*! 
- *  \brief Exception thrown by Point::operator<(), Point::ratioDistance(),
- *         Hyperplane::ratioDistance() and Hyperplane::init().
+ *  \brief Exception thrown by Point::operator<(), Point::operator+(), 
+ *         Point::ratioDistance(), Point::dominates(), 
+ *         Hyperplane::ratioDistance(), Hyperplane::init() and 
+ *         Facet::ratioDistance().
  *
  *  An exception thrown when:
  *  - Two Point instances were supposed to be compared but they have 

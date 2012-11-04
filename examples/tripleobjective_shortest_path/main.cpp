@@ -119,18 +119,18 @@ main(int argc, char * argv[])
   // BaseProblem) to find the Pareto set.
   unsigned int numObjectives = 3;
   double approximationRatio = 1e-12;
-  std::list< PointAndSolution<PredecessorMap> > paretoSet;
+  std::vector< PointAndSolution<PredecessorMap> > paretoSet;
   paretoSet = rgp.computeConvexParetoSet(numObjectives, approximationRatio);
 
   // Output (convex Pareto set)
   // =========================================
   cout << "A. convex Pareto set size: " << paretoSet.size() << endl;
   cout << endl << "B. convex Pareto (set) points: " << endl;
-  std::list< PointAndSolution<PredecessorMap> >::iterator li;
+  std::vector< PointAndSolution<PredecessorMap> >::iterator vi;
   // Print each Pareto optimal point and the corresponding solution (path).
-  for (li = paretoSet.begin(); li != paretoSet.end(); ++li) {
-    cout << li->point << endl;
-    rgp.printPath(li->solution);
+  for (vi = paretoSet.begin(); vi != paretoSet.end(); ++vi) {
+    cout << vi->point << endl;
+    rgp.printPath(vi->solution);
   }
 
   // Exact Pareto set

@@ -13,6 +13,8 @@
 #include <set>
 #include <vector>
 
+#include <armadillo>
+
 #include "Point.h"
 #include "DifferentDimensionsException.h"
 #include "SamePointsException.h"
@@ -139,7 +141,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane
      */
-    Hyperplane(const int * first, const int * last, int b);
+    Hyperplane(const int* first, const int* last, int b);
 
     //! Constructor for a hyperplane on an n-dimensional space.
     /*!
@@ -162,7 +164,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane
      */
-    Hyperplane(const double * first, const double * last, double b);
+    Hyperplane(const double* first, const double* last, double b);
 
     //! Constructor for a hyperplane on a 2D space. (line)
     /*!
@@ -179,7 +181,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane, init() and Point
      */
-    Hyperplane(const Point & p1, const Point & p2);
+    Hyperplane(const Point& p1, const Point& p2);
 
     //! Constructor for a hyperplane on a 3D space. (line)
     /*!
@@ -198,7 +200,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane, init() and Point
      */
-    Hyperplane(const Point & p1, const Point & p2, const Point & p3);
+    Hyperplane(const Point& p1, const Point& p2, const Point& p3);
 
     //! Constructor for a hyperplane on a 4D space. (line)
     /*!
@@ -218,8 +220,8 @@ class Hyperplane
      *  
      *  \sa Hyperplane, init() and Point
      */
-    Hyperplane(const Point & p1, const Point & p2, 
-               const Point & p3, const Point & p4);
+    Hyperplane(const Point& p1, const Point& p2, 
+               const Point& p3, const Point& p4);
 
     //! Constructor for a hyperplane on an n-dimensional space.
     /*!
@@ -265,7 +267,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane, init() and Point
      */
-    Hyperplane(const Point * first, const Point * last);
+    Hyperplane(const Point* first, const Point* last);
 
     //! A simple (and empty) destructor.
     ~Hyperplane();
@@ -295,7 +297,7 @@ class Hyperplane
     double b() const;
 
     //! Return the dimension of the space the hyperplane lives in.
-    unsigned int space_dimension() const;
+    unsigned int spaceDimension() const;
 
     //! Return iterator to beginning of the vector of a_{i} coefficients.
     /*!
@@ -364,7 +366,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane and operator!=()
      */
-    bool operator== (const Hyperplane & hyperplane) const;
+    bool operator== (const Hyperplane& hyperplane) const;
 
     //! The Hyperplane inequality operator.
     /*!
@@ -375,7 +377,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane and operator==()
      */
-    bool operator!= (const Hyperplane & hyperplane) const;
+    bool operator!= (const Hyperplane& hyperplane) const;
 
     //! The Hyperplane output stream operator.
     /*!
@@ -387,12 +389,12 @@ class Hyperplane
      *  
      *  \sa Hyperplane and str()
      */
-    friend std::ostream & operator<< (std::ostream & out, 
-                                     const Hyperplane & hyperplane);
+    friend std::ostream& operator<< (std::ostream& out, 
+                                     const Hyperplane& hyperplane);
 
     //! Compute the ratio distance from the given Point to the hyperplane.
     /*!
-     *  \param p A Point instance.
+     *  \param p A Point instance. (with non-negative coordinates)
      *  \return The ratio distance from p to the hyperplane.
      *  
      *  The ratio distance from a point p to a hyperplane H is defined as:
@@ -403,13 +405,16 @@ class Hyperplane
      *  Intuitively it is the minimum value of \f$ \epsilon \ge 0 \f$ such 
      *  that some point on H \f$ \epsilon -covers p \f$.
      *  
+     *  In order for the ratio distance to make sense point p must have 
+     *  non-negative coordinates. 
+     *  
      *  Possible exceptions:
      *  - May throw a DifferentDimensionsException exception if the given point 
      *    and the hyperplane belong in spaces of different dimensions.
      *  
      *  \sa Hyperplane and Point
      */
-    double ratioDistance(const Point & p) const;
+    double ratioDistance(const Point& p) const;
     
     //! Create a new Hyperplane parallel to the current one (through a point).
     /*!
@@ -424,7 +429,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane and Point
      */
-    Hyperplane parallelThrough(const Point & p) const;
+    Hyperplane parallelThrough(const Point& p) const;
 
     //! Check if two hyperplanes are parallel.
     /*!
@@ -443,7 +448,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane
      */
-    bool isParallel(const Hyperplane & hyperplane) const;
+    bool isParallel(const Hyperplane& hyperplane) const;
 
     //! Check if every a_{i} coefficient is non-positive.
     /*! 

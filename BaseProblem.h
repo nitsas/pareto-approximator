@@ -131,44 +131,58 @@ class BaseProblem
      *  
      *  \sa BaseProblem, PointAndSolution and Point
      */
-    std::list< PointAndSolution<S> > 
+    std::vector< PointAndSolution<S> > 
     computeConvexParetoSet(unsigned int numObjectives, double eps=1e-12);
 
   private:
-    /*! \brief A recursive function called by computeConvexParetoSet() to do 
-     *         most of the work.
+    /*! \brief A function called by computeConvexParetoSet() to do most of 
+     *         the work.
      * 
-     *  \param numObjectives The number of objectives to minimize. Note: The 
-     *                       user's comb() routine should be able to handle a 
-     *                       std::vector<double> of \#numObjectives weights.
-     *  \param base A facet of the current approximation. 
-     *  \param eps The degree of approximation. doChord() will find a subset 
-     *             of an (1+eps)-convex Pareto set of the problem.
-     *  \return The part of the problem's (1+eps)-convex Pareto set between 
-     *          the points in base and 0.
+     *  \param numObjectives The number of objectives to minimize. 
+     *                       Note: The user's comb() routine should be able to 
+     *                       handle a std::vector<double> of \#numObjectives 
+     *                       weights.
+     *  \param anchors The Facet defined by the anchor points.
+     *  \param eps The degree of approximation. 
+     *  \return A vector of Pareto optimal points (PointAndSolution instances).
+     *          BaseProblem::computeConvexParetoSet() will filter them to make 
+     *          the (1+eps)-approximate convex Pareto set.
      *  
      *  Users don't need to use doChord() - that is why it's declared private. 
-     *  It's just a recursive routine the computeConvexParetoSet() method uses 
+     *  It's just a routine that BaseProblem::computeConvexParetoSet() uses 
      *  to do most of the work.
      *  
-     *  Each time it's called doChord() finds at most one new (1+eps)-convex 
-     *  Pareto set point (inside the convex polytope defined by the given 
-     *  points: tip and the points in base), splits the problem into 
-     *  subproblems and calls itself recursivelly on the subproblems until 
-     *  the requested degree of approximation is met.
+     *  doChord() has a big while loop that processes facets (from a stack). 
+     *  On each iteration doChord() finds at most one new Pareto optimal point, 
+     *  makes new facets using that point and pushes the new facets on the 
+     *  stack (iff they improve the approximation; if the requested degree of 
+     *  approximation has been met, no new facets are pushed onto the stack).
      *  
      *  Please read "How good is the Chord Algorithm?" by Constantinos 
      *  Daskalakis, Ilias Diakonikolas and Mihalis Yannakakis for in-depth 
      *  info on how the chord algorithm works.
      *  
+     *  You can also read "Approximating convex Pareto surfaces in 
+     *  multiobjective radiotherapy planning" by David L. Craft et al. for 
+     *  info on how we handle facets whose normal vector has both positive 
+     *  and negative components.
+     *
      *  Possible exceptions:
      *  - May throw a NotEnoughAnchorPointsException exception if at some step
-     *    the number of points for the new base are less than #numObjectives.
+     *    the number of points for the new base are less than \#numObjectives.
      *  
      *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
      */
-    std::list< PointAndSolution<S> > 
-    doChord(unsigned int numObjectives, Facet base, double eps);
+    std::vector< PointAndSolution<S> > 
+    doChord(unsigned int numObjectives, Facet anchors, double eps);
+
+    /*! \brief Generate a new Pareto optimal point using the given facet 
+     *         as a generating facet.
+     *
+     *  \sa comb(), BaseProblem, PointAndSolution and Point
+     */
+    PointAndSolution<S> 
+    generateNewParetoPoint(Facet facet);
 
     //! Computes the mean of all the weight vectors in "base".
     /*!
@@ -191,8 +205,8 @@ class BaseProblem
 /* @} */
 
 
-// We've got to #include the implementation here because we are describing 
-// a class template, not a simple class.
+// We have got to #include the implementation here because we are 
+// describing a class template, not a simple class.
 #include "BaseProblem.cpp"
 
 

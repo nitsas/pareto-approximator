@@ -7,7 +7,6 @@
 
 #include <set>
 #include <vector>
-#include <algorithm>
 
 #include "gtest/gtest.h"
 #include "../Hyperplane.h"
@@ -38,7 +37,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   EXPECT_EQ(h1.a(0), 5.0);
   EXPECT_EQ(h1.a(1), 10.0);
   EXPECT_EQ(h1.b(), 15.0);
-  EXPECT_EQ(h1.space_dimension(), 2);
+  EXPECT_EQ(h1.spaceDimension(), 2);
 
   // test Hyperplane(double, double, double, double)
   Hyperplane h2(0.0, 2.0, 5.0, -4.5);
@@ -46,7 +45,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   EXPECT_EQ(h2.a(1), 2.0);
   EXPECT_EQ(h2.a(2), 5.0);
   EXPECT_EQ(h2.b(), -4.5);
-  EXPECT_EQ(h2.space_dimension(), 3);
+  EXPECT_EQ(h2.spaceDimension(), 3);
 
   // test Hyperplane(std::vector<int>::const_iterator, 
   //                 std::vector<int>::const_iterator)
@@ -61,7 +60,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   EXPECT_EQ(h3.a(2), 0.0);
   EXPECT_EQ(h3.a(3), 0.0);
   EXPECT_EQ(h3.b(), 12.0);
-  EXPECT_EQ(h3.space_dimension(), 4);
+  EXPECT_EQ(h3.spaceDimension(), 4);
 
   // test Hyperplane(std::vector<double>::const_iterator, 
   //                 std::vector<double>::const_iterator)
@@ -76,7 +75,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   EXPECT_EQ(h4.a(2), 0.0);
   EXPECT_EQ(h4.a(3), 0.0);
   EXPECT_EQ(h4.b(), 12.0);
-  EXPECT_EQ(h4.space_dimension(), 4);
+  EXPECT_EQ(h4.spaceDimension(), 4);
 
   // test Hyperplane(const int *, const int *, int)
   int coefficientsC[6] = {-1, 0, 1, 2, 3, 4};
@@ -88,7 +87,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   EXPECT_EQ(h5.a(4), 3.0);
   EXPECT_EQ(h5.a(5), 4.0);
   EXPECT_EQ(h5.b(), 5.0);
-  EXPECT_EQ(h5.space_dimension(), 6);
+  EXPECT_EQ(h5.spaceDimension(), 6);
 
   // test Hyperplane(const double *, const double *, double)
   double coefficientsD[6] = {-1.0, 0.0, 1.0, 2.0, 3.0, 4.0};
@@ -100,11 +99,11 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   EXPECT_EQ(h6.a(4), 3.0);
   EXPECT_EQ(h6.a(5), 4.0);
   EXPECT_EQ(h6.b(), 5.0);
-  EXPECT_EQ(h6.space_dimension(), 6);
+  EXPECT_EQ(h6.spaceDimension(), 6);
 
   // test Hyperplane(const Point &, const Point &)
   Hyperplane h7(Point(0, 1), Point(1, 2));
-  EXPECT_EQ(h7.space_dimension(), 2);
+  EXPECT_EQ(h7.spaceDimension(), 2);
   EXPECT_EQ(h7.a(0), -h7.a(1));
   EXPECT_EQ(h7.a(1), h7.b());
 
@@ -115,7 +114,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   pointsA.push_back(Point(0, 1, 0));
   pointsA.push_back(Point(0, 0, 1));
   Hyperplane h8(pointsA.begin(), pointsA.end());
-  EXPECT_EQ(h8.space_dimension(), 3);
+  EXPECT_EQ(h8.spaceDimension(), 3);
   EXPECT_EQ(h8.a(0), h8.a(1));
   EXPECT_EQ(h8.a(1), h8.a(2));
   EXPECT_EQ(h8.a(2), h8.b());
@@ -127,7 +126,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   pointsB[2] = Point(0.0, 0.0, 1.0, 0.0);
   pointsB[3] = Point(0.0, 0.0, 0.0, 1.0);
   Hyperplane h9(pointsB, pointsB + 4);
-  EXPECT_EQ(h9.space_dimension(), 4);
+  EXPECT_EQ(h9.spaceDimension(), 4);
   EXPECT_EQ(h9.a(0), h9.a(1));
   EXPECT_EQ(h9.a(1), h9.a(2));
   EXPECT_EQ(h9.a(2), h9.a(3));
@@ -143,7 +142,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   pointsC.push_back(Point(1.0, 1.0, 0.0));
   pointsC.push_back(Point(1.0, 1.0, 1.0));
   Hyperplane h10(pointsC.begin(), pointsC.end());
-  EXPECT_EQ(h10.space_dimension(), 3);
+  EXPECT_EQ(h10.spaceDimension(), 3);
   EXPECT_NE(h10.a(0), 0.0);
   EXPECT_EQ(h10.a(0), h10.b());
   EXPECT_EQ(h10.a(1), 0.0);
@@ -161,7 +160,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   pointsD.push_back(Point(2.0, 3.0, 4.0));
   pointsD.push_back(Point(4.0, 6.0, 8.0));
   Hyperplane h11(pointsD.begin(), pointsD.end());
-  EXPECT_EQ(h11.space_dimension(), 3);
+  EXPECT_EQ(h11.spaceDimension(), 3);
   EXPECT_EQ(h11.a(0), 0.0);
   EXPECT_EQ(h11.a(1), 0.0);
   EXPECT_EQ(h11.a(2), 0.0);
@@ -174,7 +173,7 @@ TEST_F(HyperplaneTest, HyperplaneConstructorsAndAccessorsWork)
   //    valid answers (and represent the same hyperplane) but we expect the 
   //    first one.
   Hyperplane h12(Point(0.0, 1.0), Point(2.0, 0.0));
-  EXPECT_EQ(h12.space_dimension(), 2);
+  EXPECT_EQ(h12.spaceDimension(), 2);
   EXPECT_GT(h12.a(0), 0.0);
   EXPECT_EQ(h12.a(1), 2 * h12.a(0));
   EXPECT_EQ(h12.b(), h12.a(1));
@@ -300,7 +299,7 @@ TEST_F(HyperplaneTest, HyperplaneNormalizeAiCoefficients)
 
   h1.normalizeAiCoefficients();
   // All a_{i}'s should now be equal to 1/2 and b should be 4.
-  ASSERT_EQ(h1.space_dimension(), 4);
+  ASSERT_EQ(h1.spaceDimension(), 4);
   EXPECT_EQ(h1.a(0), 0.5);
   EXPECT_EQ(h1.a(1), 0.5);
   EXPECT_EQ(h1.a(2), 0.5);

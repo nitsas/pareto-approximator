@@ -64,8 +64,10 @@ class PointAndSolution
   public:
     //! PointAndSolution's default constructor. (empty)
     PointAndSolution();
+
     //! A constructor initializing all attributes except weightsUsed.
-    PointAndSolution(const Point & p, const S & s);
+    PointAndSolution(const Point& p, const S& s);
+
     //! A constructor initializing PointAndSolution's attributes.
     /*! 
      *  \param p A Point object.
@@ -76,9 +78,10 @@ class PointAndSolution
      *              std::vector<double> containing the weights used to 
      *              obtain p and s.
      */
-    PointAndSolution(const Point & p, const S & s, 
+    PointAndSolution(const Point& p, const S& s, 
                      std::vector<double>::const_iterator first,
                      std::vector<double>::const_iterator last);
+
     //! PointAndSolution's default destructor. (empty)
     ~PointAndSolution();
 
@@ -93,7 +96,7 @@ class PointAndSolution
      *  
      *  \sa PointAndSolution
      */
-    inline bool operator== (const PointAndSolution & pas) const;
+    inline bool operator== (const PointAndSolution& pas) const;
 
     //! The PointAndSolution less-than operator. 
     /*! 
@@ -110,7 +113,7 @@ class PointAndSolution
      *  
      *  \sa PointAndSolution and Point::operator<()
      */
-    inline bool operator< (const PointAndSolution<S> & pas) const;
+    inline bool operator< (const PointAndSolution<S>& pas) const;
 
     //! Check if this instance's point eps-covers the given instance's point.
     /*!
@@ -143,7 +146,7 @@ class PointAndSolution
      *  
      *  \sa PointAndSolution and Point::dominates()
      */
-    inline bool dominates(const PointAndSolution<S> & pas, 
+    inline bool dominates(const PointAndSolution<S>& pas, 
                           double eps=0.0) const;
 
     //! A point in objective space.

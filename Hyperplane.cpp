@@ -7,11 +7,11 @@
 
 #include <assert.h>
 #include <string>
+#include <algorithm>
 #include <sstream>
 #include <vector>
 #include <iterator>
 #include <cmath>
-#include <armadillo>
 
 #include "Hyperplane.h"
 
@@ -140,7 +140,7 @@ Hyperplane::Hyperplane(std::vector<double>::const_iterator first,
  *  
  *  \sa Hyperplane
  */
-Hyperplane::Hyperplane(const int * first, const int * last, int b) : b_(b)
+Hyperplane::Hyperplane(const int* first, const int* last, int b) : b_(b)
 {
   assert(coefficients_.size() == 0);
   coefficients_.assign(first, last);
@@ -168,7 +168,7 @@ Hyperplane::Hyperplane(const int * first, const int * last, int b) : b_(b)
  *  
  *  \sa Hyperplane
  */
-Hyperplane::Hyperplane(const double * first, const double * last, 
+Hyperplane::Hyperplane(const double* first, const double* last, 
                        double b) : b_(b)
 {
   assert(coefficients_.size() == 0);
@@ -190,7 +190,7 @@ Hyperplane::Hyperplane(const double * first, const double * last,
  *  
  *  \sa Hyperplane, init() and Point
  */
-Hyperplane::Hyperplane(const Point & p1, const Point & p2)
+Hyperplane::Hyperplane(const Point& p1, const Point& p2)
 {
   if (p1 == p2)
     throw SamePointsException();
@@ -219,7 +219,7 @@ Hyperplane::Hyperplane(const Point & p1, const Point & p2)
  *  
  *  \sa Hyperplane, init() and Point
  */
-Hyperplane::Hyperplane(const Point & p1, const Point & p2, const Point & p3)
+Hyperplane::Hyperplane(const Point& p1, const Point& p2, const Point& p3)
 {
   std::set<Point> points;
   points.insert(p1);
@@ -249,8 +249,8 @@ Hyperplane::Hyperplane(const Point & p1, const Point & p2, const Point & p3)
  *  
  *  \sa Hyperplane, init() and Point
  */
-Hyperplane::Hyperplane(const Point & p1, const Point & p2, 
-                       const Point & p3, const Point & p4)
+Hyperplane::Hyperplane(const Point& p1, const Point& p2, 
+                       const Point& p3, const Point& p4)
 {
   std::set<Point> points;
   points.insert(p1);
@@ -314,7 +314,7 @@ Hyperplane::Hyperplane(std::vector<Point>::const_iterator first,
  *  
  *  \sa Hyperplane, init() and Point
  */
-Hyperplane::Hyperplane(const Point * first, const Point * last)
+Hyperplane::Hyperplane(const Point* first, const Point* last)
 {
   std::set<Point> points(first, last);
   if ( ((int) points.size()) < std::distance(first, last))
@@ -397,7 +397,7 @@ Hyperplane::~Hyperplane() { }
 double 
 Hyperplane::a(unsigned int pos) const
 {
-  if (pos >= space_dimension())
+  if (pos >= spaceDimension())
     throw NonExistentCoefficientException();
   else
     return coefficients_[pos];
@@ -422,7 +422,7 @@ Hyperplane::b() const
 
 //! Return the dimension of the space the hyperplane lives in.
 unsigned int 
-Hyperplane::space_dimension() const
+Hyperplane::spaceDimension() const
 {
   return coefficients_.size();
 }
@@ -496,13 +496,13 @@ Hyperplane::end() const
 std::string 
 Hyperplane::str() const
 {
-  if (space_dimension() == 0)
+  if (spaceDimension() == 0)
     return "()";
   else {
     std::stringstream ss;
 
     ss << "( " << coefficients_[0] << " * x1";
-    for (unsigned int i=1; i!=space_dimension(); ++i) {
+    for (unsigned int i=1; i!=spaceDimension(); ++i) {
       ss << ( coefficients_[i] >= 0 ? " + " : " - " );
       ss << fabs(coefficients_[i]) << " * x" << i+1;
     }
@@ -560,12 +560,12 @@ Hyperplane::toRowVec() const
  *  \sa Hyperplane and operator!=()
  */
 bool 
-Hyperplane::operator== (const Hyperplane & hyperplane) const
+Hyperplane::operator== (const Hyperplane& hyperplane) const
 {
-  if (space_dimension() != hyperplane.space_dimension())
+  if (spaceDimension() != hyperplane.spaceDimension())
     return false;
   // else
-  for (unsigned int i=0; i!=space_dimension(); ++i)
+  for (unsigned int i=0; i!=spaceDimension(); ++i)
     if (coefficients_[i] * hyperplane.b() != hyperplane.a(i) * b_)
       return false;
 
@@ -583,12 +583,12 @@ Hyperplane::operator== (const Hyperplane & hyperplane) const
  *  \sa Hyperplane and operator==()
  */
 bool 
-Hyperplane::operator!= (const Hyperplane & hyperplane) const
+Hyperplane::operator!= (const Hyperplane& hyperplane) const
 {
-  if (space_dimension() != hyperplane.space_dimension())
+  if (spaceDimension() != hyperplane.spaceDimension())
     return true;
   // else
-  for (unsigned int i=0; i!=space_dimension(); ++i)
+  for (unsigned int i=0; i!=spaceDimension(); ++i)
     if (coefficients_[i] * hyperplane.b() != hyperplane.a(i) * b_)
       return true;
 
@@ -606,8 +606,8 @@ Hyperplane::operator!= (const Hyperplane & hyperplane) const
  *  
  *  \sa Hyperplane and str()
  */
-std::ostream & 
-operator<< (std::ostream & out, const Hyperplane & hyperplane)
+std::ostream& 
+operator<< (std::ostream& out, const Hyperplane& hyperplane)
 {
   return out << hyperplane.str();
 }
@@ -615,7 +615,7 @@ operator<< (std::ostream & out, const Hyperplane & hyperplane)
 
 //! Compute the ratio distance from the given Point to the hyperplane.
 /*!
- *  \param p A Point instance.
+ *  \param p A Point instance. (with non-negative coordinates)
  *  \return The ratio distance from p to the hyperplane.
  *  
  *  The ratio distance from a point p to a hyperplane H is defined as:
@@ -626,6 +626,9 @@ operator<< (std::ostream & out, const Hyperplane & hyperplane)
  *  Intuitively it is the minimum value of \f$ \epsilon \ge 0 \f$ such 
  *  that some point on H \f$ \epsilon -covers p \f$.
  *  
+ *  In order for the ratio distance to make sense point p must have 
+ *  non-negative coordinates. 
+ *  
  *  Possible exceptions:
  *  - May throw a DifferentDimensionsException exception if the given point 
  *    and the hyperplane belong in spaces of different dimensions.
@@ -633,13 +636,15 @@ operator<< (std::ostream & out, const Hyperplane & hyperplane)
  *  \sa Hyperplane and Point
  */
 double 
-Hyperplane::ratioDistance(const Point & p) const
+Hyperplane::ratioDistance(const Point& p) const
 {
-  if (space_dimension() != p.dimension())
+  assert(spaceDimension() > 0);
+
+  if (spaceDimension() != p.dimension())
     throw DifferentDimensionsException();
   // else
   double dotProduct = 0.0;
-  for (unsigned int i=0; i!=space_dimension(); ++i) 
+  for (unsigned int i=0; i!=spaceDimension(); ++i) 
     dotProduct += coefficients_[i] * p[i];
 
   return std::max( (b_ - dotProduct) / dotProduct, 0.0 );
@@ -660,10 +665,10 @@ Hyperplane::ratioDistance(const Point & p) const
  *  \sa Hyperplane and Point
  */
 Hyperplane 
-Hyperplane::parallelThrough(const Point & p) const
+Hyperplane::parallelThrough(const Point& p) const
 {
   double newB = 0.0;
-  for (unsigned int i=0; i!=space_dimension(); ++i)
+  for (unsigned int i=0; i!=spaceDimension(); ++i)
     newB += coefficients_[i] * p[i];
 
   return Hyperplane(coefficients_.begin(), coefficients_.end(), newB);
@@ -688,11 +693,11 @@ Hyperplane::parallelThrough(const Point & p) const
  *  \sa Hyperplane
  */
 bool 
-Hyperplane::isParallel(const Hyperplane & hyperplane) const
+Hyperplane::isParallel(const Hyperplane& hyperplane) const
 {
-  if (space_dimension() != hyperplane.space_dimension())
+  if (spaceDimension() != hyperplane.spaceDimension())
     return false;
-  for (unsigned int i=0; i!=space_dimension(); ++i) 
+  for (unsigned int i=0; i!=spaceDimension(); ++i) 
     if (coefficients_[i] * hyperplane.a(0) != hyperplane.a(i) * coefficients_[0])
       return false;
 
@@ -714,7 +719,7 @@ Hyperplane::isParallel(const Hyperplane & hyperplane) const
 bool 
 Hyperplane::hasAllAiCoefficientsNonPositive() const
 {
-  for (unsigned int i = 0; i != space_dimension(); ++i)
+  for (unsigned int i = 0; i != spaceDimension(); ++i)
     if (coefficients_[i] > 0.0)
       return false;
 
@@ -736,7 +741,7 @@ Hyperplane::hasAllAiCoefficientsNonPositive() const
 bool 
 Hyperplane::hasAllAiCoefficientsNonNegative() const
 {
-  for (unsigned int i = 0; i != space_dimension(); ++i)
+  for (unsigned int i = 0; i != spaceDimension(); ++i)
     if (coefficients_[i] < 0.0)
       return false;
 
@@ -760,7 +765,7 @@ Hyperplane::hasAllAiCoefficientsNonNegative() const
 void 
 Hyperplane::reverseCoefficientSigns()
 {
-  for (unsigned int i = 0; i != space_dimension(); ++i)
+  for (unsigned int i = 0; i != spaceDimension(); ++i)
     coefficients_[i] = -coefficients_[i];
   b_ = -b_;
 }
@@ -784,7 +789,7 @@ Hyperplane::normalizeAiCoefficients()
 {
   double l2Norm = arma::norm(this->toVec(), 2);
 
-  for (unsigned int i = 0; i != space_dimension(); ++i)
+  for (unsigned int i = 0; i != spaceDimension(); ++i)
     coefficients_[i] /= l2Norm;
   b_ /= l2Norm;
 }

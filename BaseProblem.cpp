@@ -67,7 +67,7 @@ BaseProblem<S>::~BaseProblem() { }
  *  \sa BaseProblem, PointAndSolution and Point
  */
 template <class S> 
-std::list< PointAndSolution<S> > 
+std::vector< PointAndSolution<S> > 
 BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
 {
   // reminder: comb's arguments are a set of iterators over a 
@@ -95,12 +95,12 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
 
   // Let doChord do all the work.
   NonDominatedSet< PointAndSolution<S> > filter(anchors.begin(), anchors.end());
-  std::list< PointAndSolution<S> > resultsFromDoChord;
+  std::vector< PointAndSolution<S> > resultsFromDoChord;
   resultsFromDoChord = doChord(numObjectives, anchors, eps);
   filter.insert(resultsFromDoChord.begin(), resultsFromDoChord.end());
-  std::list< PointAndSolution<S> > resultList(filter.begin(), filter.end());
+  std::vector< PointAndSolution<S> > results(filter.begin(), filter.end());
 
-  return resultList;
+  return results;
 }
 
 
@@ -113,7 +113,7 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  *                       weights.
  *  \param anchors The Facet defined by the anchor points.
  *  \param eps The degree of approximation. 
- *  \return A list of Pareto optimal points (PointAndSolution instances).
+ *  \return A vector of Pareto optimal points (PointAndSolution instances).
  *          BaseProblem::computeConvexParetoSet() will filter them to make 
  *          the (1+eps)-approximate convex Pareto set.
  *  
@@ -143,7 +143,7 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
  */
 template <class S> 
-std::list< PointAndSolution<S> > 
+std::vector< PointAndSolution<S> > 
 BaseProblem<S>::doChord(unsigned int numObjectives, Facet anchors, double eps)
 {
   // reminder: comb accepts a set of iterators to the objectives' weights
@@ -156,7 +156,7 @@ BaseProblem<S>::doChord(unsigned int numObjectives, Facet anchors, double eps)
   std::stack< Facet > facetsToTry;
   facetsToTry.push(anchors);
 
-  std::list< PointAndSolution<S> > resultList;
+  std::vector< PointAndSolution<S> > results;
   while (not facetsToTry.empty()) {
     // Get a facet from the stack and try to generate a new Pareto 
     // optimal point using that facet.
@@ -172,35 +172,14 @@ BaseProblem<S>::doChord(unsigned int numObjectives, Facet anchors, double eps)
     Hyperplane generatingHyperplane(facetPoints.begin(), facetPoints.end());
 
     PointAndSolution<S> opt;
-    if (generatingHyperplane.hasAllAiCoefficientsNonNegative()) {
-      // Call comb using generatingHyperplane's coefficients (that is, 
-      // generatingHyperplane's slope) as weights.
-      generatingHyperplane.normalizeAiCoefficients();
-      opt = comb(generatingHyperplane.begin(), generatingHyperplane.end());
-      opt.weightsUsed.assign(generatingHyperplane.begin(), 
-                             generatingHyperplane.end());
-    }
-    else {
-      // "meanWeights" is a std::vector<double> of weights mw_{i}, where:
-      // /f$ mw_{i} = sum_{j=1}^{j=generatingFacet.size()} ( w_{ij} ) /f$,
-      // where w_{ij} is the i'th of the weights used to obtain the j'th 
-      // point in "generatingFacet".
-
-      std::vector<double> meanWeights = computeMeanWeights(generatingFacet);
-      Hyperplane meanHyperplane(meanWeights.begin(), meanWeights.end(), 0.0);
-      meanHyperplane.normalizeAiCoefficients();
-
-      // Now call comb() using meanHyperplane's coefficients.
-      opt = comb(meanHyperplane.begin(), meanHyperplane.end());
-      opt.weightsUsed.assign(meanHyperplane.begin(), meanHyperplane.end());
-    }
+    opt = generateNewParetoPoint(generatingFacet);
 
     // Check if the point we just found is approximately dominated by the 
     // points we have so far. If it is ignore it. (try the next facet)
     if (generatingHyperplane.ratioDistance(opt.point) <= eps)
       continue;
     // else
-    resultList.push_back(opt);
+    results.push_back(opt);
 
     // Keep (for the new facet) only those points in generatingFacet 
     // that opt doesn't dominate.
@@ -229,13 +208,57 @@ BaseProblem<S>::doChord(unsigned int numObjectives, Facet anchors, double eps)
         newFacet[i] = opt;
         // Push the new facet on top of the stack.
         facetsToTry.push(newFacet);
-        // Restore newFacet (replace opt with the old facet point).
+        // Restore newFacet (replace opt with the old facet vertex).
         newFacet[i] = generatingFacet[i];
       }
     }
   }   // while (not facetsToTry.empty())
 
-  return resultList;
+  return results;
+}
+
+
+/*! \brief Generate a new Pareto optimal point using the given facet 
+ *         as a generating facet.
+ *
+ *  \sa comb(), BaseProblem, PointAndSolution and Point
+ */
+template <class S> 
+PointAndSolution<S> 
+BaseProblem<S>::generateNewParetoPoint(Facet facet)
+{
+  std::vector<Point> facetPoints;
+  typename Facet::iterator fi;
+  for (fi = facet.begin(); fi != facet.end(); ++fi)
+    facetPoints.push_back(fi->point);
+  Hyperplane facetHyperplane(facetPoints.begin(), facetPoints.end());
+
+  PointAndSolution<S> newPoint;
+  if (facetHyperplane.hasAllAiCoefficientsNonNegative()) {
+    // Call comb using facetHyperplane's coefficients (that is, 
+    // facetHyperplane's slope) as weights.
+    facetHyperplane.normalizeAiCoefficients();
+    newPoint = comb(facetHyperplane.begin(), facetHyperplane.end());
+    newPoint.weightsUsed.assign(facetHyperplane.begin(), 
+                                facetHyperplane.end());
+  }
+  else {
+    // "meanWeights" is a std::vector<double> of weights mw_{i}, where:
+    // /f$ mw_{i} = sum_{j=1}^{j=facet.size()} ( w_{ij} ) /f$,
+    // where w_{ij} is the i'th of the weights used to obtain the j'th 
+    // point in "facet".
+
+    std::vector<double> meanWeights = computeMeanWeights(facet);
+    Hyperplane meanHyperplane(meanWeights.begin(), meanWeights.end(), 0.0);
+    meanHyperplane.normalizeAiCoefficients();
+
+    // Now call comb() using meanHyperplane's coefficients.
+    newPoint = comb(meanHyperplane.begin(), meanHyperplane.end());
+    newPoint.weightsUsed.assign(meanHyperplane.begin(), 
+                                meanHyperplane.end());
+  }
+
+  return newPoint;
 }
 
 

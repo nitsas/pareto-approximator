@@ -29,15 +29,15 @@ namespace pareto_approximator {
  *  The NonDominatedSet<T> is a type of container/filter. It stores unique 
  *  T instances. T must represent some kind of a point. It must have at 
  *  least the following methods:
- *  - bool dominates(const T & s, double eps): 
+ *  - bool dominates(const T& s, double eps): 
  *    Returns true if the current instance eps-covers s; false otherwise.
  *    We say that a point p \f$ \epsilon \f$-covers another point q 
  *    (\f$\epsilon \ge 0 \f$) iff \f$ p_{i} \le (1 + \epsilon) q_{i} \f$, 
  *    for all i. Both p and q must be of the same dimension.
  *    (see Point or PointAndSolution for more info and examples)
- *  - bool operator==(const T & s):
+ *  - bool operator==(const T& s):
  *    Returns true if the current instance is equal to s; false otherwise.
- *  - bool operator<(const T & s):
+ *  - bool operator<(const T& s):
  *    Returns true if the current instance is less-than s; false otherwise.
  *    (only needed for the sort method)
  *  
@@ -173,7 +173,7 @@ class NonDominatedSet
      *  
      *  \sa NonDominatedSet
      */
-    bool insert(const T & t);
+    bool insert(const T& t);
 
     //! Insert elements.
     /*!
@@ -214,7 +214,7 @@ class NonDominatedSet
      *  
      *  \sa NonDominatedSet
      */
-    bool dominates(const T & t) const;
+    bool dominates(const T& t) const;
 
     //! Clear content. 
     /*!
@@ -237,7 +237,7 @@ class NonDominatedSet
      *  
      *  \sa NonDominatedSet and NonDominatedSet::end()
      */
-    iterator find(const T & t) const;
+    iterator find(const T& t) const;
 
   private:
     std::set<T> contents_;

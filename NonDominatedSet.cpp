@@ -174,7 +174,7 @@ NonDominatedSet<T>::size() const
  */
 template <class T> 
 bool 
-NonDominatedSet<T>::insert(const T & t)
+NonDominatedSet<T>::insert(const T& t)
 {
   bool isDominated = this->dominates(t);
   if (!isDominated) {
@@ -244,7 +244,7 @@ NonDominatedSet<T>::insert(InputIterator first, InputIterator last)
  */
 template <class T> 
 bool 
-NonDominatedSet<T>::dominates(const T & t) const
+NonDominatedSet<T>::dominates(const T& t) const
 {
   iterator it;
   for (it = contents_.begin(); it != contents_.end(); ++it) 
@@ -284,7 +284,7 @@ NonDominatedSet<T>::clear()
  */
 template <class T> 
 typename NonDominatedSet<T>::iterator 
-NonDominatedSet<T>::find(const T & t) const
+NonDominatedSet<T>::find(const T& t) const
 {
   iterator it;
   for (it = contents_.begin(); it != contents_.end(); ++it)

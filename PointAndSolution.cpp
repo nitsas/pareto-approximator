@@ -26,7 +26,7 @@ PointAndSolution<S>::PointAndSolution() { }
 
 //! A constructor initializing all attributes except weightsUsed.
 template<class S> 
-PointAndSolution<S>::PointAndSolution(const Point & p, const S & s) : 
+PointAndSolution<S>::PointAndSolution(const Point& p, const S& s) : 
                                       point(p), solution(s) { }
 
 
@@ -41,7 +41,7 @@ PointAndSolution<S>::PointAndSolution(const Point & p, const S & s) :
  *              obtain p and s.
  */
 template<class S> 
-PointAndSolution<S>::PointAndSolution(const Point & p, const S & s, 
+PointAndSolution<S>::PointAndSolution(const Point& p, const S& s, 
                                  std::vector<double>::const_iterator first,
                                  std::vector<double>::const_iterator last) :
                                       point(p), solution(s)

@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+
 #include <armadillo>
 
 #include "DifferentDimensionsException.h"
@@ -81,9 +82,9 @@ class Point {
      *  \param first Iterator to the initial position in a std::vector<int>.
      *  \param last Iterator to the final position in a std::vector<int>.
      *  
-     *  The range used is [first, last), which includes all the elements between 
-     *  first and last, including the element pointed by first but not the 
-     *  element pointed by last.
+     *  The range used is [first, last), which includes all the elements 
+     *  between first and last, including the element pointed by first but 
+     *  not the element pointed by last.
      *  
      *  The resulting point's coordinates will be doubles, not ints. 
      *  
@@ -96,9 +97,9 @@ class Point {
      *  \param first Iterator to the initial position in a std::vector<double>.
      *  \param last Iterator to the final position in a std::vector<double>.
      *  
-     *  The range used is [first, last), which includes all the elements between 
-     *  first and last, including the element pointed by first but not the 
-     *  element pointed by last.
+     *  The range used is [first, last), which includes all the elements 
+     *  between first and last, including the element pointed by first but 
+     *  not the element pointed by last.
      *  
      *  \sa Point
      */
@@ -112,9 +113,9 @@ class Point {
      *  \param last Iterator (pointer) to the final position in an array of 
      *              double. (the position just beyond the last element we want)
      *  
-     *  The range used is [first, last), which includes all the elements between 
-     *  first and last, including the element pointed by first but not the 
-     *  element pointed by last.
+     *  The range used is [first, last), which includes all the elements 
+     *  between first and last, including the element pointed by first but 
+     *  not the element pointed by last.
      *  
      *  The resulting point's coordinates will be doubles, not ints. 
      *  
@@ -129,13 +130,29 @@ class Point {
      *  \param last Iterator (pointer) to the final position in an array of 
      *              double. (the position just beyond the last element we want)
      *  
-     *  The range used is [first, last), which includes all the elements between 
-     *  first and last, including the element pointed by first but not the 
-     *  element pointed by last.
+     *  The range used is [first, last), which includes all the elements 
+     *  between first and last, including the element pointed by first but 
+     *  not the element pointed by last.
      *  
      *  \sa Point
      */
     Point(double* first, double* last);
+
+    //! An n-dimensional Point constructor.
+    /*!
+     *  \param first Iterator to the initial position in an armadillo column 
+     *               vector of double (arma::vec).
+     *  \param last Iterator to the final position in an armadillo column 
+     *              vector of double (arma::vec). (the position just beyond 
+     *              the last element we want)
+     *  
+     *  The range used is [first, last), which includes all the elements 
+     *  between first and last, including the element pointed by first but 
+     *  not the element pointed by last.
+     *  
+     *  \sa Point
+     */
+    Point(arma::vec::const_iterator first, arma::vec::const_iterator last);
 
     //! A simple (and empty) destructor.
     ~Point();
@@ -170,7 +187,7 @@ class Point {
      *      std::ostream& operator<<(std::ostream&, Point&) and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
-    bool operator== (const Point & p) const;
+    bool operator== (const Point& p) const;
     
     //! The Point inequality operator.
     /*! 
@@ -185,7 +202,7 @@ class Point {
      *      std::ostream& operator<<(std::ostream&, Point&) and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
-    bool operator!= (const Point & p) const;
+    bool operator!= (const Point& p) const;
 
     //! The Point less-than operator.
     /*! 
@@ -206,7 +223,7 @@ class Point {
      *      std::ostream& operator<<(std::ostream&, Point&) and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
-    bool operator< (const Point & p) const;
+    bool operator< (const Point& p) const;
 
     //! The Point plus operator.
     /*!
@@ -220,7 +237,7 @@ class Point {
      *  
      *  \sa Point
      */
-    Point operator+ (const Point & p) const;
+    Point operator+ (const Point& p) const;
 
     //! The Point output stream operator. A friend of the Point class.
     /*! 
@@ -243,7 +260,7 @@ class Point {
      *      Point::operator<(), Point::operator[]() and 
      *      std::istream& operator>>(std::istream&, Point&)
      */
-    friend std::ostream & operator<< (std::ostream & out, const Point & p);
+    friend std::ostream& operator<< (std::ostream& out, const Point& p);
 
     //! The Point input stream operator. A friend of the Point class.
     /*! 
@@ -254,7 +271,7 @@ class Point {
      *      Point::operator<(), Point::operator[]() and 
      *      std::ostream& operator<<(std::ostream&, Point&)
      */
-    friend std::istream & operator>> (std::istream & istr, Point & p);
+    friend std::istream& operator>> (std::istream& istr, Point& p);
 
     //! Get a Point instance's dimension. (1D, 2D or 3D point)
     /*! 
@@ -320,7 +337,7 @@ class Point {
      *
      *  \sa Point and Point::dominates()
      */
-    double ratioDistance(const Point & q) const;
+    double ratioDistance(const Point& q) const;
 
     //! Check if the current point (p) eps-covers the given point (q).
     /*! 
@@ -348,7 +365,7 @@ class Point {
      *  
      *  \sa Point and Point::ratioDistance()
      */
-    bool dominates(const Point & q, double eps=0.0) const;
+    bool dominates(const Point& q, double eps=0.0) const;
 
   private:
     //! The Point instance's coordinates. The instance's dimension will 

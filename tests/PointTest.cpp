@@ -141,6 +141,15 @@ TEST_F(PointTest, PointConstructorsWorkForDoubles)
   EXPECT_EQ(p6[4], 1.5);
   EXPECT_EQ(p6[5], 2.5);
   EXPECT_EQ(p6.dimension(), 6);
+
+  // test Point(arma::vec::const_iterator, arma::vec::const_iterator)
+  arma::vec coordinatesC;
+  coordinatesC << -1.0 << arma::endr << 0.0 << arma::endr << 1.0 << arma::endr;
+  Point p7(coordinatesC.begin(), coordinatesC.end());
+  EXPECT_EQ(p7[0], -1.0);
+  EXPECT_EQ(p7[1], 0.0);
+  EXPECT_EQ(p7[2], 1.0);
+  EXPECT_EQ(p7.dimension(), 3);
 }
 
 

@@ -177,6 +177,27 @@ Point::Point(double* first, double* last)
 }
 
 
+//! An n-dimensional Point constructor.
+/*!
+ *  \param first Iterator to the initial position in an armadillo column 
+ *               vector of double (arma::vec).
+ *  \param last Iterator to the final position in an armadillo column 
+ *              vector of double (arma::vec). (the position just beyond 
+ *              the last element we want)
+ *  
+ *  The range used is [first, last), which includes all the elements 
+ *  between first and last, including the element pointed by first but 
+ *  not the element pointed by last.
+ *  
+ *  \sa Point
+ */
+Point::Point(arma::vec::const_iterator first, arma::vec::const_iterator last)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.assign(first, last);
+}
+
+
 //! A simple (and empty) destructor.
 Point::~Point() { }
 
@@ -271,7 +292,7 @@ Point::operator[] (unsigned int pos) const
  *      std::istream& operator>>(std::istream&, Point&)
  */
 bool 
-Point::operator== (const Point & p) const
+Point::operator== (const Point& p) const
 {
   if (dimension() != p.dimension())
     return false;
@@ -298,7 +319,7 @@ Point::operator== (const Point & p) const
  *      std::istream& operator>>(std::istream&, Point&)
  */
 bool 
-Point::operator!= (const Point & p) const
+Point::operator!= (const Point& p) const
 {
   if (dimension() != p.dimension())
     return true;
@@ -331,7 +352,7 @@ Point::operator!= (const Point & p) const
  *      std::istream& operator>>(std::istream&, Point&)
  */
 bool 
-Point::operator< (const Point & p) const 
+Point::operator< (const Point& p) const 
 {
   if (dimension() != p.dimension()) 
     throw DifferentDimensionsException();
@@ -362,7 +383,7 @@ Point::operator< (const Point & p) const
  *  \sa Point
  */
 Point 
-Point::operator+ (const Point & p) const
+Point::operator+ (const Point& p) const
 {
   if (dimension() != p.dimension()) 
     throw DifferentDimensionsException();
@@ -395,8 +416,8 @@ Point::operator+ (const Point & p) const
  *      Point::operator<(), Point::operator[]() and 
  *      std::istream& operator>>(std::istream&, Point&)
  */
-std::ostream & 
-operator<< (std::ostream & out, const Point & p)
+std::ostream& 
+operator<< (std::ostream& out, const Point& p)
 {
   return out << p.str();
 }
@@ -411,8 +432,8 @@ operator<< (std::ostream & out, const Point & p)
  *      Point::operator<(), Point::operator[]() and 
  *      std::ostream& operator<<(std::ostream&, Point&)
  */
-std::istream & 
-operator>> (std::istream & istr, Point & p)
+std::istream& 
+operator>> (std::istream& istr, Point& p)
 {
   char c;
   double d;
@@ -466,11 +487,7 @@ Point::str() const
 arma::vec 
 Point::toVec() const
 {
-  arma::vec coords(coordinates_.size());
-  for (unsigned int i = 0; i != coordinates_.size(); ++i)
-    coords(i) = coordinates_[i];
-
-  return coords;
+  return arma::vec(coordinates_);
 }
 
 
@@ -480,11 +497,7 @@ Point::toVec() const
 arma::rowvec 
 Point::toRowVec() const
 {
-  arma::rowvec coords(coordinates_.size());
-  for (unsigned int i = 0; i != coordinates_.size(); ++i)
-    coords(i) = coordinates_[i];
-
-  return coords;
+  return arma::rowvec(coordinates_);
 }
 
 
@@ -502,7 +515,7 @@ Point::toRowVec() const
  *  \sa Point and Point::dominates() 
  */
 double 
-Point::ratioDistance(const Point & q) const 
+Point::ratioDistance(const Point& q) const 
 {
   if (dimension() != q.dimension())
     throw DifferentDimensionsException();
@@ -545,7 +558,7 @@ Point::ratioDistance(const Point & q) const
  *  \sa Point and Point::ratioDistance()
  */
 bool 
-Point::dominates(const Point & q, double eps) const
+Point::dominates(const Point& q, double eps) const
 {
   if (dimension() != q.dimension())
     throw DifferentDimensionsException();

@@ -48,12 +48,12 @@ TEST_F(BaseProblemTest, NonOptimalStartingPointsProblem)
   using non_optimal_starting_points_problem::NonOptimalStartingPointsProblem;
 
   NonOptimalStartingPointsProblem nospp;
-  std::list< PointAndSolution<string> > paretoSet;
+  std::vector< PointAndSolution<string> > paretoSet;
   unsigned int numObjectives = 3;
   paretoSet = nospp.computeConvexParetoSet(numObjectives, verySmallEpsilon);
 
   ASSERT_EQ(6, paretoSet.size());
-  std::list< PointAndSolution<string> >::iterator psi = paretoSet.begin();
+  std::vector< PointAndSolution<string> >::iterator psi = paretoSet.begin();
   EXPECT_EQ(Point(1.0, 4.0, 4.0), psi->point);
   EXPECT_EQ("best-on-x", psi->solution);
   ++psi;
@@ -87,12 +87,12 @@ TEST_F(BaseProblemTest, SmallBiobjectiveSPProblem)
   using small_biobjective_sp_problem::PredecessorMap;
 
   SmallBiobjectiveSPProblem sbspp;
-  std::list< PointAndSolution<PredecessorMap> > paretoSet;
+  std::vector< PointAndSolution<PredecessorMap> > paretoSet;
   unsigned int numObjectives = 2;
   paretoSet = sbspp.computeConvexParetoSet(numObjectives, verySmallEpsilon);
 
   EXPECT_EQ(4, paretoSet.size());
-  std::list< PointAndSolution<PredecessorMap> >::iterator psi = paretoSet.begin();
+  std::vector< PointAndSolution<PredecessorMap> >::iterator psi = paretoSet.begin();
   EXPECT_EQ(Point(2, 16), psi->point);
   EXPECT_EQ(Point(3, 12), (++psi)->point);
   EXPECT_EQ(Point(4, 10), (++psi)->point);
@@ -111,12 +111,12 @@ TEST_F(BaseProblemTest, SmallTripleobjectiveSPProblem)
   using small_tripleobjective_sp_problem::PredecessorMap;
 
   SmallTripleobjectiveSPProblem stspp;
-  std::list< PointAndSolution<PredecessorMap> > paretoSet;
+  std::vector< PointAndSolution<PredecessorMap> > paretoSet;
   unsigned int numObjectives = 3;
   paretoSet = stspp.computeConvexParetoSet(numObjectives, verySmallEpsilon);
 
   EXPECT_EQ(4, paretoSet.size());
-  std::list< PointAndSolution<PredecessorMap> >::iterator psi = paretoSet.begin();
+  std::vector< PointAndSolution<PredecessorMap> >::iterator psi = paretoSet.begin();
   EXPECT_EQ(Point(1, 9, 9), psi->point);
   EXPECT_EQ(Point(5, 5, 5), (++psi)->point);
   EXPECT_EQ(Point(9, 1, 9), (++psi)->point);
@@ -139,13 +139,13 @@ TEST_F(BaseProblemTest, TripleobjectiveWithNegativeWeightsProblem)
   using tripleobjective_with_negative_weights_problem::TripleobjectiveWithNegativeWeightsProblem;
 
   TripleobjectiveWithNegativeWeightsProblem twnwp;
-  std::list< PointAndSolution<string> > paretoSet;
+  std::vector< PointAndSolution<string> > paretoSet;
   unsigned int numObjectives = 3;
 
   ASSERT_NO_THROW(paretoSet = twnwp.computeConvexParetoSet(numObjectives, verySmallEpsilon));
 
   ASSERT_EQ(4, paretoSet.size());
-  std::list< PointAndSolution<string> >::iterator psi = paretoSet.begin();
+  std::vector< PointAndSolution<string> >::iterator psi = paretoSet.begin();
   EXPECT_EQ(Point(36.0, 349.0, 280.0), psi->point);
   EXPECT_EQ("best-on-x", psi->solution);
   ++psi;
