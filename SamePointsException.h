@@ -32,7 +32,7 @@ class SamePointsException : public std::exception
 {
   public:
     //! Return a simple char* message.
-    const char* what() const throw() 
+    const char* what() const throw()
     {
       return "Encountered two Point instances that represent the same point. (expected unique points!)";
     }

@@ -29,27 +29,33 @@ namespace non_optimal_starting_points_problem {
 class NonOptimalStartingPointsProblem : public BaseProblem<string>
 {
   public:
-    NonOptimalStartingPointsProblem();
+    NonOptimalStartingPointsProblem(unsigned int dimension=2);
     ~NonOptimalStartingPointsProblem();
 
-    PointAndSolution<string> comb(std::vector<double>::const_iterator first, 
-                                  std::vector<double>::const_iterator last);
+    PointAndSolution<string> comb(
+                        std::vector<double>::const_iterator first, 
+                        std::vector<double>::const_iterator last) const;
 
   private:
     std::vector< PointAndSolution<string> > optimalPoints_;
     std::vector< PointAndSolution<string> > weaklyOptimalPoints_;
+    // problem dimension:
+    unsigned int dimension_;
 };
 
 
 // A simple class we'll use as a comparison function (functor).
 class CompareUsingWeightsFunctor {
   public:
+    CompareUsingWeightsFunctor(double xWeight, double yWeight);
     CompareUsingWeightsFunctor(double xWeight, double yWeight, double zWeight);
     
     bool operator() (PointAndSolution<string> a, PointAndSolution<string> b);
   
   private:
     double xWeight_, yWeight_, zWeight_;
+    // problem dimension:
+    unsigned int dimension_;
 };
 
 

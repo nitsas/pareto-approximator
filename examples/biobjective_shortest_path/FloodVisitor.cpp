@@ -51,11 +51,15 @@ FloodVisitor::FloodVisitor(const Vertex & source,
 void 
 FloodVisitor::initializeVertex(const Vertex & u, const Graph &)
 {
-  if (u == source_)
-    vertexDistances_[u].insert(Point(0.0, 0.0));
+  if (u == source_) {
+    // initialize the source's distance to [1.0, 1.0] because (currently) 
+    // we do not allow not strictly positive points like [0.0, 0.0]
+    // inside Point::dominates() and Point::ratioDistance()
+    vertexDistances_[u].insert(Point(1.0, 1.0));
+  }
   else
     vertexDistances_[u].insert(Point(std::numeric_limits<double>::max(), 
-                                              std::numeric_limits<double>::max()));
+                                     std::numeric_limits<double>::max()));
 }
 
 
@@ -98,7 +102,16 @@ FloodVisitor::broadcastDistances(const Edge & e, const Graph & g)
 NonDominatedSet<Point> 
 FloodVisitor::getParetoPoints()
 {
-  return vertexDistances_[target_];
+  // Remember that we had initialized the source to [1.0, 1.0] instead 
+  // of [0.0, 0.0]. We now have to subtract [1.0, 1.0] from each of the 
+  // target vertex's distances to get the Pareto points.
+  NonDominatedSet<Point>::iterator udi;
+  NonDominatedSet<Point> paretoPoints;
+  for (udi = vertexDistances_[target_].begin();
+       udi != vertexDistances_[target_].end(); ++udi) {
+    paretoPoints.insert(*udi - Point(1.0, 1.0));
+  }
+  return paretoPoints;
 }
 
 

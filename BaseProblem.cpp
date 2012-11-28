@@ -13,8 +13,9 @@
 #include <algorithm>
 #include <stack>
 
-
-using std::min;
+#include "Point.h"
+#include "NonDominatedSet.h"
+#include "utility.h"
 
 
 /*!
@@ -29,7 +30,12 @@ namespace pareto_approximator {
 
 //! BaseProblem's default constructor. (empty)
 template <class S> 
-BaseProblem<S>::BaseProblem() { }
+BaseProblem<S>::BaseProblem() 
+{
+  // not really needed (it is done automatically)
+  // - added this line just to make the code more explicit
+  usedWeightVectors_ = std::list< std::vector<double> >();
+}
 
 
 //! BaseProblem's default destructor. (virtual and empty)
@@ -60,6 +66,10 @@ BaseProblem<S>::~BaseProblem() { }
  *  computeConvexParetoSet() will use the comb() method that the user 
  *  implemented. That is why comb() is declared virtual.
  *
+ *  computeConvexParetoSet() initializes the usedWeightVectors_ 
+ *  attribute to an empty list every time it is called (before it 
+ *  calls any other method).
+ *
  *  Possible exceptions:
  *  - May throw a NotEnoughAnchorPointsException exception if at some step
  *    the number of points for a newFacet are less than \#numObjectives.
@@ -68,37 +78,84 @@ BaseProblem<S>::~BaseProblem() { }
  */
 template <class S> 
 std::vector< PointAndSolution<S> > 
-BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
+BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, 
+                                       double eps) 
 {
   // reminder: comb's arguments are a set of iterators over a 
   // std::vector<double> of weights (one for each objective)
 
+  assert(eps >= 0.0);
+  assert(numObjectives >= 2);
   assert(numObjectives <= 3);
 
-  // Find a best solution for each objective. We'll end up with up to  
-  // \#numObjectives (possibly less) different solutions. 
-  // Let's call the corresponding points (in objective space) anchor points
-  // and the PointAndSolution instances that contain them anchors.
+  // Clear the list of used weight vectors.
+  // - In case computeConvexParetoSet() was called earlier.
+  usedWeightVectors_.clear();
+
+  // Find a best solution for each objective. 
+  // - We'll end up with up to \#numObjectives (possibly less) different 
+  //   solutions. 
+  // - Let's call the corresponding points (in objective space) anchor 
+  //   points and the PointAndSolution instances that contain them anchors.
   std::vector<double> weights(numObjectives, 0.0);
-  Facet anchors;
+  std::vector< PointAndSolution<S> > anchors;
   for (unsigned int i = 0; i != numObjectives; ++i) {
+    // make only the i'th element of the weight vector non-zero
     weights[i] = 1.0;
-    PointAndSolution<S> pas = comb(weights.begin(), weights.end());
-    pas.weightsUsed.assign(weights.begin(), weights.end());
-    anchors.push_back(pas);
+    // generate an anchor
+    PointAndSolution<S> anchor = generateNewParetoPoint(weights);
+    assert(not anchor.isNull());
+    anchors.push_back(anchor);
+    // restore the weight vector's i'th element (all zero again)
     weights[i] = 0.0;
   }
 
+  // Filter the anchor points (some might be weakly-dominated by others).
+  // - We might even have 1 anchor point that dominates all the others. In 
+  //   that case just return the single anchor point as the result.
+  // - We use a NonDominatedSet for the filtering.
+  std::vector< PointAndSolution<S> > results;
   NonDominatedSet< PointAndSolution<S> > nds(anchors.begin(), anchors.end());
-  if (nds.size() < numObjectives)
-    throw NotEnoughAnchorPointsException();
 
-  // Let doChord do all the work.
-  NonDominatedSet< PointAndSolution<S> > filter(anchors.begin(), anchors.end());
-  std::vector< PointAndSolution<S> > resultsFromDoChord;
-  resultsFromDoChord = doChord(numObjectives, anchors, eps);
-  filter.insert(resultsFromDoChord.begin(), resultsFromDoChord.end());
-  std::vector< PointAndSolution<S> > results(filter.begin(), filter.end());
+  assert( (nds.size() > 0) && (nds.size() <= numObjectives) );
+  if (nds.size() == 1) 
+    // We are very lucky, we got a single solution that is optimum in 
+    // every objective!!!
+    results.assign(nds.begin(), nds.end());
+  else if ( (nds.size() > 1) && (nds.size() < numObjectives) ) 
+    // Not enough anchor points to continue.
+    results.assign(nds.begin(), nds.end());
+    // throw NotEnoughAnchorPointsException();
+  else {
+    // Exactly \#numObjectives anchor points - enough to continue.
+    // (no anchor point was dominated by any other)
+
+    // make the convex hull of the anchor points (it is just a single facet)
+    Facet<S> anchorFacet(anchors.begin(), anchors.end());
+
+    // Call doChord() for biobjective problems or doCraft() for 
+    // more than two objectives.
+    std::vector< PointAndSolution<S> > unfilteredResults;
+    if (numObjectives == 2) {
+      // anchorFacet is just a single line segment for numObjectives == 2
+
+      // Let doChord do all the work.
+      unfilteredResults = doChord(numObjectives, anchorFacet, eps);
+    }
+    else {
+      assert(numObjectives > 2);
+
+      // Let doCraft do all the work.
+      unfilteredResults = doCraft(numObjectives, anchorFacet, eps);
+    }
+
+    // Filter the results.
+    // - Some of the anchor points might be weakly Pareto optimal, so 
+    //   some of the points computed by doChord might dominate them. 
+    results = pareto_approximator::filterDominatedPoints<S>(
+                                      unfilteredResults.begin(), 
+                                      unfilteredResults.end());
+  }
 
   return results;
 }
@@ -109,13 +166,12 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  * 
  *  \param numObjectives The number of objectives to minimize. 
  *                       Note: The user's comb() routine should be able to 
- *                       handle a std::vector<double> of \#numObjectives 
- *                       weights.
- *  \param anchors The Facet defined by the anchor points.
+ *                       handle a std::vector<double> of two weights.
+ *  \param anchorFacet The Facet defined by the anchor points.
  *  \param eps The degree of approximation. 
  *  \return A vector of Pareto optimal points (PointAndSolution instances).
- *          BaseProblem::computeConvexParetoSet() will filter them to make 
- *          the (1+eps)-approximate convex Pareto set.
+ *          It might contain weakly-dominated points (some of the anchor 
+ *          points). 
  *  
  *  Users don't need to use doChord() - that is why it's declared private. 
  *  It's just a routine that BaseProblem::computeConvexParetoSet() uses 
@@ -131,85 +187,98 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives, double eps)
  *  Daskalakis, Ilias Diakonikolas and Mihalis Yannakakis for in-depth 
  *  info on how the chord algorithm works.
  *  
- *  You can also read "Approximating convex Pareto surfaces in 
- *  multiobjective radiotherapy planning" by David L. Craft et al. for 
- *  info on how we handle facets whose normal vector has both positive 
- *  and negative components.
- *
- *  Possible exceptions:
- *  - May throw a NotEnoughAnchorPointsException exception if at some step
- *    the number of points for the new base are less than \#numObjectives.
- *  
  *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
  */
 template <class S> 
 std::vector< PointAndSolution<S> > 
-BaseProblem<S>::doChord(unsigned int numObjectives, Facet anchors, double eps)
+BaseProblem<S>::doChord(unsigned int numObjectives, Facet<S> anchorFacet, 
+                        double eps) 
 {
   // reminder: comb accepts a set of iterators to the objectives' weights
 
-  assert(anchors.size() <= 3);
-  assert(numObjectives <= 3);
-  assert(anchors.size() == numObjectives);
+  assert(numObjectives == 2);
+  assert(anchorFacet.spaceDimension() == 2);
 
-  // a stack of Facets to try (for generating new Pareto optimal points)
-  std::stack< Facet > facetsToTry;
-  facetsToTry.push(anchors);
-
+  // a vector that will hold all the approximation points:
   std::vector< PointAndSolution<S> > results;
+  results.assign(anchorFacet.beginVertex(), anchorFacet.endVertex());
+
+  // a stack of Facets to try (for generating new Pareto optimal points):
+  std::stack< Facet<S> > facetsToTry;
+  facetsToTry.push(anchorFacet);
+
   while (not facetsToTry.empty()) {
     // Get a facet from the stack and try to generate a new Pareto 
     // optimal point using that facet.
-    Facet generatingFacet = facetsToTry.top();
+    Facet<S> generatingFacet = facetsToTry.top();
     facetsToTry.pop();
 
-    // Make a \#numObjectives-dimensional hyperplane that passes 
-    // through all the points in "anchors".
-    std::vector<Point> facetPoints;
-    typename Facet::iterator fi;
-    for (fi = generatingFacet.begin(); fi != generatingFacet.end(); ++fi)
-      facetPoints.push_back(fi->point);
-    Hyperplane generatingHyperplane(facetPoints.begin(), facetPoints.end());
+    // if the facet's local approximation error upper bound is less 
+    // than the tolerance move on to the next facet
+    if (generatingFacet.getLocalApproximationErrorUpperBound() <= eps)
+      continue;
 
-    PointAndSolution<S> opt;
-    opt = generateNewParetoPoint(generatingFacet);
+    PointAndSolution<S> opt = 
+                        generateNewParetoPointUsingFacet(generatingFacet);
+
+    // We will never encounter the same weight vector twice in 
+    // biobjective problems:
+    assert(not opt.isNull());
+
+    // Note: the generatingFacet will always have an all-positive normal 
+    //       vector in biobjective problems
 
     // Check if the point we just found is approximately dominated by the 
-    // points we have so far. If it is ignore it. (try the next facet)
-    if (generatingHyperplane.ratioDistance(opt.point) <= eps)
+    // facet that made it (i.e. dominated by some convex combination of 
+    // the facet's two vertices). 
+    // - If it is dominated ignore it. (try the next facet)
+    // - It is dominated if it is one of the facet's two vertices.
+    if (generatingFacet.ratioDistance(opt.point) <= eps)
       continue;
     // else
+
+    // Add opt to the list of approximation points.
     results.push_back(opt);
 
-    // Keep (for the new facet) only those points in generatingFacet 
-    // that opt doesn't dominate.
-    Facet newFacet;
-    for (fi = generatingFacet.begin(); fi != generatingFacet.end(); ++fi)
-      if (!opt.dominates(*fi))
-        newFacet.push_back(*fi);
+    // Keep (for the new facet/facets) only those vertices of 
+    // generatingFacet that opt doesn't dominate. 
+    std::vector< PointAndSolution<S> > newFacetVertices;
+    typename Facet<S>::ConstVertexIterator fvi;
+    for (fvi = generatingFacet.beginVertex(); 
+         fvi != generatingFacet.endVertex(); ++fvi) 
+      if (!opt.dominates(*fvi))
+        newFacetVertices.push_back(*fvi);
 
     // Make the new facets (using generatingFacet and opt) and push them 
     // onto the stack.
-    if (newFacet.size() < numObjectives - 1)
-      // not enough points to form a new facet
-      throw NotEnoughAnchorPointsException();
-    else if (newFacet.size() == numObjectives - 1) {
+    if (newFacetVertices.size() == 0)
+      // opt dominated both of generatingFacet's vertices.
+      // - This can only happen if generatingFacet's vertices were both 
+      //   anchor points. 
+      // - Don't make any new facets, opt is the utopia point - we will 
+      //   not find any more points. (don't need any)
+      continue;
+    else if (newFacetVertices.size() == 1) {
       // enough points (including opt) for exactly one new facet
-      newFacet.push_back(opt);
+      newFacetVertices.push_back(opt);
+      Facet<S> newFacet(newFacetVertices.begin(), newFacetVertices.end());
       facetsToTry.push(newFacet);
     }
     else {
-      // enough points (including opt) for #numObjectives new facets
-      assert(newFacet.size() == numObjectives);
-      // opt is not yet included in newFacet - newFacet is currently 
-      // the same as generatingFacet.
-      for (unsigned int i = 0; i != numObjectives; ++i) {
-        // Temporarily replace one of the old facet points with opt.
-        newFacet[i] = opt;
+      assert(newFacetVertices.size() == 2);
+      // Enough points (including opt) for two new facets.
+      // opt is not yet included in newFacetVertices - newFacetVertices 
+      // currently contains the vertices of generatingFacet
+      PointAndSolution<S> tempVertex;
+      for (unsigned int i = 0; i != 2; ++i) {
+        // Temporarily replace one of the old facet vertices with opt.
+        tempVertex = newFacetVertices[i];
+        newFacetVertices[i] = opt;
         // Push the new facet on top of the stack.
+        Facet<S> newFacet(newFacetVertices.begin(), newFacetVertices.end());
         facetsToTry.push(newFacet);
-        // Restore newFacet (replace opt with the old facet vertex).
-        newFacet[i] = generatingFacet[i];
+        // Restore newFacetVertices (replace opt with the old facet vertex).
+        newFacetVertices[i] = tempVertex;
       }
     }
   }   // while (not facetsToTry.empty())
@@ -218,74 +287,253 @@ BaseProblem<S>::doChord(unsigned int numObjectives, Facet anchors, double eps)
 }
 
 
-/*! \brief Generate a new Pareto optimal point using the given facet 
- *         as a generating facet.
+/*! \brief A function that uses Craft's (et al.) algorithm to 
+ *         approximate the Pareto set.
+ *  
+ *  \param numObjectives The number of objectives to minimize. 
+ *                       Note: The user's comb() routine should be able to 
+ *                       handle a std::vector<double> of \#numObjectives 
+ *                       weights.
+ *  \param anchors The Facet defined by the anchor points.
+ *  \param eps The degree of approximation. 
+ *  \return A vector of Pareto optimal points (PointAndSolution instances).
+ *          BaseProblem::computeConvexParetoSet() will filter them to make 
+ *          the (1+eps)-approximate convex Pareto set.
  *
- *  \sa comb(), BaseProblem, PointAndSolution and Point
+ *  Please read "Approximating convex Pareto surfaces in multiobjective 
+ *  radiotherapy planning" by David L. Craft et al. (2006) for more 
+ *  info on the algorithm.
+ *  
+ *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
  */
 template <class S> 
-PointAndSolution<S> 
-BaseProblem<S>::generateNewParetoPoint(Facet facet)
+std::vector< PointAndSolution<S> > 
+BaseProblem<S>::doCraft(unsigned int numObjectives, Facet<S> anchorFacet, 
+                        double eps) 
 {
-  std::vector<Point> facetPoints;
-  typename Facet::iterator fi;
-  for (fi = facet.begin(); fi != facet.end(); ++fi)
-    facetPoints.push_back(fi->point);
-  Hyperplane facetHyperplane(facetPoints.begin(), facetPoints.end());
+  // reminder: comb accepts a set of iterators to the objectives' weights
 
-  PointAndSolution<S> newPoint;
-  if (facetHyperplane.hasAllAiCoefficientsNonNegative()) {
-    // Call comb using facetHyperplane's coefficients (that is, 
-    // facetHyperplane's slope) as weights.
-    facetHyperplane.normalizeAiCoefficients();
-    newPoint = comb(facetHyperplane.begin(), facetHyperplane.end());
-    newPoint.weightsUsed.assign(facetHyperplane.begin(), 
-                                facetHyperplane.end());
+  assert(numObjectives <= 3);
+  assert(anchorFacet.spaceDimension() <= 3);
+  assert(anchorFacet.spaceDimension() == numObjectives);
+
+  unsigned int spaceDimension = numObjectives;
+
+  std::vector< PointAndSolution<S> > 
+                            approximationPoints(anchorFacet.beginVertex(), 
+                                                anchorFacet.endVertex());
+
+  // We need to add one more point (interior point) before we can call qconvex.
+
+  // Make a Pareto point using anchorFacet as a generating facet.
+  PointAndSolution<S> interiorPoint = 
+                      generateNewParetoPointUsingFacet(anchorFacet);
+
+  // Is interiorPoint an existing point?
+  if ( std::find(approximationPoints.begin(), 
+                 approximationPoints.end(), 
+                 interiorPoint) != approximationPoints.end() ) {
+    // InteriorPoint is an existing point - no new Pareto points found.
+    // - No facets to make except for anchorFacet, which we already tried.
+    //   We cannot generate any new points.
+    // - Return approximation points found so far.
+    // - If anchorFacet did not have an all-positive normal vector there 
+    //   might be other Pareto optimal points (on the convex hull of the 
+    //   Pareto set of course; can't find Pareto points inside the convex 
+    //   hull). The facet's normal vector not being all-positive  would 
+    //   make us use the mean of its vertices' weightsUsed attributes as 
+    //   weights (which is kind of an arbitrary choice) and apparently 
+    //   they did not produce a new Pareto point. Is is not completely 
+    //   unlikely that some other weight vector might produce one but we 
+    //   have no systematic way to try every one of the infinite possible 
+    //   weight vectors.
+    return approximationPoints;
   }
-  else {
-    // "meanWeights" is a std::vector<double> of weights mw_{i}, where:
-    // /f$ mw_{i} = sum_{j=1}^{j=facet.size()} ( w_{ij} ) /f$,
-    // where w_{ij} is the i'th of the weights used to obtain the j'th 
-    // point in "facet".
+  // else 
 
-    std::vector<double> meanWeights = computeMeanWeights(facet);
-    Hyperplane meanHyperplane(meanWeights.begin(), meanWeights.end(), 0.0);
-    meanHyperplane.normalizeAiCoefficients();
+  // Add the new point to the existing set of approximation points.
+  approximationPoints.push_back(interiorPoint);
 
-    // Now call comb() using meanHyperplane's coefficients.
-    newPoint = comb(meanHyperplane.begin(), meanHyperplane.end());
-    newPoint.weightsUsed.assign(meanHyperplane.begin(), 
-                                meanHyperplane.end());
+  // Compute the convex hull of the approximation points. 
+  // - Each facet has a local approximation error upper bound built-in.
+  // - That local approximation error upper bound is computed during the 
+  //   construction of the Facet instance.
+  std::list< Facet<S> > facets;
+  facets = pareto_approximator::computeConvexHull<S>(approximationPoints, 
+                                                     spaceDimension);
+
+  // Discard facets with all-negative normal vectors.
+  pareto_approximator::discardUselessFacets<S>(facets);
+
+  while (not facets.empty()) {
+    // Choose the facet with largest local approximation error upper bound.
+    typename std::list< Facet<S> >::iterator generatingFacet;
+    generatingFacet = pareto_approximator::
+                    chooseFacetWithLargestLocalApproximationErrorUpperBound<S>(
+                                          facets.begin(), facets.end());
+
+    // Were all the remaining facets boundary facets? (or no facets left)
+    if (generatingFacet == facets.end())
+      // Either all the remaining facets are boundary facets or there are 
+      // no more facets. Exit
+      // - We will not try to generate new points using boundary facets.
+      break;
+    // else
+
+    // Have we reached the required approximation factor?
+    // - the facet is surely not a boundary facet, it surely has a 
+    //   local approximation error upper bound
+    // - if we have reached the required approximation factor stop 
+    //   the algorithm
+    if (generatingFacet->getLocalApproximationErrorUpperBound() <= eps) 
+      break;
+    // else 
+    
+    // Make a new Pareto point using generatingFacet as a generating facet.
+    // - Reminder: generatingFacet is actually an iterator pointing to 
+    //             the actual facet - that is why we use the * operator
+    PointAndSolution<S> opt = 
+                        generateNewParetoPointUsingFacet(*generatingFacet);
+
+    // Is opt a null instance or an existing point?
+    if ( opt.isNull() or 
+         std::find(approximationPoints.begin(), 
+                   approximationPoints.end(), 
+                   opt) != approximationPoints.end() ) {
+      // Either we have already tried this set of weights
+      // or opt has already been found (using a different weight vector).
+      // - discard generatingFacet and go to the next iteration (i.e. 
+      //   choose another facet)
+      // Reminder: generatingFacet is actually an iterator pointing to one 
+      //           of "facets"'s elements
+      facets.erase(generatingFacet);
+      continue;
+    }
+    // else 
+
+    // opt is a new point - we will add it to the set of approximation 
+    // points and calculate the new convex hull of the set
+    approximationPoints.push_back(opt);
+    facets = pareto_approximator::computeConvexHull<S>(approximationPoints, 
+                                                       spaceDimension);
+    pareto_approximator::discardUselessFacets<S>(facets);
   }
 
-  return newPoint;
+  return approximationPoints;
 }
 
 
-//! Computes the mean of all the weight vectors in "base".
-/*!
- *  \param base A std::vector of PointAndSolution<S> instances (where S is 
- *              the type of the problem solutions).
- *  \return A weight vector W of size base.size(). Each element W_{j} is
- *          the mean of all w_{ij}'s, where w_{i} is the weight vector 
- *          inside the i'th element of "base".
+/*! 
+ *  \brief Generate a new Pareto optimal point using the given Facet 
+ *         instance as a generating facet.
+ *
+ *  \param facet A Facet instance. (Its vertices' weightsUsed 
+ *               attributes will be needed if the facet's normal vector 
+ *               is not all-positive.)
+ *  \return A Pareto optimal point (inside a PointAndSolution<S>  
+ *          object) generated using the given facet, i.e. the weights 
+ *          generated from the facet, if the weights were not used 
+ *          before; a null PointAndSolution<S> object otherwise.
+ *          
+ *  This method generates a weight vector using the given facet and 
+ *  delegates the jobs of making a Pareto point and updating the 
+ *  usedWeightVectors_ attribute to generateNewParetoPoint().
  *  
- *  \sa BaseProblem and PointAndSolution
+ *  This method will call:
+ *  - pareto_approximator::generateNewWeightVector() (using the given 
+ *    facet instance as a parameter) to get a weight vector 
+ *  - BaseProblem::generateNewParetoPoint() (using the weights it got 
+ *    in the previous step) which will in turn call comb() to make a 
+ *    Pareto point (if the weights were not used before)
+ *  
+ *  \sa BaseProblem, comb(), generateNewParetoPoint(), 
+ *      pareto_approximator::generateNewWeightVector(), 
+ *      PointAndSolution and Point
  */
-template <class S>
-std::vector<double>
-BaseProblem<S>::computeMeanWeights(Facet base)
+template <class S> 
+PointAndSolution<S> 
+BaseProblem<S>::generateNewParetoPointUsingFacet(const Facet<S> & facet) 
 {
-  typename Facet::iterator bi;
+  // Get a weight vector (using the given facet as a generating facet).
+  std::vector<double> weights = pareto_approximator::
+                                generateNewWeightVector<S>(facet);
 
-  std::vector<double> meanWeights(base.size(), 0.0);
-  for (unsigned int i = 0; i != base.size(); ++i) {
-    for (bi = base.begin(); bi != base.end(); ++bi)
-      meanWeights[i] += bi->weightsUsed[i];
-    meanWeights[i] = meanWeights[i] / base.size();
-  }
-  
-  return meanWeights;
+  return generateNewParetoPoint(weights);
+}
+
+
+/*!
+ *  \brief Generate a new Pareto optimal point using the given weights
+ *         to call comb().
+ *
+ *  \param weights A vector of weights for comb().
+ *  \return A Pareto optimal point (inside a PointAndSolution<S> object) 
+ *          generated using the given weights if the weights were not 
+ *          used before; a null PointAndSolution<S> object otherwise.
+ *          
+ *  This method will call the user-implemented comb() method (using the 
+ *  given weight vector) to make a Pareto point.
+ *  
+ *  If the user returns a point that is not strictly positive (i.e. not 
+ *  every coordinate is greater than zero) a 
+ *  NotStrictlyPositivePointException exception will be thrown.
+ *  
+ *  Every time the method is called with a weight vector W it checks 
+ *  if W has been used before (using the usedWeightVectors_ attribute):
+ *  - If they have, it returns a null PointAndSolution instance without 
+ *    calling comb().
+ *  - If they have not, it calls comb() using the given weights (W) 
+ *    and adds W to the usedWeightsVectors_ list. 
+ *  
+ *  Possible exceptions:
+ *  - May throw a NotStrictlyPositivePointException exception if the 
+ *    point returned by comb() is not strictly positive. (i.e. if one
+ *    or more of its coordinates is not greater than zero)
+ *  
+ *  \sa BaseProblem, comb(), generateNewParetoPointUsingFacet(), 
+ *      PointAndSolution and Point
+ */
+template <class S> 
+PointAndSolution<S> 
+BaseProblem<S>::generateNewParetoPoint(const std::vector<double> & weights)
+{
+  // Check if the given weights have been used before.
+  bool haveUsedTheseWeightsBefore = false;
+  std::list< std::vector<double> >::iterator it;
+  for (it = usedWeightVectors_.begin(); it != usedWeightVectors_.end(); ++it)
+    if ( std::equal(weights.begin(), weights.end(), it->begin()) ) {
+      haveUsedTheseWeightsBefore = true;
+      break;
+    }
+
+  // Have the given weights been used before?
+  if (haveUsedTheseWeightsBefore)
+    // Yes, return a null PointAndSolution<S> instance.
+    return PointAndSolution<S>();
+  // else
+
+  // Call comb() with the given weights.
+  PointAndSolution<S> newPoint = comb(weights.begin(), weights.end());
+
+  // Make sure the user didn't return an invalid point:
+  // - We are talking about the Point instance contained inside the 
+  //   PointAndSolution<S> instance. The PointAndSolution<S> instance's 
+  //   _isNull attribute does not have to have been initialized already
+  //   (we'll do it below).
+  assert(not newPoint.point.isNull());
+  // Is the point returned strictly positive? (it should)
+  if (not newPoint.point.isStrictlyPositive()) 
+    throw NotStrictlyPositivePointException();
+  // else
+
+  // Initialize newPoint's weightsUsed and _isNull attributes.
+  // - So that the user doesn't have to do it inside comb().
+  newPoint.weightsUsed.assign(weights.begin(), weights.end());
+  newPoint._isNull = false;
+  // Add the newly used weight vector to the usedWeightVectors_ list.
+  usedWeightVectors_.push_front(weights);
+
+  return newPoint;
 }
 
 

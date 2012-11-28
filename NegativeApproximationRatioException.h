@@ -31,7 +31,7 @@ class NegativeApproximationRatioException : public std::exception
 {
   public:
     //! Return a simple char* message.
-    const char* what() const throw() 
+    const char* what() const throw()
     {
       return "The given approximation ratio is negative.";
     }

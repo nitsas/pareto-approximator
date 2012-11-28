@@ -26,16 +26,15 @@ namespace {
 class NonDominatedSetTest : public ::testing::Test 
 {
   protected:
-    NonDominatedSetTest() { }
-    ~NonDominatedSetTest() { }
-
-    virtual void SetUp()
+    NonDominatedSetTest() 
     {
       std::vector< Point > elements;
       elements.push_back(Point(1, 2));
       elements.push_back(Point(2, 1));
       nds.insert(elements.begin(), elements.end());
     }
+
+    ~NonDominatedSetTest() { }
 
     NonDominatedSet<Point> emptyNds;
     NonDominatedSet<Point> nds;

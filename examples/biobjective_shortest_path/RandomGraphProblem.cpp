@@ -197,8 +197,9 @@ RandomGraphProblem::makeGraph(int numVertices, int numEdges,
  *  \sa RandomGraphProblem and RandomGraphProblem::RandomGraphProblem().
  */
 PointAndSolution<PredecessorMap> 
-RandomGraphProblem::comb(std::vector<double>::const_iterator first, 
-                         std::vector<double>::const_iterator last)
+RandomGraphProblem::comb(
+                    std::vector<double>::const_iterator first, 
+                    std::vector<double>::const_iterator last) const
 {
   assert(std::distance(first, last) == 2);
 

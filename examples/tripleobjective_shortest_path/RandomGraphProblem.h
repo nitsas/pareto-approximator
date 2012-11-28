@@ -175,8 +175,9 @@ class RandomGraphProblem : public BaseProblem<PredecessorMap>
      *  
      *  \sa RandomGraphProblem and RandomGraphProblem::RandomGraphProblem().
      */
-    PointAndSolution<PredecessorMap> comb(std::vector<double>::const_iterator first, 
-                                          std::vector<double>::const_iterator last);
+    PointAndSolution<PredecessorMap> comb(
+                          std::vector<double>::const_iterator first, 
+                          std::vector<double>::const_iterator last) const;
 
     //! Check if the target (t) is reachable.
     /*!

@@ -24,18 +24,17 @@ namespace pareto_approximator {
 
 /*! 
  *  \brief Exception thrown by Point::operator<(), Point::operator+(), 
- *         Point::ratioDistance(), Point::dominates(), 
- *         Hyperplane::ratioDistance(), Hyperplane::init() and 
+ *         Point::ratioDistance(), Point::dominates(), and
  *         Facet::ratioDistance().
  *
  *  An exception thrown when:
  *  - Two Point instances were supposed to be compared but they have 
  *    different dimensions. (they belong to spaces of different dimensions)
  *  - We were trying to compute the ratio distance between two Point 
- *    instances or a Point instance and a Hyperplane instance but they 
+ *    instances or a Point instance and a Facet instance but they 
  *    had different dimensions. (they belong to spaces of different 
  *    dimensions)
- *  - We were trying to initialize a Hyperplane from a given set of 
+ *  - We were trying to initialize a Facet from a given set of 
  *    n Point instances but not all the Point instances had dimension n.
  *    (they belong to spaces of different dimensions)
  */
@@ -43,7 +42,7 @@ class DifferentDimensionsException : public std::exception
 {
   public:
     //! Return a simple char* message.
-    const char* what() const throw() 
+    const char* what() const throw()
     {
       return "The given instances have different/incompatible dimensions.";
     }

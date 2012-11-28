@@ -17,9 +17,11 @@
 
 #include "Point.h"
 #include "DifferentDimensionsException.h"
+#include "NullObjectException.h"
+#include "NotStrictlyPositivePointException.h"
 #include "SamePointsException.h"
 #include "NonExistentCoefficientException.h"
-#include "PointIsOnTheHyperplaneException.h"
+#include "InfiniteRatioDistanceException.h"
 
 
 /*!
@@ -181,7 +183,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane, init() and Point
      */
-    Hyperplane(const Point& p1, const Point& p2);
+    Hyperplane(const Point & p1, const Point & p2);
 
     //! Constructor for a hyperplane on a 3D space. (line)
     /*!
@@ -200,7 +202,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane, init() and Point
      */
-    Hyperplane(const Point& p1, const Point& p2, const Point& p3);
+    Hyperplane(const Point & p1, const Point & p2, const Point & p3);
 
     //! Constructor for a hyperplane on a 4D space. (line)
     /*!
@@ -220,8 +222,8 @@ class Hyperplane
      *  
      *  \sa Hyperplane, init() and Point
      */
-    Hyperplane(const Point& p1, const Point& p2, 
-               const Point& p3, const Point& p4);
+    Hyperplane(const Point & p1, const Point & p2, 
+               const Point & p3, const Point & p4);
 
     //! Constructor for a hyperplane on an n-dimensional space.
     /*!
@@ -366,7 +368,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane and operator!=()
      */
-    bool operator== (const Hyperplane& hyperplane) const;
+    bool operator== (const Hyperplane & hyperplane) const;
 
     //! The Hyperplane inequality operator.
     /*!
@@ -377,7 +379,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane and operator==()
      */
-    bool operator!= (const Hyperplane& hyperplane) const;
+    bool operator!= (const Hyperplane & hyperplane) const;
 
     //! The Hyperplane output stream operator.
     /*!
@@ -389,8 +391,8 @@ class Hyperplane
      *  
      *  \sa Hyperplane and str()
      */
-    friend std::ostream& operator<< (std::ostream& out, 
-                                     const Hyperplane& hyperplane);
+    friend std::ostream & operator<< (std::ostream & out, 
+                                     const Hyperplane & hyperplane);
 
     //! Compute the ratio distance from the given Point to the hyperplane.
     /*!
@@ -411,10 +413,18 @@ class Hyperplane
      *  Possible exceptions:
      *  - May throw a DifferentDimensionsException exception if the given point 
      *    and the hyperplane belong in spaces of different dimensions.
+     *  - May throw an InfiniteRatioDistanceException exception if the given 
+     *    point's coordinate vector is perpendicular to the hyperplane's 
+     *    normal vector. Multiplying the point by a constant moves it in 
+     *    a direction parallel to the hyperplane.
+     *  - May throw a NotStrictlyPositivePointException exception if the 
+     *    given point is not strictly positive. 
+     *  - May throw a NullObjectException exception if the given Point 
+     *    instance is a null Point instance.
      *  
      *  \sa Hyperplane and Point
      */
-    double ratioDistance(const Point& p) const;
+    double ratioDistance(const Point & p) const;
     
     //! Create a new Hyperplane parallel to the current one (through a point).
     /*!
@@ -429,7 +439,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane and Point
      */
-    Hyperplane parallelThrough(const Point& p) const;
+    Hyperplane parallelThrough(const Point & p) const;
 
     //! Check if two hyperplanes are parallel.
     /*!
@@ -448,7 +458,7 @@ class Hyperplane
      *  
      *  \sa Hyperplane
      */
-    bool isParallel(const Hyperplane& hyperplane) const;
+    bool isParallel(const Hyperplane & hyperplane) const;
 
     //! Check if every a_{i} coefficient is non-positive.
     /*! 

@@ -67,8 +67,9 @@ class SmallTripleobjectiveSPProblem : public BaseProblem<PredecessorMap>
     SmallTripleobjectiveSPProblem();
     ~SmallTripleobjectiveSPProblem();
 
-    PointAndSolution<PredecessorMap> comb(std::vector<double>::const_iterator first, 
-                                          std::vector<double>::const_iterator last);
+    PointAndSolution<PredecessorMap> comb(
+                              std::vector<double>::const_iterator first, 
+                              std::vector<double>::const_iterator last) const;
 
     void makeGraph();
 

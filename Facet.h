@@ -13,7 +13,10 @@
 #include "Point.h"
 #include "PointAndSolution.h"
 #include "DifferentDimensionsException.h"
+#include "NullObjectException.h"
+#include "NotStrictlyPositivePointException.h"
 #include "BoundaryFacetException.h"
+#include "InfiniteRatioDistanceException.h"
 
 
 /*!
@@ -34,10 +37,11 @@ namespace pareto_approximator {
  *  It is the type of the problem solution.
  *  
  *  In order to represent a facet we will use the vertices of the facet
- *  (Facet::vertices_) plus the facet normal (Facet::normal_). (The Facet 
+ *  (Facet::vertices_), the facet normal (Facet::normal_) and the dimension 
+ *  of the space that the facet lives in (Facet::spaceDimension_). (The Facet 
  *  class contains two more private variables, Facet::isBoundaryFacet_ and 
  *  Facet::localApproximationErrorUpperBound_ but they are only used to 
- *  store secondary info about the facet.)
+ *  store secondary/derived info about the facet.)
  *  
  *  The facet normal is a vector perpendicular to the facet's surface. 
  *  The normal is simply the direction that the facet is facing.
@@ -79,6 +83,18 @@ template <class S>
 class Facet
 {
   public:
+    //! The type of a facet vertex.
+    typedef PointAndSolution<S> Vertex;
+
+    //! The type of a set (std::vector) of vertices.
+    typedef std::vector< PointAndSolution<S> > VerticesVector;
+
+    //! The type of an element of the facet's normal vector.
+    typedef double NormalVectorElement;
+
+    //! The type of the facet's normal vector.
+    typedef std::vector<double> FacetNormalVector;
+
     //! Random access iterator to the facet's vertices.
     typedef typename std::vector< PointAndSolution<S> >::iterator 
                      VertexIterator;
@@ -93,14 +109,16 @@ class Facet
     //! Constant random access iterator to the elements of the facet's normal.
     typedef std::vector<double>::const_iterator ConstFacetNormalIterator;
 
-    //! Facet's default constructor. (empty)
-    Facet();
-
     //! A Facet constructor.
     /*!
      *  \param firstVertex An iterator to the first of the facet vertices.
      *  \param lastVertex An iterator to the past-the-end element in the 
      *                    container of facet vertices.
+     *  \param preferPositiveNormalVector While computing the facet's normal 
+     *                    vector prefer the all-positive one (if it exists).
+     *  
+     *  Vertices cannot be null PointAndSolution<S> instances and the 
+     *  contained points cannot be null Point instances. 
      *  
      *  Initializes:
      *  - Facet<S>::vertices_ to the sequence of vertices pointed to by 
@@ -111,15 +129,26 @@ class Facet
      *    (Facet<S>::normal_). For each set of n vertices there are two 
      *    different n-hyperplanes passing through them with opposite normal 
      *    vectors. This constructor will prefer the all-positive normal 
-     *    vector, if one exists.
-     *  - Facet<S>::approximationErrorUpperBound_ to the ratio distance 
+     *    vector (if one exists) if preferPositiveNormalVector is set to 
+     *    true; otherwise it will choose one depending on the order of the 
+     *    vertices.
+     *  - Facet<S>::localApproximationErrorUpperBound_ to the ratio distance 
      *    between the Facet and its Lower Distal Point (LDP). Calculates 
      *    both the LDP and the ratio distance.
      *  
+     *  Possible exceptions:
+     *  - May throw a DifferentDimensionsException exception if the given 
+     *    vertices have different dimensions.
+     *  - May throw a NullObjectException if some of the given vertices or 
+     *    some of the points contained in them are null instances (null 
+     *    PointAndSolution<S> and null Point instances respectively).
+     *  
      *  \sa Facet
      */
-    Facet(typename std::vector< PointAndSolution<S> >::const_iterator firstVertex, 
-          typename std::vector< PointAndSolution<S> >::const_iterator lastVertex);
+    Facet(
+      typename std::vector< PointAndSolution<S> >::const_iterator firstVertex, 
+      typename std::vector< PointAndSolution<S> >::const_iterator lastVertex, 
+      bool preferPositiveNormalVector=true);
 
     //! A Facet constructor.
     /*!
@@ -132,6 +161,9 @@ class Facet
      *                               element in the container of facet 
      *                               vertices.
      *  
+     *  Vertices cannot be null PointAndSolution<S> instances and the 
+     *  contained points cannot be null Point instances. 
+     *  
      *  Initializes:
      *  - Facet<S>::vertices_ to the sequence of vertices pointed to by 
      *    firstVertex and lastVertex. The range used is 
@@ -139,16 +171,28 @@ class Facet
      *  - Facet<S>::normal_ to the sequence of elements pointed to by 
      *    firstElemOfFacetNormal and lastElemOfFacetNormal. The range 
      *    used is [firstElemOfFacetNormal, lastElemOfFacetNormal).
-     *  - Facet<S>::approximationErrorUpperBound_ to the ratio distance 
+     *  - Facet<S>::localApproximationErrorUpperBound_ to the ratio distance 
      *    between the Facet and its Lower Distal Point (LDP). Calculates 
      *    both the LDP and the ratio distance.
      *  
+     *  We do not verify that the given normal vector is indeed correct, 
+     *  i.e. it agrees with the given vertices. The responsibility lies with 
+     *  the caller.
+     *  
+     *  Possible exceptions:
+     *  - May throw a DifferentDimensionsException exception if the given 
+     *    vertices have different dimensions.
+     *  - May throw a NullObjectException if some of the given vertices or 
+     *    some of the points contained in them are null instances (null 
+     *    PointAndSolution<S> and null Point instances respectively).
+     *  
      *  \sa Facet
      */
-    Facet(typename std::vector< PointAndSolution<S> >::const_iterator firstVertex, 
-          typename std::vector< PointAndSolution<S> >::const_iterator lastVertex, 
-          std::vector<double>::const_iterator firstElemOfFacetNormal, 
-          std::vector<double>::const_iterator lastElemOfFacetNormal);
+    Facet(
+      typename std::vector< PointAndSolution<S> >::const_iterator firstVertex, 
+      typename std::vector< PointAndSolution<S> >::const_iterator lastVertex, 
+      std::vector<double>::const_iterator firstElemOfFacetNormal, 
+      std::vector<double>::const_iterator lastElemOfFacetNormal);
 
     //! A simple (and empty) destructor.
     ~Facet();
@@ -226,11 +270,13 @@ class Facet
      */
     ConstFacetNormalIterator endFacetNormal() const;
 
-    //! Compute the mean of all the weight vectors of the facet's vertices.
     /*!
+     * \brief Compute the mean of all the weight vectors of the facet's 
+     *        vertices.
+     *
      *  \return A weight vector W of size this->spaceDimension(). Each 
      *          element W_{j} is the mean of all w_{ij}'s, where w_{i} is 
-     *          the weight vector inside the i'th facet vertex's 
+     *          the weight vector inside the facet's i'th vertex's 
      *          PointAndSolution object (PointAndSolution::weightsUsed).
      *  
      *  \sa Facet
@@ -239,8 +285,22 @@ class Facet
 
     //! Compute the facet's Lower Distal Point (LDP).
     /*! 
-     *  \return A pointer to the facet's Lower Distal Point (Point instance) 
-     *          if one exists, NULL otherwise.
+     *  \return The facet's Lower Distal Point (Point instance) if one 
+     *          exists, a null Point instance (i.e. a Point instance whose 
+     *          Point::isNull() method returns true) otherwise. 
+     *  
+     *  Solves (for x) the system of k equations of the form:
+     *  \f$ w_{i1} * x_{1} + ... + w_{ik} * x_{k} = w_{i} \dot v_{i} \f$, 
+     *  where w_{i} is the weight vector associated with the i'th vertex of 
+     *  the facet (the normal of the associated lower-bound hyperplane) and 
+     *  v_{i} is the vector of the i'th vectex's coordinates. 
+     *  
+     *  (\f$ w_{i} \dot v_{i} = b_{i} \f$ is the associated hyperplane's offset 
+     *  from the origin)
+     *  
+     *  The solution, if one (and only one) exists, will be the LDP's coordinates.
+     *  If a unique solution does not exist we return a null Point instance 
+     *  (i.e. a Point instance whose Point::isNull() method returns true).
      *  
      *  What is the Lower Distal Point (LDP)? Recall that hyperplanes through 
      *  the Pareto Set points with normal vectors equal to the weight vector 
@@ -259,16 +319,19 @@ class Facet
      *  v_{i}. (We can recreate h_{i} using v_{i}'s weight vector.)
      *  
      *  The h_{i}'s might not intersect in a unique point. In that case, 
-     *  this method returns NULL and the current facet is treated as a 
-     *  boundary facet.
+     *  this method returns a null Point instance (i.e. a Point instance 
+     *  Point::isNull() method returns true) and the current facet is 
+     *  treated as a boundary facet.
      *  
      *  \sa Facet
      */
-    Point* computeLowerDistalPoint() const;
+    Point computeLowerDistalPoint() const;
     
-    //! Compute a point's ratio distance from the hyperplane the facet lies on.
-    /*! 
-     *  \param p A Point instance. (with non-negative coordinates)
+    /*!
+     *  \brief Compute a point's ratio distance from the hyperplane that 
+     *         the facet lies on.
+     *  
+     *  \param p A Point instance. (strictly positive)
      *  \return The point's ratio distance from the hyperplane on which the 
      *          facet lies.
      *  
@@ -280,21 +343,29 @@ class Facet
      *  Intuitively it is the minimum value of \f$ \epsilon \ge 0 \f$ such 
      *  that some point on H \f$ \epsilon -covers p \f$.
      *  
-     *  In order for the ratio distance to make sense point p must have 
-     *  non-negative coordinates.
+     *  In order for the ratio distance to make sense point p must be 
+     *  strictly positive, i.e. \f$ p_{i} > 0.0 \f$ must hold for all i.
      *  
      *  Possible exceptions:
-     *  - May throw a DifferentDimensionsException exception if the given point 
-     *    and the hyperplane belong in spaces of different dimensions.
+     *  - May throw a DifferentDimensionsException exception if the given 
+     *    point and the hyperplane belong in spaces of different dimensions.
+     *  - May throw an InfiniteRatioDistanceException exception if the given 
+     *    point's coordinate vector is perpendicular to the facet's 
+     *    normal vector. Multiplying the point by a constant moves it in 
+     *    a direction parallel to the facet's supporting hyperplane.
+     *  - May throw a NotStrictlyPositivePointException exception if the 
+     *    given point is not strictly positive.
+     *  - May throw a NullObjectException exception if the given Point 
+     *    instance is a null Point instance.
      *  
-     *  \sa Point, Facet and Facet<S>::computeFacetsLowerDistalPoint()
+     *  \sa Point and Facet
      */
-    double ratioDistance(const Point& p) const;
+    double ratioDistance(const Point & p) const;
 
     //! Check if every element of the facet's normal vector is non-positive.
     /*!
      *  \return true if every element of the facet's normal vector 
-     *               (Facet<S>::normal_) is non-positive.
+     *          (Facet<S>::normal_) is non-positive.
      *  
      *  Each element must be non-positive.
      *  
@@ -302,18 +373,71 @@ class Facet
      */
     bool hasAllNormalVectorElementsNonPositive() const;
 
-  private: 
-    //! Compute the facet's normal vector.
+    //! Check if every element of the facet's normal vector is non-negative.
     /*!
-     *  Calculates the hyperplane passing through the facet's vertices 
-     *  and uses its normal vector as the facet's normal vector. For each 
-     *  set of n vertices there are two different n-hyperplanes passing through 
-     *  them, with opposite normal vectors. This method will prefer the 
-     *  all-positive normal vector, if one exists.
+     *  \return true if every element of the facet's normal vector 
+     *          (Facet<S>::normal_) is non-negative.
+     *  
+     *  Each element must be non-negative.
      *  
      *  \sa Facet
      */
-    void computeAndSetFacetNormal();
+    bool hasAllNormalVectorElementsNonNegative() const;
+
+    //! Normalizes the facet's normal vector.
+    /*!
+     *  Normalizes the facet's normal vector so that its magnitude 
+     *  (i.e. length or L2-norm) becomes 1. 
+     *  
+     *  First computes "l2Norm", which is the current L2-norm of the 
+     *  normal vector. Then divides each normal vector element with "l2Norm".
+     *  
+     *  \sa Facet
+     */
+    void normalizeNormalVector();
+
+    //! Get a copy of the facet's normal vector.
+    /*!
+     *  \return A copy of the facet's normal vector.
+     *
+     *  \sa Facet
+     */
+    std::vector<double> getNormalVector() const;
+
+  private: 
+
+    //! Compute (and set) the facet's normal vector using the facet's vertices.
+    /*!
+     *  \param preferPositiveNormalVector Should we prefer the all-positive 
+     *                                    normal vector (if it exists)?
+     *  
+     *  Calculates the hyperplane passing through the facet's vertices 
+     *  and uses its normal vector as the facet's normal vector. 
+     *  
+     *  For each set of n vertices there are two different n-hyperplanes passing 
+     *  through them with opposite normal vectors. This method will prefer the 
+     *  all-positive normal vector (if one exists) if preferPositiveNormalVector 
+     *  is set to true; otherwise it will choose one depending on the order of 
+     *  the facet vertices.
+     *  
+     *  \sa Facet
+     */
+    void computeAndSetFacetNormal(bool preferPositiveNormalVector);
+
+    /*! \brief Compute (and set) the facet's isBoundaryFacet_ and 
+     *         localApproximationErrorUpperBound_ attributes.
+     *  
+     *  Computes the facet's local approximation error upper bound (i.e. 
+     *  distance from the facet's Lower Distal Point if (a unique) one 
+     *  exists) and sets the facet's localApproximationErrorUpperBound_ 
+     *  and isBoundaryFacet_ attributes accordingly.
+     *  
+     *  We have only created this function to erase duplicate code from 
+     *  inside the constructors.
+     *  
+     *  \sa Facet
+     */
+    void computeAndSetLocalApproximationErrorUpperBoundAndIsBoundaryFacet();
 
     //! Reverse the sign of all elements of the facet's normal vector.
     /*!
@@ -323,6 +447,12 @@ class Facet
      *  \sa Facet
      */
     void reverseNormalVectorSign();
+
+    //! The dimension of the space that the facet lives in.
+    /*!
+     *  \sa Facet
+     */
+    unsigned int spaceDimension_;
 
     //! The vertices of the facet.
     /*! 

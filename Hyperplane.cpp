@@ -190,7 +190,7 @@ Hyperplane::Hyperplane(const double* first, const double* last,
  *  
  *  \sa Hyperplane, init() and Point
  */
-Hyperplane::Hyperplane(const Point& p1, const Point& p2)
+Hyperplane::Hyperplane(const Point & p1, const Point & p2)
 {
   if (p1 == p2)
     throw SamePointsException();
@@ -219,7 +219,7 @@ Hyperplane::Hyperplane(const Point& p1, const Point& p2)
  *  
  *  \sa Hyperplane, init() and Point
  */
-Hyperplane::Hyperplane(const Point& p1, const Point& p2, const Point& p3)
+Hyperplane::Hyperplane(const Point & p1, const Point & p2, const Point & p3)
 {
   std::set<Point> points;
   points.insert(p1);
@@ -249,8 +249,8 @@ Hyperplane::Hyperplane(const Point& p1, const Point& p2, const Point& p3)
  *  
  *  \sa Hyperplane, init() and Point
  */
-Hyperplane::Hyperplane(const Point& p1, const Point& p2, 
-                       const Point& p3, const Point& p4)
+Hyperplane::Hyperplane(const Point & p1, const Point & p2, 
+                       const Point & p3, const Point & p4)
 {
   std::set<Point> points;
   points.insert(p1);
@@ -520,11 +520,7 @@ Hyperplane::str() const
 arma::vec 
 Hyperplane::toVec() const
 {
-  arma::vec coefficients(coefficients_.size());
-  for (unsigned int i = 0; i != coefficients_.size(); ++i)
-    coefficients(i) = coefficients_[i];
-
-  return coefficients;
+  return arma::vec(coefficients_);
 }
 
 
@@ -535,11 +531,7 @@ Hyperplane::toVec() const
 arma::rowvec 
 Hyperplane::toRowVec() const
 {
-  arma::rowvec coefficients(coefficients_.size());
-  for (unsigned int i = 0; i != coefficients_.size(); ++i)
-    coefficients(i) = coefficients_[i];
-
-  return coefficients;
+  return arma::rowvec(coefficients_);
 }
 
 
@@ -560,7 +552,7 @@ Hyperplane::toRowVec() const
  *  \sa Hyperplane and operator!=()
  */
 bool 
-Hyperplane::operator== (const Hyperplane& hyperplane) const
+Hyperplane::operator== (const Hyperplane & hyperplane) const
 {
   if (spaceDimension() != hyperplane.spaceDimension())
     return false;
@@ -583,7 +575,7 @@ Hyperplane::operator== (const Hyperplane& hyperplane) const
  *  \sa Hyperplane and operator==()
  */
 bool 
-Hyperplane::operator!= (const Hyperplane& hyperplane) const
+Hyperplane::operator!= (const Hyperplane & hyperplane) const
 {
   if (spaceDimension() != hyperplane.spaceDimension())
     return true;
@@ -606,8 +598,8 @@ Hyperplane::operator!= (const Hyperplane& hyperplane) const
  *  
  *  \sa Hyperplane and str()
  */
-std::ostream& 
-operator<< (std::ostream& out, const Hyperplane& hyperplane)
+std::ostream & 
+operator<< (std::ostream & out, const Hyperplane & hyperplane)
 {
   return out << hyperplane.str();
 }
@@ -632,22 +624,47 @@ operator<< (std::ostream& out, const Hyperplane& hyperplane)
  *  Possible exceptions:
  *  - May throw a DifferentDimensionsException exception if the given point 
  *    and the hyperplane belong in spaces of different dimensions.
+ *  - May throw an InfiniteRatioDistanceException exception if the given 
+ *    point's coordinate vector is perpendicular to the hyperplane's 
+ *    normal vector. Multiplying the point by a constant moves it in 
+ *    a direction parallel to the hyperplane.
+ *  - May throw a NotStrictlyPositivePointException exception if the 
+ *    given point is not strictly positive. 
+ *  - May throw a NullObjectException exception if the given Point 
+ *    instance is a null Point instance.
  *  
  *  \sa Hyperplane and Point
  */
 double 
-Hyperplane::ratioDistance(const Point& p) const
+Hyperplane::ratioDistance(const Point & p) const
 {
-  assert(spaceDimension() > 0);
-
+  if (p.isNull())
+    throw NullObjectException();
   if (spaceDimension() != p.dimension())
     throw DifferentDimensionsException();
+  if (not p.isStrictlyPositive())
+    throw NotStrictlyPositivePointException();
   // else
+
+  assert(spaceDimension() > 0);
+
   double dotProduct = 0.0;
   for (unsigned int i=0; i!=spaceDimension(); ++i) 
     dotProduct += coefficients_[i] * p[i];
 
-  return std::max( (b_ - dotProduct) / dotProduct, 0.0 );
+  double result;
+  if (dotProduct == b_)
+    // the point is on the hyperplane
+    // it's okay even if dotProduct == 0.0
+    result = 0.0;
+  else if (dotProduct == 0.0)
+    // multiplying the point by a constant moves it in a direction 
+    // parallel to the hyperplane
+    throw InfiniteRatioDistanceException();
+  else
+    result = std::max( (b_ - dotProduct) / dotProduct, 0.0 );
+
+  return result;
 }
 
 
@@ -665,7 +682,7 @@ Hyperplane::ratioDistance(const Point& p) const
  *  \sa Hyperplane and Point
  */
 Hyperplane 
-Hyperplane::parallelThrough(const Point& p) const
+Hyperplane::parallelThrough(const Point & p) const
 {
   double newB = 0.0;
   for (unsigned int i=0; i!=spaceDimension(); ++i)
@@ -693,7 +710,7 @@ Hyperplane::parallelThrough(const Point& p) const
  *  \sa Hyperplane
  */
 bool 
-Hyperplane::isParallel(const Hyperplane& hyperplane) const
+Hyperplane::isParallel(const Hyperplane & hyperplane) const
 {
   if (spaceDimension() != hyperplane.spaceDimension())
     return false;

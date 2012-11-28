@@ -9,16 +9,15 @@
 #define PARETO_APPROXIMATOR_SIMPLE_PROBLEM_H
 
 
-#include <list>
 #include <vector>
+#include <list>
 
-#include "Point.h"
-#include "Hyperplane.h"
+#include "Facet.h"
 #include "PointAndSolution.h"
-#include "NonDominatedSet.h"
 #include "NotEnoughAnchorPointsException.h"
 
 
+using pareto_approximator::Facet;
 using pareto_approximator::PointAndSolution;
 
 
@@ -63,9 +62,6 @@ template <class S>
 class BaseProblem 
 {
   public:
-    //! A set of points representing a facet of the current approximation.
-    typedef typename std::vector< PointAndSolution<S> > Facet;
-
     //! BaseProblem's default constructor. (empty)
     BaseProblem();
 
@@ -74,19 +70,25 @@ class BaseProblem
 
     //! Optimize a linear combination of the objectives.
     /*! 
-     *  \param first Iterator to the initial position in a std::vector<double> 
+     *  \param first Iterator to the first element in a std::vector<double> 
      *               containing the weights w_{i}.
-     *  \param last Iterator to the final position in the std::vector<double> 
-     *              containing the weights w_{i}. (the position right after 
-     *              the last weight we want (w_{n}))
+     *  \param last Iterator to the past-the-end element in the 
+     *              std::vector<double> containing the weights w_{i}. (the 
+     *              position right after the last weight we want (w_{n}))
      *  \return A PointAndSolution<S> object containing: 
      *          - An optimal solution of the problem with respect to the 
      *            linear combination:
      *            \f$ w_{1} * f_{1} + w_{2} * f_{2} + ... + w_{n} * f_{n} \f$ 
      *            of the objectives (f_{i}) and the weights (w_{i}).
      *          - The corresponding point in objective space. Points returned 
-     *            by comb() must have positive coordinates.
-     *          - The weights w_{i} used in the linear combination.
+     *            by comb() must be strictly positive (i.e. all their 
+     *            coordinates must be strictly greater than zero).
+     *          - The weights w_{i} used in the linear combination. The 
+     *            comb() does not need to set the weights, it will be 
+     *            done automatically after comb() returns.
+     *          - (The PointAndSolution instance's _isNull attribute does 
+     *            not need to be set inside comb(), it too will be set 
+     *            automatically after comb() returns.)
      *
      *  computeConvexParetoSet() uses the instance's comb() to optimize linear 
      *  combinations of the objectives in order to come up with an 
@@ -100,7 +102,7 @@ class BaseProblem
      */
     virtual PointAndSolution<S> 
     comb(std::vector<double>::const_iterator first, 
-         std::vector<double>::const_iterator last) = 0;
+         std::vector<double>::const_iterator last) const = 0;
 
     //! Compute an (1+eps)-convex Pareto set of the problem.
     /*! 
@@ -124,6 +126,10 @@ class BaseProblem
      *
      *  computeConvexParetoSet() will use the comb() method the user 
      *  implemented. That is why comb() is declared virtual.
+     *  
+     *  computeConvexParetoSet() initializes the usedWeightVectors_ 
+     *  attribute to an empty list every time it is called (before it 
+     *  calls any other method).
      *
      *  Possible exceptions:
      *  - May throw a NotEnoughAnchorPointsException exception if at some step
@@ -174,28 +180,107 @@ class BaseProblem
      *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
      */
     std::vector< PointAndSolution<S> > 
-    doChord(unsigned int numObjectives, Facet anchors, double eps);
+    doChord(unsigned int numObjectives, Facet<S> anchors, double eps);
 
-    /*! \brief Generate a new Pareto optimal point using the given facet 
-     *         as a generating facet.
+    /*! \brief A function that uses Craft's (et al.) algorithm to 
+     *         approximate the Pareto set.
+     *  
+     *  \param numObjectives The number of objectives to minimize. 
+     *                       Note: The user's comb() routine should be able to 
+     *                       handle a std::vector<double> of \#numObjectives 
+     *                       weights.
+     *  \param anchors The Facet defined by the anchor points.
+     *  \param eps The degree of approximation. 
+     *  \return A vector of Pareto optimal points (PointAndSolution instances).
+     *          BaseProblem::computeConvexParetoSet() will filter them to make 
+     *          the (1+eps)-approximate convex Pareto set.
      *
-     *  \sa comb(), BaseProblem, PointAndSolution and Point
+     *  Please read "Approximating convex Pareto surfaces in multiobjective 
+     *  radiotherapy planning" by David L. Craft et al. (2006) for more 
+     *  info on the algorithm.
+     *  
+     *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
+     */
+    std::vector< PointAndSolution<S> > 
+    doCraft(unsigned int numObjectives, Facet<S> anchors, double eps);
+
+    /*! 
+     *  \brief Generate a new Pareto optimal point using the given Facet 
+     *         instance as a generating facet.
+     *
+     *  \param facet A Facet instance. (Its vertices' weightsUsed 
+     *               attributes will be needed if the facet's normal vector 
+     *               is not all-positive.)
+     *  \return A Pareto optimal point (inside a PointAndSolution<S>  
+     *          object) generated using the given facet, i.e. the weights 
+     *          generated from the facet, if the weights were not used 
+     *          before; a null PointAndSolution<S> object otherwise.
+     *          
+     *  This method generates a weight vector using the given facet and 
+     *  delegates the jobs of making a Pareto point and updating the 
+     *  usedWeightVectors_ attribute to generateNewParetoPoint().
+     *  
+     *  This method will call:
+     *  - pareto_approximator::generateNewWeightVector() (using the given 
+     *    facet instance as a parameter) to get a weight vector 
+     *  - BaseProblem::generateNewParetoPoint() (using the weights it got 
+     *    in the previous step) which will in turn call comb() to make a 
+     *    Pareto point (if the weights were not used before)
+     *  
+     *  \sa BaseProblem, comb(), generateNewParetoPoint(), 
+     *      pareto_approximator::generateNewWeightVector(), 
+     *      PointAndSolution and Point
      */
     PointAndSolution<S> 
-    generateNewParetoPoint(Facet facet);
+    generateNewParetoPointUsingFacet(const Facet<S> & facet);
 
-    //! Computes the mean of all the weight vectors in "base".
     /*!
-     *  \param base A std::vector of PointAndSolution<S> instances (where S is 
-     *              the type of the problem solutions).
-     *  \return A weight vector W of size base.size(). Each element W_{j} is
-     *          the mean of all w_{ij}'s, where w_{i} is the weight vector 
-     *          inside the i'th element of "base".
+     *  \brief Generate a new Pareto optimal point using the given weights
+     *         to call comb().
+     *
+     *  \param weights A vector of weights for comb().
+     *  \return A Pareto optimal point (inside a PointAndSolution<S>  
+     *          object) generated using the given weights if the weights 
+     *          were not used before; a null PointAndSolution<S> object 
+     *          otherwise.
+     *          
+     *  This method will call the user-implemented comb() method (using 
+     *  the given weight vector) to make a Pareto point.
      *  
-     *  \sa BaseProblem and PointAndSolution
+     *  Every time the method is called with a weight vector W it 
+     *  checks if W has been used before (using the usedWeightVectors_
+     *  attribute):
+     *  - If they have, it returns a null PointAndSolution instance 
+     *    without calling comb().
+     *  - If they have not, it calls comb() using the given weights (W) 
+     *    and adds W to the usedWeightsVectors_ list. 
+     *  
+     *  \sa BaseProblem, comb(), generateNewParetoPointUsingFacet(), 
+     *      PointAndSolution and Point
      */
-    std::vector<double>
-    computeMeanWeights(Facet base);
+    PointAndSolution<S> 
+    generateNewParetoPoint(const std::vector<double> & weights);
+
+    /*! 
+     *  \brief A list of already used weight vectors so that we never
+     *         call comb() with the same weights a second time.
+     *  
+     *  Every time generateNewParetoPoint() is called with a weight vector 
+     *  W it checks usedWeightVectors_ for W.
+     *  - If W has been used before, it will not call comb().
+     *  - If it has not, it calls comb() using W as weights and adds W
+     *    to this list. 
+     *  
+     *  Places where it is used (and how it is used):
+     *  - Initialized to an empty list inside (the constructor and)
+     *    BaseProblem::computeConvexParetoSet(). 
+     *  - Maintained inside the BaseProblem::generateNewParetoPoint() 
+     *    method.
+     *  
+     *  \sa BaseProblem, computeConvexParetoSet() and 
+     *      generateNewParetoPoint()
+     */
+    std::list< std::vector<double> > usedWeightVectors_;
 };
 
 

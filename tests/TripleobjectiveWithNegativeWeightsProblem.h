@@ -43,8 +43,9 @@ class TripleobjectiveWithNegativeWeightsProblem : public BaseProblem<string>
     TripleobjectiveWithNegativeWeightsProblem();
     ~TripleobjectiveWithNegativeWeightsProblem();
 
-    PointAndSolution<string> comb(std::vector<double>::const_iterator first, 
-                                  std::vector<double>::const_iterator last);
+    PointAndSolution<string> comb(
+                        std::vector<double>::const_iterator first, 
+                        std::vector<double>::const_iterator last) const;
 
   private:
     std::vector< PointAndSolution<string> > points_;

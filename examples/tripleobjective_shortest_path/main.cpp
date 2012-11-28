@@ -95,8 +95,8 @@ main(int argc, char * argv[])
        << "  + Black(P): sum of \"black\" weights of all edges in P" << endl
        << "  + Red(P): sum of \"red\" weights of all edges in P" << endl
        << "  + Green(P): sum of \"green\" weights of all edges in P" << endl
-       << "- find a convex Pareto set" << endl
-       << endl;
+       << "- find an eps-approximate convex Pareto set with eps = 1e-12" 
+       << endl << endl;
 
   //cout << "Printing graph as a dot file (graph.dot)..." << endl;
   //rgp.printGraphToDotFile();
@@ -112,7 +112,8 @@ main(int argc, char * argv[])
     return 1;
   }
 
-  cout << "(computing convex Pareto set... please wait a few seconds)" << endl << endl;
+  cout << "(computing approximate convex Pareto set... "
+       << "please wait a few seconds)" << endl << endl;
   // All the work (essentially 2 lines!)
   // =========================================
   // Use RandomGraphProblem::computeConvexParetoSet() (inherited from 
@@ -124,8 +125,9 @@ main(int argc, char * argv[])
 
   // Output (convex Pareto set)
   // =========================================
-  cout << "A. convex Pareto set size: " << paretoSet.size() << endl;
-  cout << endl << "B. convex Pareto (set) points: " << endl;
+  cout << "A. approximate convex Pareto set size: " << paretoSet.size() << endl;
+  cout << endl << "B. approximate convex Pareto set points: " << endl;
+  cout << "   (they are all points of the exact Pareto set)" << endl;
   std::vector< PointAndSolution<PredecessorMap> >::iterator vi;
   // Print each Pareto optimal point and the corresponding solution (path).
   for (vi = paretoSet.begin(); vi != paretoSet.end(); ++vi) {

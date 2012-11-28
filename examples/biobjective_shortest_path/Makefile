@@ -11,15 +11,15 @@ CPPLIBS=-larmadillo
 
 
 # Link everything and make bosp_example.out
-bosp_example.out: main.o ../../Point.h Point.o ../../Hyperplane.h Hyperplane.o ../../BaseProblem.h ../../BaseProblem.cpp RandomGraphProblem.h RandomGraphProblem.o ../../PointAndSolution.h ../../PointAndSolution.cpp FloodVisitor.o FloodVisitor.h
-	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o Hyperplane.o RandomGraphProblem.o main.o FloodVisitor.o -o $@
+bosp_example.out: main.o ../../Point.h Point.o ../../BaseProblem.h ../../BaseProblem.cpp RandomGraphProblem.h RandomGraphProblem.o ../../PointAndSolution.h ../../PointAndSolution.cpp FloodVisitor.o FloodVisitor.h
+	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o RandomGraphProblem.o main.o FloodVisitor.o -o $@
 
 # Compile main.cpp
 main.o: main.cpp ../../BaseProblem.h ../../BaseProblem.cpp RandomGraphProblem.h ../../PointAndSolution.h ../../PointAndSolution.cpp biobjective_shortest_path_example_common.h
 	$(CC) $(CPPFLAGS) -c main.cpp -o $@
 
 # Make RandomGraphProblem.o
-RandomGraphProblem.o: RandomGraphProblem.h RandomGraphProblem.cpp ../../PointAndSolution.h ../../PointAndSolution.cpp ../../BaseProblem.h ../../BaseProblem.cpp ../../NotEnoughAnchorPointsException.h ../../Point.h biobjective_shortest_path_example_common.h 
+RandomGraphProblem.o: RandomGraphProblem.h RandomGraphProblem.cpp ../../PointAndSolution.h ../../PointAndSolution.cpp ../../Facet.h ../../Facet.cpp ../../BaseProblem.h ../../BaseProblem.cpp ../../utility.h ../../utility.cpp ../../NotEnoughAnchorPointsException.h ../../Point.h biobjective_shortest_path_example_common.h 
 	$(CC) $(CPPFLAGS) -c RandomGraphProblem.cpp -o $@
 
 # Make FloodVisitor.o
@@ -28,15 +28,11 @@ FloodVisitor.o: FloodVisitor.h FloodVisitor.cpp biobjective_shortest_path_exampl
 
 
 # Make Point.o
-Point.o: ../../Point.h ../../Point.cpp ../../DifferentDimensionsException.h ../../NonExistentCoordinateException.h ../../NegativeApproximationRatioException.h ../../NotPositivePointException.h
+Point.o: ../../Point.h ../../Point.cpp ../../NullObjectException.h ../../DifferentDimensionsException.h ../../NonExistentCoordinateException.h ../../NegativeApproximationRatioException.h ../../NotStrictlyPositivePointException.h
 	$(CC) $(CPPFLAGS) -c ../../Point.cpp -o $@
-
-# Make Hyperplane.o
-Hyperplane.o: ../../Hyperplane.h ../../Hyperplane.cpp ../../Point.h Point.o ../../DifferentDimensionsException.h ../../NonExistentCoefficientException.h ../../PointIsOnTheHyperplaneException.h ../../SamePointsException.h
-	$(CC) $(CPPFLAGS) -c ../../Hyperplane.cpp -o $@
 
 
 # Clean object files and executables
 clean: 
-	rm -f main.o RandomGraphProblem.o FloodVisitor.o Point.o Hyperplane.o bosp_example.out
+	rm -f main.o RandomGraphProblem.o FloodVisitor.o Point.o bosp_example.out
 

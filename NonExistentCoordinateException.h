@@ -30,7 +30,7 @@ class NonExistentCoordinateException : public std::exception
 {
   public:
     //! Return a simple char* message.
-    const char* what() const throw() 
+    const char* what() const throw()
     {
       return "The requested coordinate does not exist. (out of bounds)";
     }

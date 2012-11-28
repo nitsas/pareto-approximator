@@ -9,9 +9,6 @@
  */
 
 
-#include <assert.h>
-
-
 /*!
  *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
  *  @{
@@ -55,7 +52,7 @@ template <class T>
 template <class InputIterator> 
 NonDominatedSet<T>::NonDominatedSet(InputIterator first, InputIterator last)
 {
-  contents_.insert(first, last);
+  insert(first, last);
 }
 
 
@@ -174,8 +171,9 @@ NonDominatedSet<T>::size() const
  */
 template <class T> 
 bool 
-NonDominatedSet<T>::insert(const T& t)
+NonDominatedSet<T>::insert(const T & t)
 {
+  // if t is dominated by some element in the set don't insert it
   bool isDominated = this->dominates(t);
   if (!isDominated) {
     // first remove any elements dominated by t
@@ -244,7 +242,7 @@ NonDominatedSet<T>::insert(InputIterator first, InputIterator last)
  */
 template <class T> 
 bool 
-NonDominatedSet<T>::dominates(const T& t) const
+NonDominatedSet<T>::dominates(const T & t) const
 {
   iterator it;
   for (it = contents_.begin(); it != contents_.end(); ++it) 
@@ -284,7 +282,7 @@ NonDominatedSet<T>::clear()
  */
 template <class T> 
 typename NonDominatedSet<T>::iterator 
-NonDominatedSet<T>::find(const T& t) const
+NonDominatedSet<T>::find(const T & t) const
 {
   iterator it;
   for (it = contents_.begin(); it != contents_.end(); ++it)

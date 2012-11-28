@@ -42,8 +42,9 @@ TripleobjectiveWithNegativeWeightsProblem::~TripleobjectiveWithNegativeWeightsPr
 
 
 PointAndSolution<string> 
-TripleobjectiveWithNegativeWeightsProblem::comb(std::vector<double>::const_iterator first,
-                                      std::vector<double>::const_iterator last)
+TripleobjectiveWithNegativeWeightsProblem::comb(
+                        std::vector<double>::const_iterator first,
+                        std::vector<double>::const_iterator last) const
 {
   assert(std::distance(first, last) == 3);
   double xWeight = *first;
@@ -59,7 +60,7 @@ TripleobjectiveWithNegativeWeightsProblem::comb(std::vector<double>::const_itera
   // return the best point from the points_ vector
   // use a CompareUsingWeights object to compare PointAndSolution instances
   CompareUsingWeightsFunctor comp(xWeight, yWeight, zWeight);
-  std::vector< PointAndSolution<string> >::iterator min;
+  std::vector< PointAndSolution<string> >::const_iterator min;
   min = std::min_element(points_.begin(), points_.end(), comp);
   return *min;
 }

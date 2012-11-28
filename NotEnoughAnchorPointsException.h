@@ -33,7 +33,7 @@ class NotEnoughAnchorPointsException : public std::exception
 {
   public:
     //! Return a simple char* message.
-    const char* what() const throw() 
+    const char* what() const throw()
     {
       return "Not enough anchor points to form a hyperplane.";
     }

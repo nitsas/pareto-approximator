@@ -66,8 +66,9 @@ class SmallBiobjectiveSPProblem : public BaseProblem<PredecessorMap>
     SmallBiobjectiveSPProblem();
     ~SmallBiobjectiveSPProblem();
 
-    PointAndSolution<PredecessorMap> comb(std::vector<double>::const_iterator first, 
-                                          std::vector<double>::const_iterator last);
+    PointAndSolution<PredecessorMap> comb(
+                            std::vector<double>::const_iterator first, 
+                            std::vector<double>::const_iterator last) const;
 
     void makeGraph();
 

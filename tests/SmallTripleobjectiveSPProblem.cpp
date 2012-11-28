@@ -80,8 +80,9 @@ SmallTripleobjectiveSPProblem::makeGraph()
 
 
 PointAndSolution<PredecessorMap> 
-SmallTripleobjectiveSPProblem::comb(std::vector<double>::const_iterator first, 
-                                    std::vector<double>::const_iterator last)
+SmallTripleobjectiveSPProblem::comb(
+                        std::vector<double>::const_iterator first, 
+                        std::vector<double>::const_iterator last) const
 {
   assert(last == first + 3);
 

@@ -19,15 +19,15 @@
 namespace pareto_approximator {
 
 
-template<class S> 
-//! PointAndSolution's default constructor. (empty)
-PointAndSolution<S>::PointAndSolution() { }
+template <class S> 
+//! The empty constructor. Creates a null PointAndSolution<S> instance.
+PointAndSolution<S>::PointAndSolution() : _isNull(true) { }
 
 
 //! A constructor initializing all attributes except weightsUsed.
-template<class S> 
-PointAndSolution<S>::PointAndSolution(const Point& p, const S& s) : 
-                                      point(p), solution(s) { }
+template <class S> 
+PointAndSolution<S>::PointAndSolution(const Point & p, const S & s) : 
+                              point(p), solution(s), _isNull(false) { }
 
 
 //! A constructor initializing PointAndSolution's attributes.
@@ -40,19 +40,54 @@ PointAndSolution<S>::PointAndSolution(const Point& p, const S& s) :
  *              std::vector<double> containing the weights used to 
  *              obtain p and s.
  */
-template<class S> 
-PointAndSolution<S>::PointAndSolution(const Point& p, const S& s, 
-                                 std::vector<double>::const_iterator first,
-                                 std::vector<double>::const_iterator last) :
-                                      point(p), solution(s)
+template <class S> 
+PointAndSolution<S>::PointAndSolution(const Point & p, const S & s, 
+                             std::vector<double>::const_iterator first,
+                             std::vector<double>::const_iterator last) :
+                                point(p), solution(s), _isNull(false)
 {
   weightsUsed.assign(first, last);
 }
 
 
 //! PointAndSolution's default destructor. (empty)
-template<class S> 
+template <class S> 
 PointAndSolution<S>::~PointAndSolution() { }
+
+
+//! Is the instance null?
+/*!
+ *  \return true if the instance is a null instance; false otherwise.
+ *  
+ *  \sa PointAndSolution and Point
+ */
+template <class S> 
+bool 
+PointAndSolution<S>::isNull() const
+{
+  return _isNull;
+}
+
+
+/*! 
+ *  \brief Check if the contained Point instance is strictly positive 
+ *         (i.e. all coordinates strictly greater than zero).
+ *  
+ *  Possible exceptions:
+ *  - May throw a NullObjectException exception if either this or the 
+ *    contained Point instance is null.
+ *  
+ *  \sa Point
+ */
+template <class S> 
+bool 
+PointAndSolution<S>::isStrictlyPositive() const
+{
+  if (isNull())
+    throw NullObjectException();
+
+  return point.isStrictlyPositive();
+}
 
 
 //! PointAndSolution equality operator.
@@ -66,10 +101,16 @@ PointAndSolution<S>::~PointAndSolution() { }
  *  
  *  \sa PointAndSolution
  */
-template<class S> 
+template <class S> 
 bool 
-PointAndSolution<S>::operator== (const PointAndSolution& pas) const
+PointAndSolution<S>::operator== (const PointAndSolution & pas) const
 {
+  if (isNull() and pas.isNull())
+    return true;
+  else if (isNull() or pas.isNull())
+    return false;
+  // else
+
   return (this->point == pas.point);
 }
 
@@ -84,15 +125,21 @@ PointAndSolution<S>::operator== (const PointAndSolution& pas) const
  *  instances they contain.
  *  
  *  Possible exceptions:
- *  - May throw a DifferentDimensionsException if the two Points are of 
- *    different dimensions (can't be compared).
+ *  - May throw a NullObjectException exception if either 
+ *    PointAndSolution instance (or either of the contained Point 
+ *    instances) is null.
+ *  - May throw a DifferentDimensionsException exception if the two Points 
+ *    are of different dimensions (can't be compared).
  *  
  *  \sa PointAndSolution and Point::operator<()
  */
-template<class S> 
+template <class S> 
 bool 
-PointAndSolution<S>::operator< (const PointAndSolution<S>& pas) const 
+PointAndSolution<S>::operator< (const PointAndSolution<S> & pas) const 
 { 
+  if (isNull() or pas.isNull())
+    throw NullObjectException();
+
   return (this->point < pas.point); 
 }
 
@@ -120,8 +167,11 @@ PointAndSolution<S>::operator< (const PointAndSolution<S>& pas) const
  *  q and that is how it got its name.
  *  
  *  Possible exceptions:
- *  - May throw a NotPositivePointException if either p or q is not 
- *    greater than 0 (dominated by 0).
+ *  - May throw a NullObjectException exception if either 
+ *    PointAndSolution instance (or either of the contained Point 
+ *    instances) is null.
+ *  - May throw a NotStrictlyPositivePointException if either p or q is 
+ *    not strictly positive (i.e. not strongly dominated by 0).
  *  - May throw a NegativeApproximationRatioException if \f$ eps < 0 \f$.
  *  - May throw a DifferentDimensionsException if p and q are of 
  *    different dimensions.
@@ -130,10 +180,33 @@ PointAndSolution<S>::operator< (const PointAndSolution<S>& pas) const
  */
 template <class S> 
 bool 
-PointAndSolution<S>::dominates(const PointAndSolution<S>& pas, 
+PointAndSolution<S>::dominates(const PointAndSolution<S> & pas, 
                                double eps) const
 {
+  if (isNull() or pas.isNull())
+    throw NullObjectException();
+
   return this->point.dominates(pas.point, eps);
+}
+
+
+//! The dimension of the space that the contained point lives in.
+/*!
+ *  Just a shortcut for point.dimension().
+ *  
+ *  Possible exceptions:
+ *  - May throw a NullObjectException exception if the instance is null.
+ *  
+ *  \sa PointAndSolution
+ */
+template <class S> 
+unsigned int 
+PointAndSolution<S>::dimension() const
+{
+  if (isNull())
+    throw NullObjectException();
+
+  return point.dimension();
 }
 
 

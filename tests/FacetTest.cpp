@@ -14,9 +14,16 @@
 #include "../Point.h"
 #include "../PointAndSolution.h"
 #include "../BoundaryFacetException.h"
+#include "../NullObjectException.h"
+#include "../InfiniteRatioDistanceException.h"
 
 
-using namespace pareto_approximator;
+using pareto_approximator::Point;
+using pareto_approximator::PointAndSolution;
+using pareto_approximator::Facet;
+using pareto_approximator::BoundaryFacetException;
+using pareto_approximator::NullObjectException;
+using pareto_approximator::InfiniteRatioDistanceException;
 
 
 namespace {
@@ -28,18 +35,32 @@ class FacetTest : public ::testing::Test
   protected:
     FacetTest()
     {
-      // For the purpose of this test we will create two Facet instances, 
+      // For the purpose of this test we will create three Facet instances, 
       // one that is not a boundary facet (has a unique Lower Distal Point 
-      // (LDP)) and one that is (no unique Lower Distal Point). 
+      // (LDP)), one that is (no unique Lower Distal Point) and one whose
+      // normal vector we won't initialize - the Facet constructor will 
+      // have to do it. 
+
+      regularFacet = NULL;
+      boundaryFacet = NULL;
+      verticesOnlyFacet = NULL;
 
       regularFacet = makeRegularFacet();
       boundaryFacet = makeBoundaryFacet();
       verticesOnlyFacet = makeFacetUsingVerticesOnly();
     }
 
-    ~FacetTest() { }
+    ~FacetTest() 
+    {
+      delete regularFacet;
+      regularFacet = NULL;
+      delete boundaryFacet;
+      boundaryFacet = NULL;
+      delete verticesOnlyFacet;
+      verticesOnlyFacet = NULL;
+    }
 
-    Facet<std::string> makeRegularFacet() 
+    Facet<std::string> * makeRegularFacet() 
     {
       // regular facet == has a unique Lower Distal Point
 
@@ -73,13 +94,16 @@ class FacetTest : public ::testing::Test
       std::vector<double> facetNormal(3, 1.0);
 
       // now make and return the facet
-      Facet<std::string> regularFacet(vertices.begin(), vertices.end(), 
-                                      facetNormal.begin(), facetNormal.end());
+      Facet<std::string> * regularFacet;
+      regularFacet = new Facet<std::string>(vertices.begin(), 
+                                            vertices.end(), 
+                                            facetNormal.begin(), 
+                                            facetNormal.end());
 
       return regularFacet;
     }
 
-    Facet<std::string> makeBoundaryFacet() 
+    Facet<std::string> * makeBoundaryFacet() 
     {
       // boundary facet == no unique Lower Distal Point
 
@@ -117,13 +141,16 @@ class FacetTest : public ::testing::Test
       facetNormal[2] = -1.0;
 
       // now make and return the facet
-      Facet<std::string> boundaryFacet(vertices.begin(), vertices.end(), 
-                                       facetNormal.begin(), facetNormal.end());
+      Facet<std::string> * boundaryFacet;
+      boundaryFacet = new Facet<std::string>(vertices.begin(), 
+                                             vertices.end(), 
+                                             facetNormal.begin(), 
+                                             facetNormal.end());
 
       return boundaryFacet;
     }
 
-    Facet<std::string> makeFacetUsingVerticesOnly() 
+    Facet<std::string> * makeFacetUsingVerticesOnly() 
     {
       // It will be a boundary facet as well.
 
@@ -151,18 +178,20 @@ class FacetTest : public ::testing::Test
       vertices.push_back(v11);
 
       // now call the constructor to make the facet
-      Facet<std::string> verticesOnlyFacet(vertices.begin(), vertices.end());
+      Facet<std::string> * verticesOnlyFacet;
+      verticesOnlyFacet = new Facet<std::string>(vertices.begin(), 
+                                                 vertices.end());
 
       return verticesOnlyFacet;
     }
 
     // A regular facet. Has a unique Lower Distal Point (LDP).
-    Facet<std::string> regularFacet;
+    Facet<std::string> * regularFacet;
     // A boundary facet. Hasn't got a unique LDP.
-    Facet<std::string> boundaryFacet;
+    Facet<std::string> * boundaryFacet;
     // A (boundary) facet constructed using the vertices-only constructor.
     // The constructor computed the facet's normal. Hasn't got a unique LDP.
-    Facet<std::string> verticesOnlyFacet;
+    Facet<std::string> * verticesOnlyFacet;
 };
 
 
@@ -172,20 +201,20 @@ TEST_F(FacetTest, FacetConstructorsAndAccessorsWork)
   // The constructor was called inside FacetTest's SetUp method.
 
   // first for the regularFacet instance
-  EXPECT_EQ(3, regularFacet.spaceDimension());
-  EXPECT_FALSE(regularFacet.isBoundaryFacet());
-  EXPECT_EQ(2.0 / 3.0, regularFacet.getLocalApproximationErrorUpperBound());
+  EXPECT_EQ(3, regularFacet->spaceDimension());
+  EXPECT_FALSE(regularFacet->isBoundaryFacet());
+  EXPECT_EQ(2.0 / 3.0, regularFacet->getLocalApproximationErrorUpperBound());
 
   // now for the boundaryFacet instance
-  EXPECT_EQ(3, boundaryFacet.spaceDimension());
-  EXPECT_TRUE(boundaryFacet.isBoundaryFacet());
-  EXPECT_THROW(boundaryFacet.getLocalApproximationErrorUpperBound(), 
+  EXPECT_EQ(3, boundaryFacet->spaceDimension());
+  EXPECT_TRUE(boundaryFacet->isBoundaryFacet());
+  EXPECT_THROW(boundaryFacet->getLocalApproximationErrorUpperBound(), 
                BoundaryFacetException);
 
   // now check verticesOnlyFacet's attributes
-  EXPECT_EQ(2, verticesOnlyFacet.spaceDimension());
-  EXPECT_TRUE(verticesOnlyFacet.isBoundaryFacet());
-  EXPECT_THROW(verticesOnlyFacet.getLocalApproximationErrorUpperBound(), 
+  EXPECT_EQ(2, verticesOnlyFacet->spaceDimension());
+  EXPECT_TRUE(verticesOnlyFacet->isBoundaryFacet());
+  EXPECT_THROW(verticesOnlyFacet->getLocalApproximationErrorUpperBound(), 
                BoundaryFacetException);
 }
 
@@ -194,10 +223,10 @@ TEST_F(FacetTest, FacetConstructorsAndAccessorsWork)
 TEST_F(FacetTest, FacetIteratorsWork)
 {
   // first for the regularFacet
-  EXPECT_EQ(3.0, std::distance(regularFacet.beginVertex(), 
-                               regularFacet.endVertex()));
+  EXPECT_EQ(3.0, std::distance(regularFacet->beginVertex(), 
+                               regularFacet->endVertex()));
 
-  Facet<std::string>::ConstVertexIterator cvi = regularFacet.beginVertex();
+  Facet<std::string>::ConstVertexIterator cvi = regularFacet->beginVertex();
   EXPECT_EQ(Point(1, 2, 2), cvi->point);
   EXPECT_EQ("solution1", cvi->solution);
   EXPECT_EQ(3, cvi->weightsUsed.size());
@@ -219,12 +248,12 @@ TEST_F(FacetTest, FacetIteratorsWork)
   EXPECT_EQ(0.0, cvi->weightsUsed[1]);
   EXPECT_EQ(1.0, cvi->weightsUsed[2]);
   ++cvi;
-  EXPECT_TRUE(cvi == regularFacet.endVertex());
+  EXPECT_TRUE(cvi == regularFacet->endVertex());
 
   // now for the verticesOnlyFacet
-  EXPECT_EQ(2.0, std::distance(verticesOnlyFacet.beginVertex(), 
-                               verticesOnlyFacet.endVertex()));
-  cvi = verticesOnlyFacet.beginVertex();
+  EXPECT_EQ(2.0, std::distance(verticesOnlyFacet->beginVertex(), 
+                               verticesOnlyFacet->endVertex()));
+  cvi = verticesOnlyFacet->beginVertex();
   EXPECT_EQ(Point(1, 2), cvi->point);
   EXPECT_EQ("solution1", cvi->solution);
   EXPECT_EQ(2, cvi->weightsUsed.size());
@@ -237,7 +266,7 @@ TEST_F(FacetTest, FacetIteratorsWork)
   EXPECT_EQ(1.0, cvi->weightsUsed[0]);
   EXPECT_EQ(0.0, cvi->weightsUsed[1]);
   ++cvi;
-  EXPECT_TRUE(cvi == verticesOnlyFacet.endVertex());
+  EXPECT_TRUE(cvi == verticesOnlyFacet->endVertex());
 }
 
 
@@ -245,14 +274,14 @@ TEST_F(FacetTest, FacetIteratorsWork)
 TEST_F(FacetTest, ComputeMeanVertexWeightsWorks)
 {
   // first for the regularFacet
-  std::vector<double> rfmvw = regularFacet.computeMeanVertexWeights();
+  std::vector<double> rfmvw = regularFacet->computeMeanVertexWeights();
   EXPECT_EQ(3, rfmvw.size());
   EXPECT_EQ(1.0 / 3.0, rfmvw[0]);
   EXPECT_EQ(1.0 / 3.0, rfmvw[1]);
   EXPECT_EQ(1.0 / 3.0, rfmvw[2]);
 
   // now for the boundaryFacet
-  std::vector<double> bfmvw = boundaryFacet.computeMeanVertexWeights();
+  std::vector<double> bfmvw = boundaryFacet->computeMeanVertexWeights();
   EXPECT_EQ(3, bfmvw.size());
   EXPECT_EQ(1.0 / 3.0, bfmvw[0]);
   EXPECT_EQ(2.0 / 3.0, bfmvw[1]);
@@ -267,10 +296,10 @@ TEST_F(FacetTest, ComputeLowerDistalPointWorks)
   // test as well. (Facet's constructor uses the aforementioned method to 
   // initialize some attributes)
 
-  ASSERT_TRUE(regularFacet.computeLowerDistalPoint() != NULL);
-  EXPECT_EQ(Point(1, 1, 1), *regularFacet.computeLowerDistalPoint());
+  ASSERT_FALSE(regularFacet->computeLowerDistalPoint().isNull());
+  EXPECT_EQ(Point(1, 1, 1), regularFacet->computeLowerDistalPoint());
 
-  EXPECT_TRUE(boundaryFacet.computeLowerDistalPoint() == NULL);
+  EXPECT_TRUE(boundaryFacet->computeLowerDistalPoint().isNull());
 }
 
 
@@ -278,33 +307,83 @@ TEST_F(FacetTest, ComputeLowerDistalPointWorks)
 TEST_F(FacetTest, RatioDistanceWorks)
 {
   // We implicitly tested it inside the FacetConstructorsAndAccessorsWork 
-  // test as well. (Facet's constructor uses the aforementioned method to 
-  // initialize some attributes)
+  // test as well. (Facet's constructor uses ratioDistance() to initialize 
+  // some attributes)
 
-  EXPECT_EQ(2.0 / 3.0, regularFacet.ratioDistance(Point(1, 1, 1)));
-  EXPECT_EQ(1.0 / 4.0, regularFacet.ratioDistance(Point(1, 2, 1)));
-  EXPECT_EQ(0.0, regularFacet.ratioDistance(Point(8, 8, 8)));
+  EXPECT_EQ(2.0 / 3.0, regularFacet->ratioDistance(Point(1, 1, 1)));
+  EXPECT_EQ(1.0 / 4.0, regularFacet->ratioDistance(Point(1, 2, 1)));
+  EXPECT_EQ(0.0, regularFacet->ratioDistance(Point(8, 8, 8)));
 
-  EXPECT_EQ(4.0 / 5.0, boundaryFacet.ratioDistance(Point(1, 1, 1)));
-  EXPECT_EQ(3.0 / 6.0, boundaryFacet.ratioDistance(Point(2, 1, 1)));
-  EXPECT_EQ(0.0, boundaryFacet.ratioDistance(Point(8, 8, 8)));
+  EXPECT_EQ(4.0 / 5.0, boundaryFacet->ratioDistance(Point(1, 1, 1)));
+  EXPECT_EQ(3.0 / 6.0, boundaryFacet->ratioDistance(Point(2, 1, 1)));
+  EXPECT_EQ(0.0, boundaryFacet->ratioDistance(Point(8, 8, 8)));
+
+  // We will now make a facet and a point such that ratioDistance() 
+  // will trigger an InfiniteRatioDistanceException.
+  // - This can only happen when the facet and the point's vector both 
+  //   face the same direction. (cannot actually happen for biobjective 
+  //   optimization problems but we'll just use impossible numbers below 
+  //   in order to test the behavior)
+
+  std::vector< PointAndSolution<std::string> > exceptionVertices;
+  PointAndSolution<std::string> pas1(Point(1.0, 0.0), "p01");
+  PointAndSolution<std::string> pas2(Point(2.0, 1.0), "p12");
+  pas1.weightsUsed.push_back(1.0);
+  pas1.weightsUsed.push_back(-1.0);
+  pas2.weightsUsed.push_back(1.0);
+  pas2.weightsUsed.push_back(-1.0);
+  exceptionVertices.push_back(pas1);
+  exceptionVertices.push_back(pas2);
+
+  Facet<std::string> exceptionFacet(exceptionVertices.begin(), 
+                                    exceptionVertices.end());
+
+  Point parallelPoint(1.0, 1.0);
+
+  EXPECT_THROW(exceptionFacet.ratioDistance(parallelPoint), 
+               InfiniteRatioDistanceException);
+
+  Point nullPoint = Point();
+  EXPECT_THROW(exceptionFacet.ratioDistance(nullPoint), 
+               NullObjectException);
 }
 
 
 // Test that Facet::hasAllNormalVectorElementsNonPositive() works.
 TEST_F(FacetTest, HasAllNormalVectorElementsNonPositiveWorks)
 {
-  EXPECT_FALSE(regularFacet.hasAllNormalVectorElementsNonPositive());
-  EXPECT_TRUE(boundaryFacet.hasAllNormalVectorElementsNonPositive());
+  EXPECT_FALSE(regularFacet->hasAllNormalVectorElementsNonPositive());
+  EXPECT_TRUE(boundaryFacet->hasAllNormalVectorElementsNonPositive());
 
-  // verticesOnlyFacet's normal vector could be either all-elements-positive 
-  // or all-elements-non-positive but we expect the constructor to choose 
-  // the all-elements-positive one 
+  // verticesOnlyFacet's normal vector could be either
+  // all-elements-non-negative ({1, 0} in initializer-list notation) or 
+  // all-elements-non-positive ({-1, 0} in initializer-list notation)
+  // but we expect the constructor to choose the all-elements-non-negative 
+  // one. 
   // 
   // reminder: for each set of n points there are two possible n-hyperplanes
   //           that pass through all the points; the two hyperplanes' (and 
   //           the corresponding facets') normal vectors are opposite
-  EXPECT_FALSE(verticesOnlyFacet.hasAllNormalVectorElementsNonPositive());
+  EXPECT_FALSE(verticesOnlyFacet->hasAllNormalVectorElementsNonPositive());
+}
+
+
+// Test that Facet::hasAllNormalVectorElementsNonNegative() works.
+TEST_F(FacetTest, HasAllNormalVectorElementsNonNegativeWorks)
+{
+  EXPECT_TRUE(regularFacet->hasAllNormalVectorElementsNonNegative());
+  EXPECT_FALSE(boundaryFacet->hasAllNormalVectorElementsNonNegative());
+
+  // verticesOnlyFacet's normal vector could be either
+  // all-elements-non-negative ({1, 0} in initializer-list notation) or 
+  // all-elements-non-positive ({-1, 0} in initializer-list notation)
+  // but we expect the constructor to choose the all-elements-non-negative 
+  // one. 
+  // 
+  // reminder: for each set of n points there are two possible n-hyperplanes
+  //           that pass through all the points; the two hyperplanes' (and 
+  //           the corresponding facets') normal vectors are opposite
+  EXPECT_TRUE(verticesOnlyFacet->hasAllNormalVectorElementsNonNegative());
 }
 
 
