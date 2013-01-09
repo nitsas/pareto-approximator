@@ -3,8 +3,8 @@
  *  \author Christos Nitsas
  *  \date 2012
  *  
- *  Won't `#include` "BaseProblem.h". In fact "BaseProblem.h" will 
- *  `#include` "BaseProblem.cpp" because it describes a class template 
+ *  Won't `include` BaseProblem.h. In fact BaseProblem.h will 
+ *  `include` BaseProblem.cpp because it describes a class template 
  *  (which doesn't allow us to split declaration from definition).
  */
 
@@ -19,12 +19,12 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 
@@ -43,15 +43,15 @@ template <class S>
 BaseProblem<S>::~BaseProblem() { }
 
 
-//! Compute an (1+eps)-convex Pareto set of the problem.
+//! Compute an (1+eps)-approximate convex Pareto set of the problem.
 /*! 
  *  \param numObjectives The number of objectives to minimize. Note: The 
  *                       user's comb() routine should be able to handle a 
  *                       std::vector<double> of \#numObjectives weights.
  *  \param eps The degree of approximation. computeConvexParetoSet() will 
- *             find an (1+eps)-convex Pareto set of the problem.
- *  \return An (1+eps)-convex Pareto set of the problem whose linear 
- *          combinations of objectives comb optimizes.
+ *             find an (1+eps)-approximate convex Pareto set of the problem.
+ *  \return An (1+eps)-approximate convex Pareto set of the problem whose 
+ *          linear combinations of objectives comb optimizes.
  *  
  *  How to use:
  *  Users should create a class (let's call it Problem), deriving from 
@@ -70,10 +70,6 @@ BaseProblem<S>::~BaseProblem() { }
  *  attribute to an empty list every time it is called (before it 
  *  calls any other method).
  *
- *  Possible exceptions:
- *  - May throw a NotEnoughAnchorPointsException exception if at some step
- *    the number of points for a newFacet are less than \#numObjectives.
- *  
  *  \sa BaseProblem, PointAndSolution and Point
  */
 template <class S> 
@@ -124,8 +120,8 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives,
     results.assign(nds.begin(), nds.end());
   else if ( (nds.size() > 1) && (nds.size() < numObjectives) ) 
     // Not enough anchor points to continue.
+    // - Return the anchor points we have so far.
     results.assign(nds.begin(), nds.end());
-    // throw NotEnoughAnchorPointsException();
   else {
     // Exactly \#numObjectives anchor points - enough to continue.
     // (no anchor point was dominated by any other)
@@ -152,9 +148,9 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives,
     // Filter the results.
     // - Some of the anchor points might be weakly Pareto optimal, so 
     //   some of the points computed by doChord might dominate them. 
-    results = pareto_approximator::filterDominatedPoints<S>(
-                                      unfilteredResults.begin(), 
-                                      unfilteredResults.end());
+    results = pareto_approximator::utility::
+                      filterDominatedPoints<S>(unfilteredResults.begin(), 
+                                               unfilteredResults.end());
   }
 
   return results;
@@ -233,7 +229,7 @@ BaseProblem<S>::doChord(unsigned int numObjectives, Facet<S> anchorFacet,
     // the facet's two vertices). 
     // - If it is dominated ignore it. (try the next facet)
     // - It is dominated if it is one of the facet's two vertices.
-    if (generatingFacet.ratioDistance(opt.point) <= eps)
+    if (generatingFacet.dominates(opt.point, eps))
       continue;
     // else
 
@@ -359,16 +355,17 @@ BaseProblem<S>::doCraft(unsigned int numObjectives, Facet<S> anchorFacet,
   // - That local approximation error upper bound is computed during the 
   //   construction of the Facet instance.
   std::list< Facet<S> > facets;
-  facets = pareto_approximator::computeConvexHull<S>(approximationPoints, 
-                                                     spaceDimension);
+  facets = pareto_approximator::utility::
+                       computeConvexHull<S>(approximationPoints, 
+                                            spaceDimension);
 
   // Discard facets with all-negative normal vectors.
-  pareto_approximator::discardUselessFacets<S>(facets);
+  pareto_approximator::utility::discardUselessFacets<S>(facets);
 
   while (not facets.empty()) {
     // Choose the facet with largest local approximation error upper bound.
     typename std::list< Facet<S> >::iterator generatingFacet;
-    generatingFacet = pareto_approximator::
+    generatingFacet = pareto_approximator::utility::
                     chooseFacetWithLargestLocalApproximationErrorUpperBound<S>(
                                           facets.begin(), facets.end());
 
@@ -414,9 +411,10 @@ BaseProblem<S>::doCraft(unsigned int numObjectives, Facet<S> anchorFacet,
     // opt is a new point - we will add it to the set of approximation 
     // points and calculate the new convex hull of the set
     approximationPoints.push_back(opt);
-    facets = pareto_approximator::computeConvexHull<S>(approximationPoints, 
-                                                       spaceDimension);
-    pareto_approximator::discardUselessFacets<S>(facets);
+    facets = pareto_approximator::utility::
+                              computeConvexHull<S>(approximationPoints, 
+                                                   spaceDimension);
+    pareto_approximator::utility::discardUselessFacets<S>(facets);
   }
 
   return approximationPoints;
@@ -455,7 +453,7 @@ PointAndSolution<S>
 BaseProblem<S>::generateNewParetoPointUsingFacet(const Facet<S> & facet) 
 {
   // Get a weight vector (using the given facet as a generating facet).
-  std::vector<double> weights = pareto_approximator::
+  std::vector<double> weights = pareto_approximator::utility::
                                 generateNewWeightVector<S>(facet);
 
   return generateNewParetoPoint(weights);
@@ -523,7 +521,7 @@ BaseProblem<S>::generateNewParetoPoint(const std::vector<double> & weights)
   assert(not newPoint.point.isNull());
   // Is the point returned strictly positive? (it should)
   if (not newPoint.point.isStrictlyPositive()) 
-    throw NotStrictlyPositivePointException();
+    throw exception_classes::NotStrictlyPositivePointException();
   // else
 
   // Initialize newPoint's weightsUsed and _isNull attributes.

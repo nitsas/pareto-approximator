@@ -8,22 +8,31 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <armadillo>
 
 #include "gtest/gtest.h"
 #include "../Facet.h"
 #include "../Point.h"
 #include "../PointAndSolution.h"
+#include "../DifferentDimensionsException.h"
 #include "../BoundaryFacetException.h"
 #include "../NullObjectException.h"
 #include "../InfiniteRatioDistanceException.h"
+#include "../NegativeApproximationRatioException.h"
+#include "../NotPositivePointException.h"
+#include "../NotStrictlyPositivePointException.h"
 
 
 using pareto_approximator::Point;
 using pareto_approximator::PointAndSolution;
 using pareto_approximator::Facet;
-using pareto_approximator::BoundaryFacetException;
-using pareto_approximator::NullObjectException;
-using pareto_approximator::InfiniteRatioDistanceException;
+using pareto_approximator::exception_classes::DifferentDimensionsException;
+using pareto_approximator::exception_classes::BoundaryFacetException;
+using pareto_approximator::exception_classes::NullObjectException;
+using pareto_approximator::exception_classes::InfiniteRatioDistanceException;
+using pareto_approximator::exception_classes::NegativeApproximationRatioException;
+using pareto_approximator::exception_classes::NotPositivePointException;
+using pareto_approximator::exception_classes::NotStrictlyPositivePointException;
 
 
 namespace {
@@ -135,6 +144,10 @@ class FacetTest : public ::testing::Test
       vertices.push_back(v214);
 
       // then make the facet's normal vector
+      // - We used the all-negative normal vector so that we could use 
+      //   boundaryFacet to test the 
+      //   Facet::hasAllNormalVectorElementsNonPositive() and 
+      //   Facet::hasAllNormalVectorElementsNonNegative() methods.
       std::vector<double> facetNormal(3);
       facetNormal[0] = -1.0;
       facetNormal[1] = -3.0;
@@ -303,13 +316,32 @@ TEST_F(FacetTest, ComputeLowerDistalPointWorks)
 }
 
 
+// Test that Facet::euclideanDistance() works.
+TEST_F(FacetTest, EuclideanDistanceWorks)
+{
+  arma::vec normalVector = arma::vec(regularFacet->getNormalVector());
+
+  EXPECT_EQ(regularFacet->euclideanDistance(Point(1, 1, 1)), 
+            std::abs( ( arma::dot( normalVector, Point(1, 1, 1).toVec() ) 
+                        - regularFacet->b() ) 
+                      / arma::norm(normalVector, 2)));
+
+  EXPECT_EQ(regularFacet->euclideanDistance(Point(0.0, 1.0, 0.5)), 
+            std::abs( ( arma::dot( normalVector, Point(0.0, 1.0, 0.5).toVec() ) 
+                        - regularFacet->b() ) 
+                      / arma::norm(normalVector, 2)));
+
+  Point nullPoint = Point();
+  EXPECT_THROW(regularFacet->euclideanDistance(nullPoint), 
+               NullObjectException);
+  EXPECT_THROW(regularFacet->euclideanDistance(Point(1, 1)), 
+               DifferentDimensionsException);
+}
+
+
 // Test that Facet::ratioDistance() works.
 TEST_F(FacetTest, RatioDistanceWorks)
 {
-  // We implicitly tested it inside the FacetConstructorsAndAccessorsWork 
-  // test as well. (Facet's constructor uses ratioDistance() to initialize 
-  // some attributes)
-
   EXPECT_EQ(2.0 / 3.0, regularFacet->ratioDistance(Point(1, 1, 1)));
   EXPECT_EQ(1.0 / 4.0, regularFacet->ratioDistance(Point(1, 2, 1)));
   EXPECT_EQ(0.0, regularFacet->ratioDistance(Point(8, 8, 8)));
@@ -344,8 +376,117 @@ TEST_F(FacetTest, RatioDistanceWorks)
                InfiniteRatioDistanceException);
 
   Point nullPoint = Point();
-  EXPECT_THROW(exceptionFacet.ratioDistance(nullPoint), 
+  EXPECT_THROW(regularFacet->ratioDistance(nullPoint), 
                NullObjectException);
+
+  EXPECT_THROW(regularFacet->ratioDistance(Point(1, 1)), 
+               DifferentDimensionsException);
+
+  EXPECT_THROW(regularFacet->ratioDistance(Point(0, 1, 1)), 
+               NotStrictlyPositivePointException);
+}
+
+
+// Test that Facet::additiveDistance() works as expected.
+TEST_F(FacetTest, AdditiveDistanceWorks)
+{
+  EXPECT_EQ(2.0 / 3.0, regularFacet->additiveDistance(Point(1, 1, 1)));
+  EXPECT_EQ(1.0 / 3.0, regularFacet->additiveDistance(Point(1, 2, 1)));
+  EXPECT_EQ(0.0, regularFacet->additiveDistance(Point(8, 8, 8)));
+
+  EXPECT_EQ(4.0 / 5.0, boundaryFacet->additiveDistance(Point(1, 1, 1)));
+  EXPECT_EQ(3.0 / 5.0, boundaryFacet->additiveDistance(Point(2, 1, 1)));
+  EXPECT_EQ(0.0, boundaryFacet->additiveDistance(Point(8, 8, 8)));
+
+  Point nullPoint = Point();
+  EXPECT_THROW(regularFacet->additiveDistance(nullPoint), 
+               NullObjectException);
+
+  EXPECT_THROW(regularFacet->additiveDistance(Point(1, 1)), 
+               DifferentDimensionsException);
+  
+  EXPECT_THROW(regularFacet->additiveDistance(Point(-1, 1, 1)), 
+               NotPositivePointException);
+}
+
+
+// Test that Facet::dominatesAdditive() works as expected.
+TEST_F(FacetTest, DominatesAdditiveWorks)
+{
+  EXPECT_FALSE(regularFacet->dominatesAdditive(Point(1, 1, 1)));
+  EXPECT_TRUE(regularFacet->dominatesAdditive(Point(1, 1, 1), 2.0 / 3.0));
+  EXPECT_FALSE(regularFacet->dominatesAdditive(Point(1, 1, 1), 2.0 / 3.1));
+
+  EXPECT_FALSE(regularFacet->dominatesAdditive(Point(1, 2, 1)));
+  EXPECT_TRUE(regularFacet->dominatesAdditive(Point(1, 2, 1), 1.0 / 3.0));
+  EXPECT_FALSE(regularFacet->dominatesAdditive(Point(1, 2, 1), 1.0 / 3.1));
+
+  EXPECT_TRUE(regularFacet->dominatesAdditive(Point(8, 8, 8)));
+  EXPECT_TRUE(regularFacet->dominatesAdditive(Point(8, 8, 8), 0.01));
+
+  EXPECT_FALSE(boundaryFacet->dominatesAdditive(Point(1, 1, 1)));
+  EXPECT_TRUE(boundaryFacet->dominatesAdditive(Point(1, 1, 1), 4.0 / 5.0));
+  EXPECT_FALSE(boundaryFacet->dominatesAdditive(Point(1, 1, 1), 4.0 / 5.1));
+
+  EXPECT_FALSE(boundaryFacet->dominatesAdditive(Point(2, 1, 1)));
+  EXPECT_TRUE(boundaryFacet->dominatesAdditive(Point(2, 1, 1), 3.0 / 5.0));
+  EXPECT_FALSE(boundaryFacet->dominatesAdditive(Point(2, 1, 1), 3.0 / 5.1));
+  
+  EXPECT_TRUE(boundaryFacet->dominatesAdditive(Point(8, 8, 8)));
+  EXPECT_TRUE(boundaryFacet->dominatesAdditive(Point(8, 8, 8), 0.01));
+
+  Point nullPoint = Point();
+  EXPECT_THROW(regularFacet->dominatesAdditive(nullPoint), 
+               NullObjectException);
+
+  EXPECT_THROW(regularFacet->dominatesAdditive(Point(1, 1)), 
+               DifferentDimensionsException);
+
+  EXPECT_THROW(regularFacet->dominatesAdditive(Point(1, 1, 1), -2.0), 
+               NegativeApproximationRatioException);
+
+  EXPECT_THROW(regularFacet->dominatesAdditive(Point(-1, 1, 1)), 
+               NotPositivePointException);
+}
+
+
+// Test that Facet::dominatesMultiplicative() works as expected.
+TEST_F(FacetTest, DominatesMultiplicativeWorks)
+{
+  EXPECT_FALSE(regularFacet->dominatesMultiplicative(Point(1, 1, 1)));
+  EXPECT_TRUE(regularFacet->dominatesMultiplicative(Point(1, 1, 1), 2.0 / 3.0));
+  EXPECT_FALSE(regularFacet->dominatesMultiplicative(Point(1, 1, 1), 2.0 / 3.1));
+
+  EXPECT_FALSE(regularFacet->dominatesMultiplicative(Point(1, 2, 1)));
+  EXPECT_TRUE(regularFacet->dominatesMultiplicative(Point(1, 2, 1), 1.0 / 4.0));
+  EXPECT_FALSE(regularFacet->dominatesMultiplicative(Point(1, 2, 1), 1.0 / 4.1));
+
+  EXPECT_TRUE(regularFacet->dominatesMultiplicative(Point(8, 8, 8)));
+  EXPECT_TRUE(regularFacet->dominatesMultiplicative(Point(8, 8, 8), 0.01));
+
+  EXPECT_FALSE(boundaryFacet->dominatesMultiplicative(Point(1, 1, 1)));
+  EXPECT_TRUE(boundaryFacet->dominatesMultiplicative(Point(1, 1, 1), 4.0 / 5.0));
+  EXPECT_FALSE(boundaryFacet->dominatesMultiplicative(Point(1, 1, 1), 4.0 / 5.1));
+
+  EXPECT_FALSE(boundaryFacet->dominatesMultiplicative(Point(2, 1, 1)));
+  EXPECT_TRUE(boundaryFacet->dominatesMultiplicative(Point(2, 1, 1), 3.0 / 6.0));
+  EXPECT_FALSE(boundaryFacet->dominatesMultiplicative(Point(2, 1, 1), 3.0 / 6.1));
+
+  EXPECT_TRUE(boundaryFacet->dominatesMultiplicative(Point(8, 8, 8)));
+  EXPECT_TRUE(boundaryFacet->dominatesMultiplicative(Point(8, 8, 8), 0.01));
+
+  Point nullPoint = Point();
+  EXPECT_THROW(regularFacet->dominatesMultiplicative(nullPoint), 
+               NullObjectException);
+
+  EXPECT_THROW(regularFacet->dominatesMultiplicative(Point(1, 1)), 
+               DifferentDimensionsException);
+
+  EXPECT_THROW(regularFacet->dominatesMultiplicative(Point(0, 1, 1)), 
+               NotStrictlyPositivePointException);
+
+  EXPECT_THROW(regularFacet->dominatesMultiplicative(Point(1, 1, 1), -2.0), 
+               NegativeApproximationRatioException);
 }
 
 

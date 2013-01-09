@@ -13,13 +13,17 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
+
+
+//! The namespace containing all the exception classes.
+namespace exception_classes {
 
 
 //! Exception thrown by Point::operator[]().
@@ -35,6 +39,9 @@ class NonExistentCoordinateException : public std::exception
       return "The requested coordinate does not exist. (out of bounds)";
     }
 };
+
+
+}  // namespace exception_classes
 
 
 }  // namespace pareto_approximator

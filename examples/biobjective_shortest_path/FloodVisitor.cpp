@@ -54,7 +54,8 @@ FloodVisitor::initializeVertex(const Vertex & u, const Graph &)
   if (u == source_) {
     // initialize the source's distance to [1.0, 1.0] because (currently) 
     // we do not allow not strictly positive points like [0.0, 0.0]
-    // inside Point::dominates() and Point::ratioDistance()
+    // inside Point::dominates() and Point::distance() (because of 
+    // Point::ratioDistance())
     vertexDistances_[u].insert(Point(1.0, 1.0));
   }
   else

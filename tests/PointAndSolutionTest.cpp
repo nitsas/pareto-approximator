@@ -16,7 +16,7 @@
 
 using pareto_approximator::Point;
 using pareto_approximator::PointAndSolution;
-using pareto_approximator::NullObjectException;
+using pareto_approximator::exception_classes::NullObjectException;
 
 
 namespace {

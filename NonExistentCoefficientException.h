@@ -13,19 +13,22 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 
-//! Exception thrown by Hyperplane::operator[]().
+//! The namespace containing all the exception classes.
+namespace exception_classes {
+
+
 /*! 
- *  An exception thrown when the requested Hyperplane coefficient does not 
- *  exist. (out of bounds)
+ *  \brief Exception thrown when the requested Hyperplane coefficient does 
+ *         not exist. (out of bounds)
  */
 class NonExistentCoefficientException : public std::exception
 {
@@ -36,6 +39,9 @@ class NonExistentCoefficientException : public std::exception
       return "The requested coefficient does not exist. (out of bounds)";
     }
 };
+
+
+}  // namespace exception_classes
 
 
 }  // namespace pareto_approximator

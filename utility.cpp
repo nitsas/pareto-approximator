@@ -3,8 +3,8 @@
  *  \author Christos Nitsas
  *  \date 2012
  *  
- *  Won't `#include` "utility.h". In fact, "utility.h" will `#include` 
- *  "utility.cpp" because it contains function templates (which don't allow 
+ *  Won't `include` utility.h. In fact, utility.h will `include` 
+ *  utility.cpp because it contains function templates (which don't allow 
  *  us to split declaration from definition).
  */
 
@@ -19,7 +19,7 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
@@ -80,14 +80,22 @@ normalizeVector(std::vector<double> & v);
 }  // namespace
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
+
+
+//! The namespace containing utility functions. 
+/*! 
+ *  (i.e. functions called by class methods e.t.c.)
+ */
+namespace utility {
 
 
 //! Compute the convex hull of the given set of points.
 /*!
  *  \param points A (const reference to a) std::vector of points. 
  *                (PointAndSolution<S> instances)
+ *  \param spaceDimension The dimension of the space that the points live in.
  *  
  *  \sa BaseProblem::doCraft()
  */
@@ -312,6 +320,9 @@ generateNewWeightVector(const Facet<S> & facet)
 
   return weights;
 }
+
+
+}  // namespace utility
 
 
 }  // namespace pareto_approximator

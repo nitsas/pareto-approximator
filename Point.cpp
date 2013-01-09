@@ -9,17 +9,18 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <cmath>
 
 #include "Point.h"
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 
@@ -230,7 +231,7 @@ unsigned int
 Point::dimension() const
 {
   if (isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   // else
 
   return coordinates_.size();
@@ -250,7 +251,7 @@ bool
 Point::isZero() const
 {
   if (isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   // else
 
   assert(dimension() > 0);
@@ -258,6 +259,33 @@ Point::isZero() const
   std::vector<double>::const_iterator it;
   for (it = coordinates_.begin(); it != coordinates_.end(); ++it)
     if (*it != 0.0)
+      return false;
+
+  return true;
+}
+
+
+/*!
+ *  \brief Check if the Point is positive (i.e. all coordinates greater 
+ *         than zero).
+ *  
+ *  Possible exceptions:
+ *  - May throw a NullObjectException exception if the point is null.
+ *  
+ *  \sa Point
+ */
+bool 
+Point::isPositive() const
+{
+  if (isNull())
+    throw exception_classes::NullObjectException();
+  // else
+
+  assert(dimension() > 0);
+
+  std::vector<double>::const_iterator it;
+  for (it = coordinates_.begin(); it != coordinates_.end(); ++it)
+    if (*it < 0.0)
       return false;
 
   return true;
@@ -277,7 +305,7 @@ bool
 Point::isStrictlyPositive() const
 {
   if (isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   // else
 
   assert(dimension() > 0);
@@ -311,11 +339,11 @@ double
 Point::operator[] (unsigned int pos) const
 {
   if (isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   // else
 
   if (pos >= dimension())
-    throw NonExistentCoordinateException();
+    throw exception_classes::NonExistentCoordinateException();
   else
     return coordinates_[pos];
 }
@@ -417,11 +445,11 @@ bool
 Point::operator< (const Point & p) const 
 {
   if (isNull() or p.isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   // else
 
   if (dimension() != p.dimension()) 
-    throw DifferentDimensionsException();
+    throw exception_classes::DifferentDimensionsException();
   // else
   for (unsigned int i=0; i<dimension(); ++i) {
     if (coordinates_[i] < p[i])
@@ -457,11 +485,11 @@ Point
 Point::operator+ (const Point & p) const
 {
   if (isNull() or p.isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   // else
 
   if (dimension() != p.dimension()) 
-    throw DifferentDimensionsException();
+    throw exception_classes::DifferentDimensionsException();
   // else
   std::vector<double> newCoords(dimension());
   for (unsigned int i = 0; i < dimension(); ++i) 
@@ -490,11 +518,11 @@ Point
 Point::operator- (const Point & p) const
 {
   if (isNull() or p.isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   // else
 
   if (dimension() != p.dimension()) 
-    throw DifferentDimensionsException();
+    throw exception_classes::DifferentDimensionsException();
   // else
   std::vector<double> newCoords(dimension());
   for (unsigned int i = 0; i < dimension(); ++i) 
@@ -578,7 +606,7 @@ arma::vec
 Point::toVec() const
 {
   if (isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   // else
 
   return arma::vec(coordinates_);
@@ -598,23 +626,88 @@ arma::rowvec
 Point::toRowVec() const
 {
   if (isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   // else
 
   return arma::rowvec(coordinates_);
 }
 
 
+//! Return the distance from the current to the given Point instance.
+/*!
+ *  \param q A Point instance.
+ *  \return The distance from the current Point instance (*this) to 
+ *          the given Point instance.
+ *  
+ *  There are different possible distance metrics we could use (e.g. 
+ *  ratio distance, Euclidean distance, additive distance etc.). 
+ *  
+ *  Currently using the additive distance metric.
+ *  
+ *  Possible exceptions:
+ *  - May throw a NullObjectException exception if the point is null.
+ *  - May throw a DifferentDimensionsException exception if the two 
+ *    Point instances are of different dimensions (can't be compared).
+ *  - May throw a NotStrictlyPositivePointException exception if either the 
+ *    current instance or the given point is not strictly positive.
+ *  
+ *  \sa Point, Point::additiveDistance(), Point::euclideanDistance(), 
+ *      Point::ratioDistance() and Point::dominates()
+ */
+double 
+Point::distance(const Point & q) const
+{
+  return additiveDistance(q);
+}
+
+
+/*! 
+ *  \brief Return the Euclidean distance from the current to the given 
+ *         Point instance.
+ *
+ *  The formula for the Euclidean distance between two d-dimensional 
+ *  points p and q is:
+ *  \f$ ED(p, q) = \sqrt{(p_1 - q_1)^2 + (p_2 - q_2)^2 + ... + 
+ *                       (p_d - q_d)^2} \f$
+ *  
+ *  In contrast to ratioDistance(), euclideanDistance() permits points 
+ *  with negative coordinates.
+ *  
+ *  \sa Point, Point::distance() and Point::dominates()
+ */
+double 
+Point::euclideanDistance(const Point & q) const
+{
+  if (isNull() or q.isNull())
+    throw exception_classes::NullObjectException();
+  if (dimension() != q.dimension())
+    throw exception_classes::DifferentDimensionsException();
+  // else
+
+  double sumOfSquaredDifferences = 0.0;
+  for (unsigned int i=0; i!=dimension(); ++i)
+    sumOfSquaredDifferences += std::pow((coordinates_[i] - q[i]), 2);
+  
+  return std::sqrt(sumOfSquaredDifferences);
+}
+
+
 //! Return the ratio distance from the current to the given Point instance.
 /*! 
- *  We define the ratio distance from point p to q as:
- *  \f$ RD(p, q) = \max{ x(q)/x(p) - 1, y(q)/y(p) - 1, 0 } \f$.
- *  Intuitively, it is the minimum value of \f$ \epsilon \ge 0 \f$ such 
- *  that  \f$ q \epsilon -covers p \f$.
+ *  \param q A Point instance.
+ *  \return The ratio distance from the current Point instance (*this) 
+ *          to the given Point instance.
  *  
- *  The concept of ratio distance breaks down if some of the two points 
- *  is not strictly positive. A point p is strictly positive iff 
- *  \f$ p_{i} > 0.0 \f$ holds for all i, i.e. every coordinate is 
+ *  We define the ratio distance from point p to q as:
+ *  \f$ RD(p, q) = \max\{ \max_{i}\{ q_{i}/p{i} - 1 \}, 0 \} \f$.
+ *  
+ *  Intuitively, it is the minimum value of \f$ \epsilon \ge 0 \f$ such 
+ *  that q \f$\epsilon\f$ -dominates (\f$\epsilon\f$ -covers) p in the 
+ *  multiplicative sense.
+ *  
+ *  The concept of ratio distance breaks down if one (or both) of the 
+ *  two points is not strictly positive. A point p is strictly positive 
+ *  iff \f$ p_{i} > 0.0 \f$ holds for all i, i.e. every coordinate is 
  *  strictly greater than zero.
  *  
  *  Possible exceptions:
@@ -624,17 +717,17 @@ Point::toRowVec() const
  *  - May throw a NotStrictlyPositivePointException exception if either the 
  *    current instance or the given point is not strictly positive.
  *
- *  \sa Point and Point::dominates() 
+ *  \sa Point, Point::distance() and Point::dominates() 
  */
 double 
 Point::ratioDistance(const Point & q) const 
 {
   if (isNull() or q.isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   if (dimension() != q.dimension())
-    throw DifferentDimensionsException();
+    throw exception_classes::DifferentDimensionsException();
   if (not isStrictlyPositive() or not q.isStrictlyPositive()) 
-    throw NotStrictlyPositivePointException();
+    throw exception_classes::NotStrictlyPositivePointException();
   // else
 
   double max = 0.0;
@@ -648,45 +741,186 @@ Point::ratioDistance(const Point & q) const
 }
 
 
-//! Check if the current point (p) eps-covers the given point (q).
-/*! 
- *  \param q A Point instance with \f$ q_{i} \ge 0 \f$ for all i.
- *  \param eps An approximation factor. (default 0.0)
- *  \return true if p eps-covers q, false otherwise.
+/*!
+ *  \brief Computes the minimum value of \f$\epsilon\f$ such that q 
+ *         \f$\epsilon\f$ -dominates the current instance in the additive 
+ *         sense.
  *  
- *  Note that both p and q must be greater than zero (dominated by 0),
- *  that is both \f$ p_{i} \ge 0 \f$ and \f$ q_{i} \ge 0 \f$ must hold
- *  for all i.
+ *  We say that a point p is \f$\epsilon\f$ -dominated (\f$\epsilon\f$ 
+ *  -covered) by a point q in the additive sense if: 
+ *  \f$ q_i \le p_i + \epsilon \f$ for all i.
  *  
- *  We say that p \f$ \epsilon \f$-covers q (\f$\epsilon \ge 0 \f$) if 
- *  \f$ p_{i} \le (1 + \epsilon) q_{i} \f$, for all i. Both p and 
- *  q must be of the same dimension.
+ *  In other words, the additive distance from a point p to a point q 
+ *  is defined as:
+ *  \f$ AD(p, q) = \max\{ \max_{i}\{(q_{i} - p_{i})\}, 0.0 \} \f$.
+ *  
+ *  Intuitively it is the minimum value of \f$ \epsilon \ge 0 \f$ such 
+ *  that q \f$\epsilon\f$ -dominates (\f$\epsilon\f$ -covers) p in the 
+ *  additive sense.
+ *  
+ *  Note that this method does not require the points to be positive.
+ *  
+ *  Possible exceptions:
+ *  - May throw a NullObjectException exception if the point is null.
+ *  - May throw a DifferentDimensionsException exception if the two 
+ *    Point instances are of different dimensions (can't be compared).
+ *  
+ *  \sa Point, Point::distance() and Point::dominatesAdditive()
+ */
+double 
+Point::additiveDistance(const Point & q) const
+{
+  if (isNull() or q.isNull())
+    throw exception_classes::NullObjectException();
+  if (dimension() != q.dimension())
+    throw exception_classes::DifferentDimensionsException();
+  // else 
+
+  double minEpsilon = 0.0;
+  for (unsigned int i=0; i<dimension(); ++i) {
+    double d = q[i] - coordinates_[i];
+    if (d > minEpsilon)
+      // in here only when d > minEpsilon and d > 0.0
+      minEpsilon = d;
+  }
+
+  return minEpsilon;
+}
+
+
+//! Check if the current point (p) eps-dominates the given point (q).
+/*!
+ *  \param q A Point instance.
+ *  \param eps An approximation parameter.
+ *  \return true if p eps-covers q; false otherwise.
+ *  
+ *  There are two different definitions of eps-dominance we could use:
+ *  - Additive eps-dominance. Where a point q is \f$\epsilon\f$ -dominated 
+ *    by a point p if: 
+ *    \f$ p_{i} \le q_{i} + \epsilon \f$ for all i.
+ *  - Multiplicative eps-dominance. Where a point q is \f$\epsilon\f$ 
+ *    -dominated by a point p if: 
+ *    \f$ p_{i} \le (1 + \epsilon) q_{i} \f$ for all i.
+ *
+ *  Note that for the additive variant both points must be positive (i.e. 
+ *  both \f$ p_{i} \ge 0 \f$ and \f$ q_{i} \ge 0 \f$ must hold for all 
+ *  i), whereas for the multiplicative variant both points must be 
+ *  strictly positive (i.e. both \f$ p_{i} > 0 \f$ and \f$ q_{i} > 0 \f$ 
+ *  must hold for all i).
+ *  
+ *  This method checks for errors and then calls either the 
+ *  dominatesAdditive() or the dominatesMultiplicative() method. 
+ *  (which one will be called is currently hardcoded in this method's 
+ *  implementation) 
+ *  
+ *  Currently using the additive error measure.
  *  
  *  If eps=0.0 the method simply checks whether or not p dominates 
  *  q and that is how it got its name.
  *  
  *  Possible exceptions:
  *  - May throw a NullObjectException exception if the point is null.
- *  - May throw a NotStrictlyPositivePointException if either p or q 
- *    is not strictly positive (i.e. some coordinate is not strictly 
- *    greater than zero).
  *  - May throw a NegativeApproximationRatioException if \f$ eps < 0 \f$.
  *  - May throw a DifferentDimensionsException if p and q are of different 
  *    dimensions.
  *  
- *  \sa Point and Point::ratioDistance()
+ *  \sa Point, Point::dominatesAdditive() and 
+ *      Point::dominatesMultiplicative()
  */
 bool 
 Point::dominates(const Point & q, double eps) const
 {
+  return dominatesAdditive(q, eps);
+}
+
+
+/*!
+ *  \brief Check if the current point (p) eps-dominates (in the additive 
+ *         sense) the given point (q).
+ *  
+ *  We say that a point q is \f$\epsilon\f$ -dominated (\f$\epsilon\f$ 
+ *  -covered) by a point p in the additive sense if: 
+ *  \f$ p_i \le q_i + \epsilon \f$ for all i.
+ *  
+ *  Note that both p and q must be greater than zero for the additive 
+ *  variant, that is both \f$ p_{i} \ge 0 \f$ and \f$ q_{i} \ge 0 \f$ 
+ *  must hold for all i.
+ *  
+ *  If eps=0.0 the method simply checks whether or not p dominates 
+ *  q and that is how it got its name.
+ *  
+ *  Possible exceptions:
+ *  - May throw a NullObjectException exception if the point is null.
+ *  - May throw a NegativeApproximationRatioException if \f$ eps < 0 \f$.
+ *  - May throw a DifferentDimensionsException if p and q are of different 
+ *    dimensions.
+ *  - May throw a NotPositivePointException exception if either p or q 
+ *    is not positive (i.e. some coordinate is less than zero).
+ *  
+ *  \sa Point, Point::dominates() and Point::distance()
+ */
+bool 
+Point::dominatesAdditive(const Point & q, double eps) const
+{
   if (isNull() or q.isNull()) 
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   if (dimension() != q.dimension()) 
-    throw DifferentDimensionsException();
+    throw exception_classes::DifferentDimensionsException();
   if (eps < 0.0) 
-    throw NegativeApproximationRatioException();
+    throw exception_classes::NegativeApproximationRatioException();
+  if (not isPositive() or not q.isPositive())
+    throw exception_classes::NotPositivePointException();
+  // else
+
+  for (unsigned int i=0; i<dimension(); ++i)
+    if (coordinates_[i] > q[i] + eps)
+      return false;
+
+  return true;
+}
+
+
+/*! 
+ *  \brief Check if the current point (p) eps-dominates (in the 
+ *         multiplicative sense) the given point (q).
+ *  
+ *  \param q A Point instance with \f$ q_{i} \ge 0 \f$ for all i.
+ *  \param eps An approximation factor. (default 0.0)
+ *  \return true if p eps-covers q, false otherwise.
+ *  
+ *  We say that a point q is \f$\epsilon\f$ -dominated (\f$\epsilon\f$ 
+ *  -covered) by a point p in the multiplicative sense if: 
+ *  \f$ p_i \le (1 + \epsilon) q_i \f$ for all i.
+ *  
+ *  Note that both p and q must be strictly greater than zero for the 
+ *  multiplicative variant, that is both \f$ p_{i} > 0 \f$ and 
+ *  \f$ q_{i} > 0 \f$ must hold for all i.
+ *  
+ *  If eps=0.0 the method simply checks whether or not p dominates 
+ *  q and that is how it got its name.
+ *  
+ *  Possible exceptions:
+ *  - May throw a NullObjectException exception if the point is null.
+ *  - May throw a NegativeApproximationRatioException if \f$ eps < 0 \f$.
+ *  - May throw a DifferentDimensionsException if p and q are of different 
+ *    dimensions.
+ *  - May throw a NotStrictlyPositivePointException if either p or q 
+ *    is not strictly positive (i.e. some coordinate is not strictly 
+ *    greater than zero).
+ *
+ *  \sa Point, Point::dominates() and Point::distance()
+ */
+bool 
+Point::dominatesMultiplicative(const Point & q, double eps) const
+{
+  if (isNull() or q.isNull()) 
+    throw exception_classes::NullObjectException();
+  if (dimension() != q.dimension()) 
+    throw exception_classes::DifferentDimensionsException();
+  if (eps < 0.0) 
+    throw exception_classes::NegativeApproximationRatioException();
   if (not isStrictlyPositive() or not q.isStrictlyPositive()) 
-    throw NotStrictlyPositivePointException();
+    throw exception_classes::NotStrictlyPositivePointException();
   // else
 
   double r = 1+eps;

@@ -13,11 +13,12 @@
 
 
 using pareto_approximator::Point;
-using pareto_approximator::NullObjectException;
-using pareto_approximator::DifferentDimensionsException;
-using pareto_approximator::NonExistentCoordinateException;
-using pareto_approximator::NegativeApproximationRatioException;
-using pareto_approximator::NotStrictlyPositivePointException;
+using pareto_approximator::exception_classes::NullObjectException;
+using pareto_approximator::exception_classes::DifferentDimensionsException;
+using pareto_approximator::exception_classes::NonExistentCoordinateException;
+using pareto_approximator::exception_classes::NegativeApproximationRatioException;
+using pareto_approximator::exception_classes::NotPositivePointException;
+using pareto_approximator::exception_classes::NotStrictlyPositivePointException;
 
 
 namespace {
@@ -425,6 +426,27 @@ TEST_F(PointTest, PointGetDimensionWorks)
 }
 
 
+// Test that Point::euclideanDistance() works as expected.
+TEST_F(PointTest, PointEuclideanDistanceWorks)
+{
+  Point p1(0, 0), p2(3, 4);
+  EXPECT_EQ(p1.euclideanDistance(p2), 5.0);
+  EXPECT_EQ(p2.euclideanDistance(p1), p1.euclideanDistance(p2));
+
+  Point p3(-3, -4);
+  EXPECT_EQ(p1.euclideanDistance(p3), 5.0);
+  EXPECT_EQ(p3.euclideanDistance(p1), 5.0);
+
+  Point p4(0, 0, 0);
+  EXPECT_THROW(p4.euclideanDistance(p1), DifferentDimensionsException);
+  EXPECT_THROW(p1.euclideanDistance(p4), DifferentDimensionsException);
+
+  Point nullPoint;
+  EXPECT_THROW(nullPoint.euclideanDistance(p1), NullObjectException);
+  EXPECT_THROW(p1.euclideanDistance(nullPoint), NullObjectException);
+}
+
+
 // Test that Point::ratioDistance() works as expected.
 TEST_F(PointTest, PointRatioDistanceWorks) 
 {
@@ -447,43 +469,98 @@ TEST_F(PointTest, PointRatioDistanceWorks)
   EXPECT_EQ(p7.ratioDistance(p8), 4);
 
   EXPECT_THROW(p1.ratioDistance(p5), DifferentDimensionsException);
-
   EXPECT_THROW(p1.ratioDistance(nullPoint), NullObjectException);
   EXPECT_THROW(nullPoint.ratioDistance(p1), NullObjectException);
 }
 
 
-// Test that Point::dominates() works as expected.
-TEST_F(PointTest, PointDominatesWorks) 
+// Test that Point::additiveDistance() works as expected.
+TEST_F(PointTest, PointAdditiveDistanceWorks)
+{
+  Point p1(1, 1, 1), p2(2, 3, 4);
+  EXPECT_EQ(p1.additiveDistance(p2), 3.0);
+  EXPECT_EQ(p2.additiveDistance(p1), 0.0);
+
+  Point p3(1, 5, 3);
+  EXPECT_EQ(p3.additiveDistance(p2), 1.0);
+  EXPECT_EQ(p2.additiveDistance(p3), 2.0);
+
+  Point nullPoint = Point();
+  EXPECT_THROW(nullPoint.additiveDistance(p1), NullObjectException);
+  EXPECT_THROW(p1.additiveDistance(nullPoint), NullObjectException);
+
+  Point pd(1, 1);
+  EXPECT_THROW(pd.additiveDistance(p1), DifferentDimensionsException);
+  EXPECT_THROW(p1.additiveDistance(pd), DifferentDimensionsException);
+}
+
+
+// Test that Point::dominatesAdditive() works as expected.
+TEST_F(PointTest, PointDominatesAdditiveWorks)
+{
+  Point p1(1.0, 5.0, 2.0), p2(1.5, 7.0, 3.0);
+  EXPECT_TRUE(p1.dominatesAdditive(p2));
+  EXPECT_FALSE(p2.dominatesAdditive(p1));
+  EXPECT_TRUE(p2.dominatesAdditive(p1, 2.0));
+  EXPECT_TRUE(p1.dominatesAdditive(p1));
+
+  Point nullPoint = Point();
+  EXPECT_THROW(p1.dominatesAdditive(nullPoint), NullObjectException);
+  EXPECT_THROW(nullPoint.dominatesAdditive(p1), NullObjectException);
+
+  Point p3(1, 1);
+  EXPECT_THROW(p1.dominatesAdditive(p3), DifferentDimensionsException);
+
+  EXPECT_THROW(p1.dominatesAdditive(p2, -2.0), 
+               NegativeApproximationRatioException);
+
+  Point p4(-1, 2, 2);
+  EXPECT_THROW(p4.dominatesAdditive(p1), NotPositivePointException);
+  Point p5(0, 0, 0);
+  EXPECT_NO_THROW(p5.dominatesAdditive(p1));
+}
+
+
+// Test that Point::dominatesMultiplicative() works as expected.
+TEST_F(PointTest, PointDominatesMultiplicativeWorks) 
 {
   Point p1(1.0, 5.0);
   Point p2(1.5, 7.0);
-  EXPECT_EQ(p1.dominates(p2), true);
-  EXPECT_EQ(p2.dominates(p1), false);
-  EXPECT_EQ(p2.dominates(p1, 0.5), true);
+  EXPECT_TRUE(p1.dominatesMultiplicative(p2));
+  EXPECT_FALSE(p2.dominatesMultiplicative(p1));
+  EXPECT_TRUE(p2.dominatesMultiplicative(p1, 0.5));
   Point p3(1.6, 6.0);
-  EXPECT_EQ(p3.dominates(p1, 0.5), false);
+  EXPECT_FALSE(p3.dominatesMultiplicative(p1, 0.5));
   Point p4(1.0, 1.0, 1.0);
   Point p5(2.0, 2.0, 2.0);
-  EXPECT_EQ(p4.dominates(p5), true);
-  EXPECT_EQ(p5.dominates(p4), false);
+  EXPECT_TRUE(p4.dominatesMultiplicative(p5));
+  EXPECT_FALSE(p5.dominatesMultiplicative(p4));
 
   double coordinatesA[5] = {1.0, 10.0, 100.0, 1000.0, 10000.0};
   double coordinatesB[5] = {1.0, 20.0, 300.0, 4000.0, 50000.0};
   Point p7(coordinatesA, coordinatesA + 5);
   Point p8(coordinatesB, coordinatesB + 5);
-  EXPECT_EQ(p7.dominates(p8), true);
-  EXPECT_EQ(p8.dominates(p7), false);
-  EXPECT_EQ(p8.dominates(p7, 4), true);
+  EXPECT_TRUE(p7.dominatesMultiplicative(p8));
+  EXPECT_FALSE(p8.dominatesMultiplicative(p7));
+  EXPECT_TRUE(p8.dominatesMultiplicative(p7, 4));
 
-  EXPECT_THROW(p1.dominates(p2, -0.5), NegativeApproximationRatioException);
+  EXPECT_THROW(p1.dominatesMultiplicative(p2, -0.5), 
+               NegativeApproximationRatioException);
+
   Point p9(-1.3, 8.7);
-  EXPECT_THROW(p1.dominates(p9), NotStrictlyPositivePointException);
-  Point p10(2.4, 8.97, 1.42);
-  EXPECT_THROW(p1.dominates(p10), DifferentDimensionsException);
+  EXPECT_THROW(p1.dominatesMultiplicative(p9), 
+               NotStrictlyPositivePointException);
+  Point p10(0.0, 0.0);
+  EXPECT_THROW(p10.dominatesMultiplicative(p1), 
+               NotStrictlyPositivePointException);
+  EXPECT_THROW(p1.dominatesMultiplicative(p10), 
+               NotStrictlyPositivePointException);
 
-  EXPECT_THROW(p1.dominates(nullPoint), NullObjectException);
-  EXPECT_THROW(nullPoint.dominates(p1), NullObjectException);
+  Point p11(2.4, 8.97, 1.42);
+  EXPECT_THROW(p1.dominatesMultiplicative(p11), DifferentDimensionsException);
+
+  EXPECT_THROW(p1.dominatesMultiplicative(nullPoint), NullObjectException);
+  EXPECT_THROW(nullPoint.dominatesMultiplicative(p1), NullObjectException);
 }
 
 

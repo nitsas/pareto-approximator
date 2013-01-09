@@ -25,12 +25,12 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 
@@ -394,9 +394,56 @@ class Hyperplane
     friend std::ostream & operator<< (std::ostream & out, 
                                      const Hyperplane & hyperplane);
 
-    //! Compute the ratio distance from the given Point to the hyperplane.
+    //! Compute the distance from the given point to the hyperplane.
     /*!
-     *  \param p A Point instance. (with non-negative coordinates)
+     *  \param p A Point instance. (should be strictly positive)
+     *  \return The distance from p to the hyperplane.
+     *  
+     *  There are different possible distance metrics we could use (e.g. 
+     *  ratio distance, Euclidean distance etc.). We use the ratio distance 
+     *  metric for now.
+     *  
+     *  Possible exceptions:
+     *  - May throw a DifferentDimensionsException exception if the given point 
+     *    and the hyperplane belong in spaces of different dimensions.
+     *  - May throw an InfiniteRatioDistanceException exception if the given 
+     *    point's coordinate vector is perpendicular to the hyperplane's 
+     *    normal vector. Multiplying the point by a constant moves it in 
+     *    a direction parallel to the hyperplane.
+     *  - May throw a NotStrictlyPositivePointException exception if the 
+     *    given point is not strictly positive. 
+     *  - May throw a NullObjectException exception if the given Point 
+     *    instance is a null Point instance.
+     *  
+     *  \sa Hyperplane and Point
+     */
+    double distance(const Point & p) const;
+
+    //! Compute the Euclidean distance from the given point to the hyperpane.
+    /*!
+     *  \param p A Point instance.
+     *  \return The Euclidean distance from p to the hyperplane.
+     *  
+     *  The formula for the Euclidean distance between a d-dimensional point 
+     *  p and a d-dimensional hyperplane H with normal \f$\mathbf{n}\f$ 
+     *  given by the equation \f$ \mathbf{n} \dot \mathbf{x} = c \f$ is:
+     *  \f$ ED(p, H) = \left|
+     *      \frac{ \mathbf{n} \dot \mathbf{p} - c }{ ||\mathbf{n}|| } 
+     *      \right| \f$
+     *  
+     *  Possible exceptions:
+     *  - May throw a DifferentDimensionsException exception if the given point 
+     *    and the hyperplane belong in spaces of different dimensions.
+     *  - May throw a NullObjectException exception if the given Point 
+     *    instance is a null Point instance.
+     *
+     *  \sa Hyperplane and Point
+     */
+    double euclideanDistance(const Point & p) const;
+
+    //! Compute the ratio distance from the given point to the hyperplane.
+    /*!
+     *  \param p A Point instance. (should have non-negative coordinates)
      *  \return The ratio distance from p to the hyperplane.
      *  
      *  The ratio distance from a point p to a hyperplane H is defined as:

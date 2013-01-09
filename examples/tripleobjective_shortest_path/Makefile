@@ -6,7 +6,7 @@
 
 
 CC=g++
-CPPFLAGS=-Wall -Wextra -Werror -g
+CPPFLAGS=-Wall -Wextra -Werror -g -O2
 CPPLIBS=-larmadillo
 
 
@@ -19,7 +19,7 @@ main.o: main.cpp ../../utility.h ../../utility.cpp ../../BaseProblem.h ../../Bas
 	$(CC) $(CPPFLAGS) -c main.cpp -o $@
 
 # Make RandomGraphProblem.o
-RandomGraphProblem.o: RandomGraphProblem.h RandomGraphProblem.cpp ../../PointAndSolution.h ../../PointAndSolution.cpp ../../Facet.h ../../Facet.cpp ../../BaseProblem.h ../../BaseProblem.cpp ../../utility.h ../../utility.cpp ../../NotEnoughAnchorPointsException.h ../../Point.h tripleobjective_shortest_path_example_common.h
+RandomGraphProblem.o: RandomGraphProblem.h RandomGraphProblem.cpp ../../PointAndSolution.h ../../PointAndSolution.cpp ../../Facet.h ../../Facet.cpp ../../BaseProblem.h ../../BaseProblem.cpp ../../utility.h ../../utility.cpp ../../Point.h tripleobjective_shortest_path_example_common.h
 	$(CC) $(CPPFLAGS) -c RandomGraphProblem.cpp -o $@
 
 # Make FloodVisitor.o
@@ -28,7 +28,7 @@ FloodVisitor.o: FloodVisitor.h FloodVisitor.cpp tripleobjective_shortest_path_ex
 
 
 # Make Point.o
-Point.o: ../../Point.h ../../Point.cpp ../../NullObjectException.h ../../DifferentDimensionsException.h ../../NonExistentCoordinateException.h ../../NegativeApproximationRatioException.h ../../NotStrictlyPositivePointException.h
+Point.o: ../../Point.h ../../Point.cpp ../../NullObjectException.h ../../DifferentDimensionsException.h ../../NonExistentCoordinateException.h ../../NegativeApproximationRatioException.h ../../NotPositivePointException.h ../../NotStrictlyPositivePointException.h
 	$(CC) $(CPPFLAGS) -c ../../Point.cpp -o $@
 
 

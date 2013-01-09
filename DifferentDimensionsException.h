@@ -13,19 +13,22 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 
+//! The namespace containing all the exception classes.
+namespace exception_classes {
+
+
 /*! 
- *  \brief Exception thrown by Point::operator<(), Point::operator+(), 
- *         Point::ratioDistance(), Point::dominates(), and
- *         Facet::ratioDistance().
+ *  \brief Exception thrown when two instances have different/incompatible 
+ *         dimensions.
  *
  *  An exception thrown when:
  *  - Two Point instances were supposed to be compared but they have 
@@ -47,6 +50,9 @@ class DifferentDimensionsException : public std::exception
       return "The given instances have different/incompatible dimensions.";
     }
 };
+
+
+}  // namespace exception_classes
 
 
 }  // namespace pareto_approximator

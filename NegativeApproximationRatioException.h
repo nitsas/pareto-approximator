@@ -13,16 +13,20 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 
-//! Exception thrown by Point::dominates().
+//! The namespace containing all the exception classes.
+namespace exception_classes {
+
+
+//! Exception thrown when the given approximation ratio is negative.
 /*! 
  *  An exception thrown when the given approximation ratio is negative.
  *  (approximation ratios must always be positive!)
@@ -36,6 +40,9 @@ class NegativeApproximationRatioException : public std::exception
       return "The given approximation ratio is negative.";
     }
 };
+
+
+}  // namespace exception_classes
 
 
 }  // namespace pareto_approximator

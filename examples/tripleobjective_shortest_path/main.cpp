@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <algorithm>
 #include <time.h>
 #include <list>
 #include <boost/graph/adjacency_list.hpp>
@@ -43,6 +44,29 @@ using tripleobjective_shortest_path_example::PredecessorMap;
  */
 
 
+//! Check if a specific command line option exists.
+bool 
+commandLineOptionExists(char ** begin, char ** end, 
+                        const std::string & option)
+{
+  return std::find(begin, end, option) != end;
+}
+
+
+//! Get a specific command line argument if it exists.
+char * 
+getCommandLineArgument(char ** begin, char ** end, 
+                       const std::string & option)
+{
+  char ** it = std::find(begin, end, option);
+  // if the option exists and is followed by an argument return the argument
+  if (it != end and ++it != end)
+    return *it;
+  // else 
+  return NULL;
+}
+
+
 //! The example's main function.
 /*!
  *  Will make a RandomGraphProblem instance and, if t is reachable, will 
@@ -52,17 +76,28 @@ using tripleobjective_shortest_path_example::PredecessorMap;
 int 
 main(int argc, char * argv[])
 {
-  // Get the command line arguments (the random number generator's seed).
+  // Parse the command line arguments.
   int seed;
-  if (argc > 2) {
-    cout << "Too many arguments! Expected at most 1 integer argument "
-         << "(a seed)." << endl;
-    return(1);
+  bool withoutExactParetoSet = false;
+  char * arg = NULL;
+  if (commandLineOptionExists(argv, argv + argc, "-h") or
+      commandLineOptionExists(argv, argv + argc, "--help")) {
+    cout << "Usage: tosp_example [-s seed] [--without-exact-pareto-set]" 
+         << endl;
+    return 0;
   }
-  else if (argc == 2) 
+  // else 
+  if (commandLineOptionExists(argv, argv + argc, "-W") or 
+      commandLineOptionExists(argv, argv + argc, 
+      "--without-exact-pareto-set")) {
+    // compute the approximate Pareto set only
+    withoutExactParetoSet = true;
+  }
+  arg = getCommandLineArgument(argv, argv + argc, "-s");
+  if (arg != NULL)
     // Use the input argument as a seed. 
     // Use 0 if the input argument is not an integer.
-    seed = atoi(argv[1]);
+    seed = atoi(arg);
   else 
     // Use the current time as a seed.
     seed = std::time(0);
@@ -135,15 +170,18 @@ main(int argc, char * argv[])
     rgp.printPath(vi->solution);
   }
 
-  // Exact Pareto set
-  // =========================================
-  cout << endl << "(computing exact Pareto set... please wait a few seconds)" << endl << endl;
-  NonDominatedSet<Point> exactParetoSet = rgp.findExactParetoSet();
-  cout << "C. exact Pareto set size: " << exactParetoSet.size() << endl;
-  cout << endl << "D. exact Pareto set points: " << endl;
-  NonDominatedSet<Point>::iterator epsi;
-  for (epsi = exactParetoSet.begin(); epsi != exactParetoSet.end(); ++epsi)
-    cout << *epsi << endl;
+  // Should we also compute and print the exact Pareto set?
+  if (not withoutExactParetoSet) {
+    // Exact Pareto set
+    // =========================================
+    cout << endl << "(computing exact Pareto set... please wait a few seconds)" << endl << endl;
+    NonDominatedSet<Point> exactParetoSet = rgp.findExactParetoSet();
+    cout << "C. exact Pareto set size: " << exactParetoSet.size() << endl;
+    cout << endl << "D. exact Pareto set points: " << endl;
+    NonDominatedSet<Point>::iterator epsi;
+    for (epsi = exactParetoSet.begin(); epsi != exactParetoSet.end(); ++epsi)
+      cout << *epsi << endl;
+  }
 
   return 0;
 }

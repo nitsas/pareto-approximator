@@ -13,18 +13,22 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 
+//! The namespace containing all the exception classes.
+namespace exception_classes {
+
+
 /*! 
- *  \brief Exception thrown by Hyperplane::ratioDistance() and 
- *         Facet::ratioDistance().
+ *  \brief Exception thrown when we were asked to compute a ratio distance 
+ *         and it turns out that it is infinite.
  *
  *  An exception thrown when:
  *  - We were trying to compute the ratio distance between a point p 
@@ -47,6 +51,9 @@ class InfiniteRatioDistanceException : public std::exception
       return "The requested ratio distance is infinite.";
     }
 };
+
+
+}  // namespace exception_classes
 
 
 }  // namespace pareto_approximator

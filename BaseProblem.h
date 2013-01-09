@@ -14,7 +14,6 @@
 
 #include "Facet.h"
 #include "PointAndSolution.h"
-#include "NotEnoughAnchorPointsException.h"
 
 
 using pareto_approximator::Facet;
@@ -22,12 +21,12 @@ using pareto_approximator::PointAndSolution;
 
 
 /*!
- *  \defgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \defgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 
@@ -40,10 +39,11 @@ namespace pareto_approximator {
  *  Instances of the user-created derived class will represent bi-objective 
  *  problems. Examples of problems: 
  *  - A graph with two "costs" for each edge and the problem of finding a 
- *    minimum spanning tree.
- *  - A similar graph with two "capacities" for each edge and the problem 
- *    of finding a maximum flow.
- *  - A linear optimization problem with two objective functions.
+ *    minimum spanning tree. (biobjective problem)
+ *  - A similar graph with three "capacities" for each edge and the problem 
+ *    of finding a maximum flow. (triple objective problem)
+ *  - A linear optimization problem with four objective functions.
+ *    (four objectives problem)
  *  - etc
  *  
  *  BaseProblem is a class template. The template argument is the 
@@ -57,7 +57,6 @@ namespace pareto_approximator {
  *
  *  \sa BaseProblem(), ~BaseProblem(), comb() and operator()()
  */
-
 template <class S>
 class BaseProblem 
 {
@@ -104,15 +103,16 @@ class BaseProblem
     comb(std::vector<double>::const_iterator first, 
          std::vector<double>::const_iterator last) const = 0;
 
-    //! Compute an (1+eps)-convex Pareto set of the problem.
+    //! Compute an (1+eps)-approximate convex Pareto set of the problem.
     /*! 
      *  \param numObjectives The number of objectives to minimize. Note: The 
      *                       user's comb() routine should be able to handle a 
      *                       std::vector<double> of \#numObjectives weights.
      *  \param eps The degree of approximation. computeConvexParetoSet() will 
-     *             find an (1+eps)-convex Pareto set of the problem.
-     *  \return An (1+eps)-convex Pareto set of the problem whose linear 
-     *          combinations of objectives comb optimizes.
+     *             find an (1+eps)-approximate convex Pareto set of the 
+     *             problem.
+     *  \return An (1+eps)-approximate convex Pareto set of the problem whose 
+     *          linear combinations of objectives comb optimizes.
      *  
      *  How to use:
      *  Users should create a class (let's call it Problem), deriving from 
@@ -120,7 +120,7 @@ class BaseProblem
      *  they should implement its comb() method. All the comb() method needs 
      *  to do is optimize linear combinations of the problem's objectives and 
      *  return the resulting problem solution and the corresponding point in 
-     *  objective space. After all the above users can make a Problem 
+     *  objective space. After all the above, users can make a Problem 
      *  instance and call its computeConvexParetoSet() method with the eps 
      *  they want.
      *
@@ -131,10 +131,6 @@ class BaseProblem
      *  attribute to an empty list every time it is called (before it 
      *  calls any other method).
      *
-     *  Possible exceptions:
-     *  - May throw a NotEnoughAnchorPointsException exception if at some step
-     *    the number of points for the new base are less than \#numObjectives.
-     *  
      *  \sa BaseProblem, PointAndSolution and Point
      */
     std::vector< PointAndSolution<S> > 
@@ -167,15 +163,6 @@ class BaseProblem
      *  Please read "How good is the Chord Algorithm?" by Constantinos 
      *  Daskalakis, Ilias Diakonikolas and Mihalis Yannakakis for in-depth 
      *  info on how the chord algorithm works.
-     *  
-     *  You can also read "Approximating convex Pareto surfaces in 
-     *  multiobjective radiotherapy planning" by David L. Craft et al. for 
-     *  info on how we handle facets whose normal vector has both positive 
-     *  and negative components.
-     *
-     *  Possible exceptions:
-     *  - May throw a NotEnoughAnchorPointsException exception if at some step
-     *    the number of points for the new base are less than \#numObjectives.
      *  
      *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
      */

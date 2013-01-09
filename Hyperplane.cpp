@@ -17,12 +17,12 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 
@@ -193,7 +193,7 @@ Hyperplane::Hyperplane(const double* first, const double* last,
 Hyperplane::Hyperplane(const Point & p1, const Point & p2)
 {
   if (p1 == p2)
-    throw SamePointsException();
+    throw exception_classes::SamePointsException();
 
   std::set<Point> points;
   points.insert(p1);
@@ -226,7 +226,7 @@ Hyperplane::Hyperplane(const Point & p1, const Point & p2, const Point & p3)
   points.insert(p2);
   points.insert(p3);
   if (points.size() < 3)
-    throw SamePointsException();
+    throw exception_classes::SamePointsException();
 
   init(points);
 }
@@ -258,7 +258,7 @@ Hyperplane::Hyperplane(const Point & p1, const Point & p2,
   points.insert(p3);
   points.insert(p4);
   if (points.size() < 4)
-    throw SamePointsException();
+    throw exception_classes::SamePointsException();
 
   init(points);
 }
@@ -288,7 +288,7 @@ Hyperplane::Hyperplane(std::vector<Point>::const_iterator first,
 {
   std::set<Point> points(first, last);
   if ( ((int) points.size()) < std::distance(first, last))
-    throw SamePointsException();
+    throw exception_classes::SamePointsException();
   init(points);
 }
 
@@ -318,7 +318,7 @@ Hyperplane::Hyperplane(const Point* first, const Point* last)
 {
   std::set<Point> points(first, last);
   if ( ((int) points.size()) < std::distance(first, last))
-    throw SamePointsException();
+    throw exception_classes::SamePointsException();
   init(points);
 }
 
@@ -355,7 +355,7 @@ Hyperplane::init(const std::set<Point> points)
   std::set<Point>::const_iterator pit;
   for (pit = points.begin(); pit != points.end(); ++pit)
     if (pit->dimension() != n)
-      throw DifferentDimensionsException();
+      throw exception_classes::DifferentDimensionsException();
   
   // fill a matrix will each point's coordinates
   arma::mat M;
@@ -398,7 +398,7 @@ double
 Hyperplane::a(unsigned int pos) const
 {
   if (pos >= spaceDimension())
-    throw NonExistentCoefficientException();
+    throw exception_classes::NonExistentCoefficientException();
   else
     return coefficients_[pos];
 }
@@ -605,7 +605,64 @@ operator<< (std::ostream & out, const Hyperplane & hyperplane)
 }
 
 
-//! Compute the ratio distance from the given Point to the hyperplane.
+//! Compute the distance from the given point to the hyperplane.
+/*!
+ *  \param p A Point instance. (should be strictly positive)
+ *  \return The distance from p to the hyperplane.
+ *  
+ *  There are different possible distance metrics we could use (e.g. 
+ *  ratio distance, Euclidean distance etc.). We use the ratio distance 
+ *  metric for now.
+ *  
+ *  Possible exceptions:
+ *  - May throw a DifferentDimensionsException exception if the given point 
+ *    and the hyperplane belong in spaces of different dimensions.
+ *  - May throw an InfiniteRatioDistanceException exception if the given 
+ *    point's coordinate vector is perpendicular to the hyperplane's 
+ *    normal vector. Multiplying the point by a constant moves it in 
+ *    a direction parallel to the hyperplane.
+ *  - May throw a NotStrictlyPositivePointException exception if the 
+ *    given point is not strictly positive. 
+ *  - May throw a NullObjectException exception if the given Point 
+ *    instance is a null Point instance.
+ *  
+ *  \sa Hyperplane and Point
+ */
+double 
+Hyperplane::distance(const Point & p) const
+{
+  return ratioDistance(p);
+}
+
+
+//! Compute the Euclidean distance from the given point to the hyperpane.
+/*!
+ *  \param p A Point instance.
+ *  \return The Euclidean distance from p to the hyperplane.
+ *  
+ *  The formula for the Euclidean distance between a d-dimensional point 
+ *  p and a d-dimensional hyperplane H with normal \f$\mathbf{n}\f$ given 
+ *  by the equation \f$ \mathbf{n} \dot \mathbf{x} = c \f$ is:
+ *  \f$ ED(p, H) = \left|
+ *      \frac{ \mathbf{n} \dot \mathbf{p} - c }{ ||\mathbf{n}|| } 
+ *      \right| \f$
+ *  
+ *  Possible exceptions:
+ *  - May throw a DifferentDimensionsException exception if the given point 
+ *    and the hyperplane belong in spaces of different dimensions.
+ *  - May throw a NullObjectException exception if the given Point 
+ *    instance is a null Point instance.
+ *  
+ *  \sa Hyperplane and Point
+ */
+double 
+Hyperplane::euclideanDistance(const Point & p) const
+{
+  assert(false);
+}
+
+
+//! Compute the ratio distance from the given point to the hyperplane.
 /*!
  *  \param p A Point instance. (with non-negative coordinates)
  *  \return The ratio distance from p to the hyperplane.
@@ -639,11 +696,11 @@ double
 Hyperplane::ratioDistance(const Point & p) const
 {
   if (p.isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   if (spaceDimension() != p.dimension())
-    throw DifferentDimensionsException();
+    throw exception_classes::DifferentDimensionsException();
   if (not p.isStrictlyPositive())
-    throw NotStrictlyPositivePointException();
+    throw exception_classes::NotStrictlyPositivePointException();
   // else
 
   assert(spaceDimension() > 0);
@@ -660,7 +717,7 @@ Hyperplane::ratioDistance(const Point & p) const
   else if (dotProduct == 0.0)
     // multiplying the point by a constant moves it in a direction 
     // parallel to the hyperplane
-    throw InfiniteRatioDistanceException();
+    throw exception_classes::InfiniteRatioDistanceException();
   else
     result = std::max( (b_ - dotProduct) / dotProduct, 0.0 );
 

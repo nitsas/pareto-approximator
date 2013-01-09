@@ -22,10 +22,10 @@ CPPLIBS=-lgtest -larmadillo
 
 
 # Make all unit tests
-all: PointTest.out PointAndSolutionTest.out HyperplaneTest.out NonDominatedSetTest.out FacetTest.out BaseProblemTest.out
+all: PointTest.out PointAndSolutionTest.out NonDominatedSetTest.out FacetTest.out BaseProblemTest.out
 
 # Make PointTest.out
-PointTest.out: PointTest.cpp ../Point.h Point.o ../NullObjectException.h ../DifferentDimensionsException.h ../NegativeApproximationRatioException.h ../NotStrictlyPositivePointException.h ../NonExistentCoordinateException.h
+PointTest.out: PointTest.cpp ../Point.h Point.o ../NullObjectException.h ../DifferentDimensionsException.h ../NegativeApproximationRatioException.h ../NotPositivePointException.h ../NotStrictlyPositivePointException.h ../NonExistentCoordinateException.h
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o PointTest.cpp -o $@
 
 # Make PointAndSolutionTest.out
@@ -66,23 +66,23 @@ NonDominatedSetTest.o: NonDominatedSetTest.cpp ../Point.h ../PointAndSolution.h 
 	$(CC) $(CPPFLAGS) -c NonDominatedSetTest.cpp -o $@
 
 # Make SmallBiobjectiveSPProblem.o
-SmallBiobjectiveSPProblem.o: SmallBiobjectiveSPProblem.cpp SmallBiobjectiveSPProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../utility.h ../utility.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAnchorPointsException.h
+SmallBiobjectiveSPProblem.o: SmallBiobjectiveSPProblem.cpp SmallBiobjectiveSPProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../utility.h ../utility.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp 
 	$(CC) $(CPPFLAGS) -c SmallBiobjectiveSPProblem.cpp -o $@
 
 # Make SmallTripleobjectiveSPProblem.o
-SmallTripleobjectiveSPProblem.o: SmallTripleobjectiveSPProblem.cpp SmallTripleobjectiveSPProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../utility.h ../utility.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAnchorPointsException.h
+SmallTripleobjectiveSPProblem.o: SmallTripleobjectiveSPProblem.cpp SmallTripleobjectiveSPProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../utility.h ../utility.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp 
 	$(CC) $(CPPFLAGS) -c SmallTripleobjectiveSPProblem.cpp -o $@
 
 # Make NonOptimalStartingPointsProblem.o
-NonOptimalStartingPointsProblem.o: NonOptimalStartingPointsProblem.cpp NonOptimalStartingPointsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../utility.h ../utility.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAnchorPointsException.h
+NonOptimalStartingPointsProblem.o: NonOptimalStartingPointsProblem.cpp NonOptimalStartingPointsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../utility.h ../utility.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp 
 	$(CC) $(CPPFLAGS) -c NonOptimalStartingPointsProblem.cpp -o $@
 
 # Make TripleobjectiveWithNegativeWeightsProblem.o
-TripleobjectiveWithNegativeWeightsProblem.o: TripleobjectiveWithNegativeWeightsProblem.cpp TripleobjectiveWithNegativeWeightsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../utility.h ../utility.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp ../NotEnoughAnchorPointsException.h
+TripleobjectiveWithNegativeWeightsProblem.o: TripleobjectiveWithNegativeWeightsProblem.cpp TripleobjectiveWithNegativeWeightsProblem.h ../PointAndSolution.h ../PointAndSolution.cpp ../BaseProblem.h ../BaseProblem.cpp ../utility.h ../utility.cpp ../Point.h ../NonDominatedSet.h ../NonDominatedSet.cpp 
 	$(CC) $(CPPFLAGS) -c TripleobjectiveWithNegativeWeightsProblem.cpp -o $@
 
 # Make Point.o
-Point.o: ../Point.h ../Point.cpp ../DifferentDimensionsException.h ../NegativeApproximationRatioException.h ../NotStrictlyPositivePointException.h
+Point.o: ../Point.h ../Point.cpp ../DifferentDimensionsException.h ../NegativeApproximationRatioException.h ../NotPositivePointException.h ../NotStrictlyPositivePointException.h
 	$(CC) $(CPPFLAGS) -c ../Point.cpp -o $@
 
 # Make Hyperplane.o

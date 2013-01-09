@@ -3,19 +3,19 @@
  *  \author Christos Nitsas
  *  \date 2012
  *  
- *  Won't `#include` "NonDominatedSet.h". In fact "NonDominatedSet.h" will 
- *  `#include` "NonDominatedSet.cpp" because it describes a class template 
+ *  Won't `include` NonDominatedSet.h. In fact NonDominatedSet.h will 
+ *  `include` NonDominatedSet.cpp because it describes a class template 
  *  (which doesn't allow us to split declaration from definition).
  */
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 

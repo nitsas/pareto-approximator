@@ -3,8 +3,8 @@
  *  \author Christos Nitsas
  *  \date 2012
  *  
- *  Won't `#include` "Facet.h". In fact "Facet.h" will `#include` 
- *  "Facet.cpp" because it describes a class template (which doesn't allow 
+ *  Won't `include` Facet.h. In fact Facet.h will `include` 
+ *  Facet.cpp because it describes a class template (which doesn't allow 
  *  us to split declaration from definition).
  */
 
@@ -16,12 +16,12 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
 
 
@@ -48,9 +48,9 @@ namespace pareto_approximator {
  *    vector (if one exists) if preferPositiveNormalVector is set to 
  *    true; otherwise it will choose one depending on the order of the 
  *    vertices.
- *  - Facet<S>::approximationErrorUpperBound_ to the ratio distance 
- *    between the Facet and its Lower Distal Point (LDP). Calculates 
- *    both the LDP and the ratio distance.
+ *  - Facet<S>::approximationErrorUpperBound_ to the distance between 
+ *    the Facet and its Lower Distal Point (LDP). Calculates both the 
+ *    LDP and the distance.
  *  
  *  Possible exceptions:
  *  - May throw a DifferentDimensionsException exception if the given 
@@ -81,9 +81,9 @@ Facet<S>::Facet(
   ConstVertexIterator cvi;
   for (cvi = firstVertex; cvi != lastVertex; ++cvi) {
     if (cvi->isNull() or cvi->point.isNull())
-      throw NullObjectException();
+      throw exception_classes::NullObjectException();
     if (cvi->dimension() != spaceDimension_)
-      throw DifferentDimensionsException();
+      throw exception_classes::DifferentDimensionsException();
   }
 
   // First fill-in Facet<S>::vertices_.
@@ -98,7 +98,7 @@ Facet<S>::Facet(
 }
 
 
-//! Facet constructor.
+//! A Facet constructor.
 /*!
  *  \param firstVertex An iterator to the first of the facet vertices.
  *  \param lastVertex An iterator to the past-the-end element in the 
@@ -119,9 +119,9 @@ Facet<S>::Facet(
  *  - Facet<S>::normal_ to the sequence of elements pointed to by 
  *    firstElemOfFacetNormal and lastElemOfFacetNormal. The range 
  *    used is [firstElemOfFacetNormal, lastElemOfFacetNormal).
- *  - Facet<S>::approximationErrorUpperBound_ to the ratio distance between 
+ *  - Facet<S>::approximationErrorUpperBound_ to the distance between 
  *    the Facet and its Lower Distal Point (LDP). Calculates both the 
- *    LDP and the ratio distance.
+ *    LDP and the distance.
  *  
  *  We do not verify that the given normal vector is indeed correct, 
  *  i.e. it agrees with the given vertices. The responsibility lies with 
@@ -158,9 +158,9 @@ Facet<S>::Facet(
   ConstVertexIterator cvi;
   for (cvi = firstVertex; cvi != lastVertex; ++cvi) {
     if (cvi->isNull() or cvi->point.isNull())
-      throw NullObjectException();
+      throw exception_classes::NullObjectException();
     if (cvi->dimension() != spaceDimension_)
-      throw DifferentDimensionsException();
+      throw exception_classes::DifferentDimensionsException();
   }
 
   // First fill-in Facet<S>::vertices_ and Facet<S>::normal_.
@@ -213,8 +213,8 @@ Facet<S>::isBoundaryFacet() const
 /*! 
  *  \return the localApproximationErrorUpperBound attribute
  *  
- *  We will use the ratio distance from the facet to it's Lower Distal 
- *  Point as an upper bound to the local approximation error.
+ *  We will use the distance from the facet to it's Lower Distal Point 
+ *  as an upper bound to the local approximation error.
  *  
  *  Check the documentation for Facet for a description of what a Lower 
  *  Distal Point is.
@@ -230,7 +230,7 @@ double
 Facet<S>::getLocalApproximationErrorUpperBound() const
 {
   if (isBoundaryFacet())
-    throw BoundaryFacetException();
+    throw exception_classes::BoundaryFacetException();
   // else
 
   return localApproximationErrorUpperBound_;
@@ -294,6 +294,30 @@ typename Facet<S>::ConstFacetNormalIterator
 Facet<S>::endFacetNormal() const
 {
   return normal_.end();
+}
+
+
+//! Compute the b coefficient of the hyperplane on which the facet lies.
+/*! 
+ *  \return The b coefficient of the hyperplane on which the facet lies 
+ *          (the one with the same normal vector as the facet).
+ *  
+ *  We describe a hyperplane using the following linear equation:
+ *  \f$ a_{1} \cdot x_{1} + a_{2} \cdot x_{2} + ... + a_{n} \cdot x_{n} 
+ *      = b \f$, where \f$ \mathbf{a} = [a_{1} a_{2} ... a_{n}]^{T} \f$ 
+ *  is the hyperplane's normal vector and b is the coefficient this 
+ *  function will compute.
+ *  
+ *  b can be found by taking the dot product of the hyperplane's (or 
+ *  facet's) normal vector with any point on the hyperplane (or facet).
+ *  
+ *  \sa Facet
+ */
+template <class S> 
+double 
+Facet<S>::b() const
+{
+  return arma::dot( arma::vec(normal_), vertices_[0].point.toVec() );
 }
 
 
@@ -409,6 +433,76 @@ Facet<S>::computeLowerDistalPoint() const
 
 
 /*!
+ *  \brief Compute a Point instance's distance from the hyperplane 
+ *         that the facet lies on.
+ *
+ *  \param p A Point instance. (should be strictly positive)
+ *  \return The distance from p to the hyperplane on which the facet 
+ *          lies.
+ *  
+ *  There are different possible distance metrics we could use (e.g. 
+ *  ratio distance, Euclidean distance, additive distance etc.). We use 
+ *  the additive distance metric for now.
+ *  
+ *  Possible exceptions:
+ *  - May throw a DifferentDimensionsException exception if the given 
+ *    point and the hyperplane belong in spaces of different dimensions.
+ *  - May throw an InfiniteRatioDistanceException exception if the given 
+ *    point's coordinate vector is perpendicular to the facet's 
+ *    normal vector. Multiplying the point by a constant moves it in 
+ *    a direction parallel to the facet's supporting hyperplane.
+ *  - May throw a NotPositivePointException (or 
+ *    NotStrictlyPositivePointException if we are using the multiplicative 
+ *    error measure) exception if the given point is not positive (not 
+ *    strictly positive, respectively).
+ *  - May throw a NullObjectException exception if the given Point 
+ *    instance is a null Point instance.
+ *  
+ *  \sa Point and Facet
+ */
+template <class S> 
+double 
+Facet<S>::distance(const Point & p) const
+{
+  return additiveDistance(p);
+}
+
+
+/*!
+ *  \brief Compute the Euclidean distance from the given point to the 
+ *         hyperpane on which the facet lies.
+ * 
+ *  \param p A Point instance.
+ *  \return The Euclidean distance from p to the hyperplane on which 
+ *          the facet lies. (supporting hyperplane)
+ *  
+ *  The formula for the Euclidean distance between a d-dimensional point 
+ *  p and a d-dimensional facet F with a supporting hyperplane H which 
+ *  has normal \f$\mathbf{n}\f$ and is described by the equation 
+ *  \f$ \mathbf{n} \dot \mathbf{x} = c \f$ is:
+ *  \f$ ED(p, F) = \left|
+ *      \frac{ \mathbf{n} \dot \mathbf{p} - c }{ ||\mathbf{n}|| } 
+ *      \right| \f$
+ *  
+ *  \sa Facet and Point
+ */
+template <class S> 
+double 
+Facet<S>::euclideanDistance(const Point & p) const
+{
+  if (p.isNull())
+    throw exception_classes::NullObjectException();
+  if (spaceDimension() != p.dimension())
+    throw exception_classes::DifferentDimensionsException();
+
+  double normOfNormalVector = arma::norm(arma::vec(normal_), 2);
+
+  return std::abs( (arma::dot(arma::vec(normal_), p.toVec()) - b()) / 
+                   normOfNormalVector );
+}
+
+
+/*!
  *  \brief Compute a point's ratio distance from the hyperplane that 
  *         the facet lies on.
  *  
@@ -422,7 +516,8 @@ Facet<S>::computeLowerDistalPoint() const
  *  \f$ RD(p, q) = \max\{ \max_{i}\{(q_{i} - p_{i}) / p_{i}\}, 0.0 \} \f$.
  *  
  *  Intuitively it is the minimum value of \f$ \epsilon \ge 0 \f$ such 
- *  that some point on H \f$ \epsilon -covers p \f$.
+ *  that some point on H \f$\epsilon\f$ -dominates (\f$\epsilon\f$ -covers) 
+ *  p in the multiplicative sense.
  *  
  *  In order for the ratio distance to make sense point p must be 
  *  strictly positive, i.e. \f$ p_{i} > 0.0 \f$ must hold for all i.
@@ -446,21 +541,19 @@ double
 Facet<S>::ratioDistance(const Point & p) const
 {
   if (p.isNull())
-    throw NullObjectException();
+    throw exception_classes::NullObjectException();
   if (spaceDimension() != p.dimension())
-    throw DifferentDimensionsException();
+    throw exception_classes::DifferentDimensionsException();
   if (not p.isStrictlyPositive()) 
-    throw NotStrictlyPositivePointException();
+    throw exception_classes::NotStrictlyPositivePointException();
   // else
 
   assert(spaceDimension() > 0);
 
-  Point aPointOnTheFacet = vertices_[0].point;
   double dotProduct  = 0.0;
-  double facetOffset = 0.0;      // the facet's offset from the origin
+  double facetOffset = b();      // the facet's offset from the origin
   for (unsigned int i=0; i!=spaceDimension(); ++i) {
     dotProduct  += normal_[i] * p[i];
-    facetOffset += normal_[i] * aPointOnTheFacet[i];
   }
 
   double result;
@@ -471,11 +564,197 @@ Facet<S>::ratioDistance(const Point & p) const
   else if (dotProduct == 0.0)
     // multiplying the point by a constant moves it in a direction 
     // parallel to the hyperplane
-    throw InfiniteRatioDistanceException();
+    throw exception_classes::InfiniteRatioDistanceException();
   else
     result = std::max( (facetOffset - dotProduct) / dotProduct, 0.0 );
 
   return result;
+}
+
+
+/*!
+ *  \brief Compute a point's additive distance from the hyperplane 
+ *         that the facet lies on.
+ *  
+ *  \param p A Point instance.
+ *  \return The point's additive distance from the hyperplane that the 
+ *          facet lies on. (i.e. the minimum value of \f$\epsilon\f$ 
+ *          such that the hyperplane dominates the point in the additive 
+ *          sense)
+ *  
+ *  The additive distance from a point p to a hyperplane H is defined as:
+ *  \f$ AD(p, H) = \min_{q \in H} AD(p, q) \f$, where q is a point on H.
+ *  The additive distance from a point p to a point q is defined as:
+ *  \f$ AD(p, q) = \max\{ \max_{i}\{(q_{i} - p_{i})\}, 0.0 \} \f$.
+ *  
+ *  Intuitively it is the minimum value of \f$ \epsilon \ge 0 \f$ such 
+ *  that some point on H \f$\epsilon\f$ -dominates (\f$\epsilon\f$ -covers) 
+ *  p in the additive sense. To calculate it we take advantage of the fact 
+ *  that the point (p + \f$\epsilon\f$) will be lying on H.
+ *  
+ *  Possible exceptions:
+ *  - May throw a NullObjectException exception if the given Point 
+ *    instance is a null Point instance.
+ *  - May throw a DifferentDimensionsException exception if the given 
+ *    point and the hyperplane belong in spaces of different dimensions.
+ *  - May throw a NotPositivePointException exception if the given point 
+ *    is not positive. (i.e. some coordinate is less than 0.0)
+ *
+ *  \sa Point and Facet
+ */
+template <class S> 
+double 
+Facet<S>::additiveDistance(const Point & p) const
+{
+  if (p.isNull())
+    throw exception_classes::NullObjectException();
+  if (spaceDimension() != p.dimension())
+    throw exception_classes::DifferentDimensionsException();
+  if (not p.isPositive())
+    throw exception_classes::NotPositivePointException();
+  // else
+
+  assert(spaceDimension() > 0);
+
+  double sumOfFacetNormal = 0.0;
+  double dotProduct       = 0.0;
+  for (unsigned int i=0; i!=spaceDimension(); ++i) {
+    sumOfFacetNormal += normal_[i];
+    dotProduct       += normal_[i] * p[i];
+  }
+
+  // - To calculate the result we take advantage of the fact that point 
+  //   (p + \f$\epsilon\f$) will be lying on H (the hyperplane).
+  // - sumOfFacetNormal should not be 0.0 - it can only be 0.0 if 
+  //   the facet's normal vector is all zero (not a valid facet)
+  return std::max( (b() - dotProduct) / sumOfFacetNormal, 0.0 );
+}
+
+
+//! Check if the Facet approximately dominates the given point.
+/*!
+ *  \param p A Point instance. (must be positive if we are using the 
+ *           additive error measure; strictly positive if we are using 
+ *           the multiplicative)
+ *  \param eps The approximation factor.
+ *  \return true if some point on the facet's supporting hyperplane 
+ *          approximately dominates the given point; false otherwise
+ *  
+ *  There are two different definitions of approximate dominance 
+ *  (\f$\epsilon\f$ -dominance) we could use:
+ *  - Additive \f$\epsilon\f$ -dominance. Where a point q is 
+ *    \f$\epsilon\f$ -dominated by a point p if: 
+ *    \f$ p_{i} \le q_{i} + \epsilon \f$ for all i.
+ *  - Multiplicative \f$\epsilon\f$ -dominance. Where a point q is 
+ *    \f$\epsilon\f$ -dominated by a point p if: 
+ *    \f$ p_{i} \le (1 + \epsilon) q_{i} \f$ for all i.
+ *  
+ *  This method checks if some point on the facet's supporting 
+ *  hyperplane H (the hyperplane on which the facet lies, that has the 
+ *  same normal vector as the facet) approximately dominates the given 
+ *  point.
+ *  
+ *  Currently using the additive error measure.
+ *  
+ *  \sa Facet, Point, Point::dominates(), Facet::dominatesAdditive() 
+ *      and Facet::dominatesMultiplicative()
+ */
+template <class S> 
+bool 
+Facet<S>::dominates(const Point & p, double eps) const
+{
+  return dominatesAdditive(p, eps);
+}
+
+
+/*! 
+ *  \brief Check if the Facet approximately dominates (in the additive 
+ *         sense) the given point.
+ *  
+ *  \param p A Point instance. (must be positive - i.e. all coordinates 
+ *           greater than or equal to 0.0)
+ *  \param eps The approximation factor.
+ *  \return true if some point on the facet's supporting hyperplane 
+ *          approximately dominates the given point in the additive 
+ *          sense; false otherwise
+ *  
+ *  Possible exceptions:
+ *  - May throw a NullObjectException exception if the given Point 
+ *    instance is a null Point instance.
+ *  - May throw a DifferentDimensionsException exception if the given 
+ *    point and the hyperplane belong in spaces of different dimensions.
+ *  - May throw a NegativeApproximationRatioException exception if the 
+ *    given approximation ratio/factor/threshold is less than 0.0.
+ *  - May throw a NotPositivePointException exception if the given point 
+ *    is not positive. (i.e. some coordinate is less than 0.0)
+ *  
+ *  \sa Facet, Point, Point::dominatesAdditive() and 
+ *      Facet::dominates()
+ */
+template <class S> 
+bool 
+Facet<S>::dominatesAdditive(const Point & p, double eps) const
+{
+  if (p.isNull())
+    throw exception_classes::NullObjectException();
+  if (spaceDimension() != p.dimension())
+    throw exception_classes::DifferentDimensionsException();
+  if (eps < 0.0)
+    throw exception_classes::NegativeApproximationRatioException();
+  if (not p.isPositive())
+    throw exception_classes::NotPositivePointException();
+  // else
+
+  if (additiveDistance(p) <= eps)
+    return true;
+  else
+    return false;
+}
+
+
+/*! 
+ *  \brief Check if the Facet approximately dominates (in the 
+ *         multiplicative sense) the given point.
+ *  
+ *  \param p A Point instance. (must be strictly positive - i.e. all 
+ *           coordinates greater than 0.0)
+ *  \param eps The approximation factor.
+ *  \return true if some point on the facet's supporting hyperplane 
+ *          approximately dominates the given point in the multiplicative 
+ *          sense; false otherwise
+ *  
+ *  Possible exceptions:
+ *  - May throw a NullObjectException exception if the given Point 
+ *    instance is a null Point instance.
+ *  - May throw a DifferentDimensionsException exception if the given 
+ *    point and the hyperplane belong in spaces of different dimensions.
+ *  - May throw a NegativeApproximationRatioException exception if the 
+ *    given approximation ratio/factor/threshold is less than 0.0.
+ *  - May throw a NotStrictlyPositivePointException exception if the 
+ *    given point is not strictly positive. (i.e. some coordinate is less 
+ *    than or equal to 0.0)
+ *  
+ *  \sa Facet, Point, Point::dominatesMultiplicative() and 
+ *      Facet::dominates()
+ */
+template <class S> 
+bool 
+Facet<S>::dominatesMultiplicative(const Point & p, double eps) const
+{
+  if (p.isNull())
+    throw exception_classes::NullObjectException();
+  if (spaceDimension() != p.dimension())
+    throw exception_classes::DifferentDimensionsException();
+  if (not p.isStrictlyPositive()) 
+    throw exception_classes::NotStrictlyPositivePointException();
+  if (eps < 0.0)
+    throw exception_classes::NegativeApproximationRatioException();
+  // else
+
+  if (ratioDistance(p) <= eps)
+    return true;
+  else
+    return false;
 }
 
 
@@ -609,8 +888,8 @@ Facet<S>::computeAndSetFacetNormal(bool preferPositiveNormalVector)
  *  exists) and sets the facet's localApproximationErrorUpperBound_ 
  *  and isBoundaryFacet_ attributes accordingly.
  *  
- *  We have only created this function to erase duplicate code from 
- *  inside the constructors.
+ *  We have only created this function in order to erase duplicate 
+ *  code from inside the constructors.
  *  
  *  \sa Facet
  */
@@ -626,7 +905,7 @@ Facet<S>::computeAndSetLocalApproximationErrorUpperBoundAndIsBoundaryFacet()
   if (not lowerDistalPoint.isNull()) {
     isBoundaryFacet_ = false;
     if (lowerDistalPoint.isStrictlyPositive()) 
-      localApproximationErrorUpperBound_ = ratioDistance(lowerDistalPoint);
+      localApproximationErrorUpperBound_ = distance(lowerDistalPoint);
     else {
       // The LDP is not strictly positive.
       // - mark the facet as a boundary facet

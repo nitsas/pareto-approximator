@@ -13,13 +13,17 @@
 
 
 /*!
- *  \weakgroup ParetoApproximator Everything needed for the chord algorithm.
+ *  \weakgroup ParetoApproximator Everything needed for the Pareto set approximation algorithms.
  *  @{
  */
 
 
-//! The namespace containing everything needed for the chord algorithm.
+//! The namespace containing everything needed for the Pareto set approximation algorithms.
 namespace pareto_approximator {
+
+
+//! The namespace containing all the exception classes.
+namespace exception_classes {
 
 
 /*! 
@@ -43,6 +47,9 @@ class NullObjectException : public std::exception
       return "Cannot operate on a null object.";
     }
 };
+
+
+}  // namespace exception_classes
 
 
 }  // namespace pareto_approximator
