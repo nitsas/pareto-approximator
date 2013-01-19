@@ -19,6 +19,7 @@
  */
 
 
+//! Everything needed for the example biobjective shortest path problem.
 namespace biobjective_shortest_path_example {
 
 

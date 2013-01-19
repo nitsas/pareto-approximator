@@ -19,6 +19,7 @@
  */
 
 
+//! Everything needed for the example tripleobjective shortest path problem.
 namespace tripleobjective_shortest_path_example {
 
 

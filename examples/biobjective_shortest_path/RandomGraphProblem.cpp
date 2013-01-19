@@ -43,13 +43,13 @@ using pareto_approximator::NonDominatedSet;
 
 
 /*!
- *  \weakgroup BiobjectiveShortestPathExample
- *  An example biobjective shortest path problem.
+ *  \addtogroup BiobjectiveShortestPathExample An example biobjective shortest path problem.
  *  
  *  @{
  */
 
 
+//! Everything needed for the example biobjective shortest path problem.
 namespace biobjective_shortest_path_example {
 
 

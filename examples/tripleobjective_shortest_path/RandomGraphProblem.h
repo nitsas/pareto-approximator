@@ -25,12 +25,13 @@ using pareto_approximator::NonDominatedSet;
 
 
 /*!
- *  \defgroup TripleobjectiveShortestPathExample An example tripleobjective shortest path problem.
+ *  \addtogroup TripleobjectiveShortestPathExample An example tripleobjective shortest path problem.
  *  
  *  @{
  */
 
 
+//! Everything needed for the example tripleobjective shortest path problem.
 namespace tripleobjective_shortest_path_example {
 
 

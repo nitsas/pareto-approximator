@@ -1,15 +1,17 @@
 /*! \file examples/biobjective_shortest_path/main.cpp
- *  \brief The main program using RandomGraphProblem::computeConvexParetoSet() 
- *         to solve a biobjective shortest path problem.
+ *  \brief The main program using RandomGraphProblem's computeConvexParetoSet() 
+ *         to solve a biobjective shortest path problem
  *  \author Christos Nitsas
  *  \date 2012
  *  
- *  We use a RandomGraphProblem object to represent a biobjective shortest 
- *  path problem on a random boost graph.
+ *  We use a biobjective_shortest_path_example::RandomGraphProblem object 
+ *  to represent a biobjective shortest path problem on a random boost graph.
  *  
- *  All typedefs and class declarations are in RandomGraphProblem.h.
+ *  All typedefs and class declarations are inside 
+ *  examples/biobjective_shortest_path/RandomGraphProblem.h.
  *  
- *  \sa RandomGraphProblem and BaseProblem.
+ *  \sa biobjective_shortest_path_example::RandomGraphProblem and 
+ *      pareto_approximator::BaseProblem
  */
 
 
@@ -38,7 +40,7 @@ using biobjective_shortest_path_example::PredecessorMap;
 
 
 /*!
- *  \defgroup BiobjectiveShortestPathExample An example biobjective shortest path problem.
+ *  \addtogroup BiobjectiveShortestPathExample An example biobjective shortest path problem.
  *  
  *  @{
  */
@@ -104,30 +106,46 @@ main(int argc, char * argv[])
 
   // Initializations
   // =========================================
-  // Make a RandomGraphProblem instance with 1000 vertices and 100000 edges.
-  // - "black" edge weights should be random integers in [1, 100] (uniformly)
-  // - "red" edge weights should be random integers in [1, 100] (uniformly)
+  // Make a RandomGraphProblem instance with numVertices vertices and 
+  // numEdges edges.
+  // - "black" edge weights should be random integers in 
+  //    [minBlackWeight, maxBlackWeight] (uniformly distributed)
+  // - "red" edge weights should be random integers in 
+  //   [minRedWeight, maxRedWeight] (uniformly distributed)
   // Reminder: All instances are created randomly so even instances with 
   // the same number of vertices and edges will almost surely be different.
-  RandomGraphProblem rgp(1000, 100000, 1, 100, 1, 100, seed);
+  int numVertices = 1000;
+  int numEdges = 100000;
+  int minBlackWeight = 1;
+  int maxBlackWeight = 100;
+  int minRedWeight = 1;
+  int maxRedWeight = 100;
+  unsigned int numObjectives = 2;
+  double approximationRatio = 1e-12;
+
+  RandomGraphProblem rgp(numVertices, numEdges, 
+                         minBlackWeight, maxBlackWeight, 
+                         minRedWeight, maxRedWeight, 
+                         seed);
 
   // Print problem info.
   cout << "Biobjective shortest path problem:" << endl
        << "- undirected random boost graph with no parallel edges" << endl
        << "- random number generator's seed: " << seed << endl
-       << "- 1000 vertices and 100000 edges" << endl
+       << "- " << numVertices << " vertices and " << numEdges << " edges" 
+       << endl
        << "- two weights (\"black\" and \"red\") on each edge" << endl
        << "- \"black\" edge weights: random integers drawn uniformly from" 
-       << " [1, 100]" << endl
+       << " [" << minBlackWeight << ", " << maxBlackWeight << "]" << endl
        << "- \"red\" edge weights: random integers drawn uniformly from"
-       << " [1, 100]" << endl
+       << " [" << minRedWeight << ", " << maxRedWeight << "]" << endl
        << "- (random) source vertex s, (random) target vertex t" << endl
        << "- two objective functions to minimize: " << endl
        << "  (let P be an s-t path)" << endl
        << "  + Black(P): sum of \"black\" weights of all edges in P" << endl
        << "  + Red(P): sum of \"red\" weights of all edges in P" << endl
-       << "- find an eps-approximate convex Pareto set with eps = 1e-12" 
-       << endl << endl;
+       << "- find an eps-approximate convex Pareto set with "
+       << "eps = " << approximationRatio << endl << endl;
 
   //cout << "Printing graph as a dot file (graph.dot)..." << endl;
   //rgp.printGraphToDotFile();
@@ -149,8 +167,6 @@ main(int argc, char * argv[])
   // =========================================
   // Use RandomGraphProblem::computeConvexParetoSet() (inherited from 
   // BaseProblem) to find the convex Pareto set.
-  unsigned int numObjectives = 2;
-  double approximationRatio = 1e-12;
   std::vector< PointAndSolution<PredecessorMap> > paretoSet;
   paretoSet = rgp.computeConvexParetoSet(numObjectives, approximationRatio);
 
