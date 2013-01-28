@@ -74,7 +74,9 @@ namespace tripleobjective_shortest_path_example {
  *  RandomGraphProblem::isTargetReachable() are just helpful, 
  *  problem-specific methods.
  *  
- *  /sa BaseProblem, PointAndSolution and Point
+ *  /sa pareto_approximator::BaseProblem, 
+ *      pareto_approximator::PointAndSolution and 
+ *      pareto_approximator::Point
  */
 class RandomGraphProblem : public BaseProblem<PredecessorMap>
 {
@@ -199,12 +201,12 @@ class RandomGraphProblem : public BaseProblem<PredecessorMap>
      */
     void printPath(const PredecessorMap& pred) const;
 
-    //! Find the exact Pareto set.
+    //! Compute the exact Pareto set.
     /*!
      *  Will use boost's breadth_first_search and a custom visitor to 
      *  make something like the flood algorithm.
      */
-    NonDominatedSet<Point> findExactParetoSet();
+    NonDominatedSet<Point> computeExactParetoSet();
 
     //! Return a reference to the underlying graph.
     Graph& graph();

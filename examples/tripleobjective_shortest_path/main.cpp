@@ -8,7 +8,7 @@
  *  represent a tripleobjective shortest path problem on a random boost graph.
  *  
  *  All typedefs and class declarations are inside 
- *  examples/tripleobjective_shortest_path/RandomGraphProblem.h.
+ *  examples/tripleobjective_shortest_path/tripleobjective_shortest_path_example_common.h.
  *  
  *  \sa tripleobjective_shortest_path_example::RandomGraphProblem and 
  *      pareto_approximator::BaseProblem
@@ -195,7 +195,7 @@ main(int argc, char * argv[])
     // Exact Pareto set
     // =========================================
     cout << endl << "(computing exact Pareto set... please wait a few seconds)" << endl << endl;
-    NonDominatedSet<Point> exactParetoSet = rgp.findExactParetoSet();
+    NonDominatedSet<Point> exactParetoSet = rgp.computeExactParetoSet();
     cout << "C. exact Pareto set size: " << exactParetoSet.size() << endl;
     cout << endl << "D. exact Pareto set points: " << endl;
     NonDominatedSet<Point>::iterator epsi;

@@ -305,13 +305,13 @@ RandomGraphProblem::printPath(const PredecessorMap& pred) const
 }
 
 
-//! Find the exact Pareto set.
+//! Compute the exact Pareto set.
 /*!
  *  We will just flood the graph with distances from the source starting
  *  from the source vertex.
  */
 NonDominatedSet<Point> 
-RandomGraphProblem::findExactParetoSet()
+RandomGraphProblem::computeExactParetoSet()
 {
   using biobjective_shortest_path_example::FloodVisitor;
 
