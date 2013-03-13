@@ -55,6 +55,9 @@ class Point {
     
     //! A 2-dimensional Point constructor.
     Point(int x, int y);
+
+    //! A 2-dimensional Point constructor.
+    Point(unsigned int x, unsigned int y);
     
     //! A 2-dimensional Point constructor.
     Point(double x, double y);
@@ -63,11 +66,17 @@ class Point {
     Point(int x, int y, int z);
 
     //! A 3-dimensional Point constructor.
+    Point(unsigned int x, unsigned int y, unsigned int z);
+    
+    //! A 3-dimensional Point constructor.
     Point(double x, double y, double z);
 
     //! A 4-dimensional Point constructor.
     Point(int x, int y, int z, int w);
 
+    //! A 4-dimensional Point constructor.
+    Point(unsigned int x, unsigned int y, unsigned int z, unsigned int w);
+    
     //! A 4-dimensional Point constructor.
     Point(double x, double y, double z, double w);
 
@@ -84,7 +93,26 @@ class Point {
      *  
      *  \sa Point
      */
-    Point(std::vector<int>::iterator first, std::vector<int>::iterator last);
+    Point(std::vector<int>::const_iterator first, 
+          std::vector<int>::const_iterator last);
+
+    //! An n-dimensional Point constructor.
+    /*! 
+     *  \param first Iterator to the initial position in a 
+     *               std::vector<unsigned int>.
+     *  \param last Iterator to the final position in a 
+     *              std::vector<unsigned int>.
+     *  
+     *  The range used is [first, last), which includes all the elements 
+     *  between first and last, including the element pointed by first but 
+     *  not the element pointed by last.
+     *  
+     *  The resulting point's coordinates will be doubles, not ints. 
+     *  
+     *  \sa Point
+     */
+    Point(std::vector<unsigned int>::const_iterator first, 
+          std::vector<unsigned int>::const_iterator last);
 
     //! An n-dimensional Point constructor.
     /*! 
@@ -97,8 +125,8 @@ class Point {
      *  
      *  \sa Point
      */
-    Point(std::vector<double>::iterator first, 
-          std::vector<double>::iterator last);
+    Point(std::vector<double>::const_iterator first, 
+          std::vector<double>::const_iterator last);
 
     //! An n-dimensional Point constructor.
     /*! 
@@ -205,7 +233,7 @@ class Point {
      */
     bool isStrictlyPositive() const;
 
-    //! The Point access coordinate operator.
+    //! The Point access coordinate operator. 
     /*! 
      *  \param pos The position (coordinate) to access. 
      *             (0 <= pos < dimension())
@@ -578,7 +606,7 @@ class Point {
      *
      *  Usage:
      *  - std::cout << Point(4, 3, -8);
-     *  - std::cout << "some text " << Point(2.7, -2.7) << std::endl;
+     *  - std::cout << "some text " << Point(2.7, -2.7) << " more text";
      *
      *  \sa Point, Point::str(), Point::operator==(), Point::operator!=(), 
      *      Point::operator<(), Point::operator[]() and 

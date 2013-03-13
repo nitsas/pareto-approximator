@@ -194,12 +194,12 @@ RandomGraphProblem::makeGraph(int numVertices, int numEdges,
  *  \$f w_{0} * Black(P) + w_{1} * Red(P) \$f,
  *  where P is an s-t path.
  *  
- *  \sa RandomGraphProblem and RandomGraphProblem::RandomGraphProblem().
+ *  \sa RandomGraphProblem and RandomGraphProblem::RandomGraphProblem()
  */
 PointAndSolution<PredecessorMap> 
 RandomGraphProblem::comb(
                     std::vector<double>::const_iterator first, 
-                    std::vector<double>::const_iterator last) const
+                    std::vector<double>::const_iterator last) 
 {
   assert(std::distance(first, last) == 2);
 

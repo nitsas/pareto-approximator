@@ -180,7 +180,7 @@ class RandomGraphProblem : public BaseProblem<PredecessorMap>
      */
     PointAndSolution<PredecessorMap> comb(
                           std::vector<double>::const_iterator first, 
-                          std::vector<double>::const_iterator last) const;
+                          std::vector<double>::const_iterator last);
 
     //! Check if the target (t) is reachable.
     /*!

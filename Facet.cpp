@@ -92,6 +92,9 @@ Facet<S>::Facet(
   // Compute and set the facet's normal vector (Facet<S>::normal_).
   computeAndSetFacetNormal(preferPositiveNormalVector);
 
+  // Compute and set the facet's offset.
+  b_ = arma::dot( arma::vec(normal_), vertices_[0].point.toVec() );
+
   // Compute and set the facet's localApproximationErrorUpperBound_ and 
   // isBoundaryFacet_ attributes.
   computeAndSetLocalApproximationErrorUpperBoundAndIsBoundaryFacet();
@@ -166,6 +169,9 @@ Facet<S>::Facet(
   // First fill-in Facet<S>::vertices_ and Facet<S>::normal_.
   vertices_.assign(firstVertex, lastVertex);
   normal_.assign(firstElemOfFacetNormal, lastElemOfFacetNormal);
+
+  // Compute and set the facet's offset.
+  b_ = arma::dot( arma::vec(normal_), vertices_[0].point.toVec() );
 
   // Compute and set the facet's localApproximationErrorUpperBound_ and 
   // isBoundaryFacet_ attributes.
@@ -317,7 +323,7 @@ template <class S>
 double 
 Facet<S>::b() const
 {
-  return arma::dot( arma::vec(normal_), vertices_[0].point.toVec() );
+  return b_;
 }
 
 
@@ -627,6 +633,9 @@ Facet<S>::additiveDistance(const Point & p) const
   //   (p + \f$\epsilon\f$) will be lying on H (the hyperplane).
   // - sumOfFacetNormal should not be 0.0 - it can only be 0.0 if 
   //   the facet's normal vector is all zero (not a valid facet)
+  //   (we assume the facet has an all-positive normal vector; 
+  //   if not, there is no point in calling this method)
+  assert(sumOfFacetNormal != 0.0);
   return std::max( (b() - dotProduct) / sumOfFacetNormal, 0.0 );
 }
 

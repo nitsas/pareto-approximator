@@ -10,6 +10,9 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <iomanip>
+#include <ios>
+#include <iostream>
 
 #include "Point.h"
 
@@ -54,6 +57,15 @@ Point::Point(int x, int y) : isNull_(false)
 
 
 //! A 2-dimensional Point constructor.
+Point::Point(unsigned int x, unsigned int y) : isNull_(false)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
+}
+
+
+//! A 2-dimensional Point constructor.
 Point::Point(double x, double y) : isNull_(false)
 {
   assert(coordinates_.size() == 0);
@@ -64,6 +76,16 @@ Point::Point(double x, double y) : isNull_(false)
 
 //! A 3-dimensional Point constructor.
 Point::Point(int x, int y, int z) : isNull_(false)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
+  coordinates_.push_back(z);
+}
+
+
+//! A 3-dimensional Point constructor.
+Point::Point(unsigned int x, unsigned int y, unsigned int z) : isNull_(false)
 {
   assert(coordinates_.size() == 0);
   coordinates_.push_back(x);
@@ -84,6 +106,18 @@ Point::Point(double x, double y, double z) : isNull_(false)
 
 //! A 4-dimensional Point constructor.
 Point::Point(int x, int y, int z, int w) : isNull_(false)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.push_back(x);
+  coordinates_.push_back(y);
+  coordinates_.push_back(z);
+  coordinates_.push_back(w);
+}
+
+
+//! A 4-dimensional Point constructor.
+Point::Point(unsigned int x, unsigned int y, 
+             unsigned int z, unsigned int w) : isNull_(false)
 {
   assert(coordinates_.size() == 0);
   coordinates_.push_back(x);
@@ -115,8 +149,31 @@ Point::Point(double x, double y, double z, double w) : isNull_(false)
  *  
  *  The resulting point's coordinates will be doubles, not ints. 
  */
-Point::Point(std::vector<int>::iterator first, 
-             std::vector<int>::iterator last) : isNull_(false)
+Point::Point(std::vector<int>::const_iterator first, 
+             std::vector<int>::const_iterator last) : isNull_(false)
+{
+  assert(coordinates_.size() == 0);
+  coordinates_.assign(first, last);
+}
+
+
+//! An n-dimensional Point constructor.
+/*! 
+ *  \param first Iterator to the initial position in a 
+ *               std::vector<unsigned int>.
+ *  \param last Iterator to the final position in a 
+ *              std::vector<unsigned int>.
+ *  
+ *  The range used is [first, last), which includes all the elements 
+ *  between first and last, including the element pointed by first but 
+ *  not the element pointed by last.
+ *  
+ *  The resulting point's coordinates will be doubles, not ints. 
+ *  
+ *  \sa Point
+ */
+Point::Point(std::vector<unsigned int>::const_iterator first, 
+             std::vector<unsigned int>::const_iterator last)
 {
   assert(coordinates_.size() == 0);
   coordinates_.assign(first, last);
@@ -132,8 +189,8 @@ Point::Point(std::vector<int>::iterator first,
  *  first and last, including the element pointed by first but not the 
  *  element pointed by last.
  */
-Point::Point(std::vector<double>::iterator first, 
-             std::vector<double>::iterator last) : isNull_(false)
+Point::Point(std::vector<double>::const_iterator first, 
+             std::vector<double>::const_iterator last) : isNull_(false)
 {
   assert(coordinates_.size() == 0);
   coordinates_.assign(first, last);
@@ -319,7 +376,7 @@ Point::isStrictlyPositive() const
 }
 
 
-//! The Point access coordinate operator.
+//! The Point access coordinate operator. 
 /*! 
  *  \param pos The position (coordinate) to access. 
  *             (0 <= pos < dimension())
@@ -444,17 +501,18 @@ Point::operator!= (const Point & p) const
 bool 
 Point::operator< (const Point & p) const 
 {
-  if (isNull() or p.isNull())
+  if (isNull() or p.isNull()) 
     throw exception_classes::NullObjectException();
   // else
 
   if (dimension() != p.dimension()) 
     throw exception_classes::DifferentDimensionsException();
   // else
+
   for (unsigned int i=0; i<dimension(); ++i) {
-    if (coordinates_[i] < p[i])
+    if (coordinates_[i] < p[i]) 
       return true;
-    else if (coordinates_[i] > p[i])
+    else if (coordinates_[i] > p[i]) 
       return false;
     else 
       continue;
@@ -564,15 +622,19 @@ Point::operator- (const Point & p) const
 std::string 
 Point::str(bool rawCoordinates) const
 {
-  std::string separator = " ";
-  std::string beginning = "";
-  std::string end = "";
+  std::string separator, beginning, end;
 
   if (not rawCoordinates) {
     // rawCoordinates == false
     separator = ", ";
     beginning = "(";
     end = ")";
+  }
+  else {
+    // rawCoordinates == true
+    separator = " ";
+    beginning = "";
+    end = "";
   }
 
   if ( isNull() or (dimension() == 0) ) {
@@ -582,6 +644,12 @@ Point::str(bool rawCoordinates) const
   }
   else {
     std::stringstream ss;
+
+    if (rawCoordinates) {
+      // coordinates in scientific notation, with 13 digits after the dot
+      ss.precision(13);
+      ss << std::scientific;
+    }
 
     ss << beginning << coordinates_[0];
     for (unsigned int i=1; i<dimension(); ++i) 
@@ -948,7 +1016,7 @@ Point::dominatesMultiplicative(const Point & q, double eps) const
  *
  *  Usage:
  *  - std::cout << Point(4, 3, -8);
- *  - std::cout << "some text " << Point(2.7, -2.7) << std::endl;
+ *  - std::cout << "some text " << Point(2.7, -2.7) << " more text";
  *
  *  \sa Point, Point::str(), Point::operator==(), Point::operator!=(), 
  *      Point::operator<(), Point::operator[]() and 

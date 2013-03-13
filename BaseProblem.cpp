@@ -136,7 +136,7 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives,
       // anchorFacet is just a single line segment for numObjectives == 2
 
       // Let doChord do all the work.
-      unfilteredResults = doChord(numObjectives, anchorFacet, eps);
+      unfilteredResults = doChord(anchorFacet, eps);
     }
     else {
       assert(numObjectives > 2);
@@ -158,16 +158,15 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives,
 
 
 /*! \brief A function called by computeConvexParetoSet() to do most of 
- *         the work.
+ *         the work. (for biobjective optimization problems)
  * 
- *  \param numObjectives The number of objectives to minimize. 
- *                       Note: The user's comb() routine should be able to 
- *                       handle a std::vector<double> of two weights.
  *  \param anchorFacet The Facet defined by the anchor points.
  *  \param eps The degree of approximation. 
  *  \return A vector of Pareto optimal points (PointAndSolution instances).
  *          It might contain weakly-dominated points (some of the anchor 
  *          points). 
+ *  
+ *  Note: doChord() is only called for problems with exactly 2 criteria.
  *  
  *  Users don't need to use doChord() - that is why it's declared private. 
  *  It's just a routine that BaseProblem::computeConvexParetoSet() uses 
@@ -187,12 +186,10 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives,
  */
 template <class S> 
 std::vector< PointAndSolution<S> > 
-BaseProblem<S>::doChord(unsigned int numObjectives, Facet<S> anchorFacet, 
-                        double eps) 
+BaseProblem<S>::doChord(Facet<S> anchorFacet, double eps) 
 {
   // reminder: comb accepts a set of iterators to the objectives' weights
 
-  assert(numObjectives == 2);
   assert(anchorFacet.spaceDimension() == 2);
 
   // a vector that will hold all the approximation points:
@@ -218,8 +215,10 @@ BaseProblem<S>::doChord(unsigned int numObjectives, Facet<S> anchorFacet,
                         generateNewParetoPointUsingFacet(generatingFacet);
 
     // We will never encounter the same weight vector twice in 
-    // biobjective problems:
-    assert(not opt.isNull());
+    // biobjective problems. 
+    //assert(not opt.isNull());
+    if (opt.isNull())
+      continue;
 
     // Note: the generatingFacet will always have an all-positive normal 
     //       vector in biobjective problems
@@ -356,8 +355,8 @@ BaseProblem<S>::doCraft(unsigned int numObjectives, Facet<S> anchorFacet,
   //   construction of the Facet instance.
   std::list< Facet<S> > facets;
   facets = pareto_approximator::utility::
-                       computeConvexHull<S>(approximationPoints, 
-                                            spaceDimension);
+                       computeConvexHullFacets<S>(approximationPoints, 
+                                                  spaceDimension);
 
   // Discard facets with all-negative normal vectors.
   pareto_approximator::utility::discardUselessFacets<S>(facets);
@@ -387,8 +386,8 @@ BaseProblem<S>::doCraft(unsigned int numObjectives, Facet<S> anchorFacet,
     // else 
     
     // Make a new Pareto point using generatingFacet as a generating facet.
-    // - Reminder: generatingFacet is actually an iterator pointing to 
-    //             the actual facet - that is why we use the * operator
+    // Reminder: generatingFacet is actually an iterator pointing to 
+    //           the actual facet - that is why we use the * operator
     PointAndSolution<S> opt = 
                         generateNewParetoPointUsingFacet(*generatingFacet);
 
@@ -412,8 +411,8 @@ BaseProblem<S>::doCraft(unsigned int numObjectives, Facet<S> anchorFacet,
     // points and calculate the new convex hull of the set
     approximationPoints.push_back(opt);
     facets = pareto_approximator::utility::
-                              computeConvexHull<S>(approximationPoints, 
-                                                   spaceDimension);
+                              computeConvexHullFacets<S>(approximationPoints, 
+                                                         spaceDimension);
     pareto_approximator::utility::discardUselessFacets<S>(facets);
   }
 

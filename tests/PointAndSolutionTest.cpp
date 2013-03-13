@@ -71,6 +71,24 @@ TEST_F(PointAndSolutionTest, PointAndSolutionConstructorsWork)
 }
 
 
+// Test PointAndSolution's attribute setters.
+TEST_F(PointAndSolutionTest, PointAndSolutionSettersWork)
+{
+  PointAndSolution<std::string> pas;
+  EXPECT_TRUE(pas.isNull());
+  pas.setPoint(Point(1.0, 1.0, 1.0));
+  EXPECT_EQ(Point(1.0, 1.0, 1.0), pas.point);
+  EXPECT_FALSE(pas.isNull());
+
+  PointAndSolution<std::string> pas2;
+  EXPECT_TRUE(pas2.isNull());
+  pas2.setAttributes(Point(2.0, 3.0, 4.0, 5.0), "pas2 solution");
+  EXPECT_EQ(Point(2.0, 3.0, 4.0, 5.0), pas2.point);
+  EXPECT_EQ(std::string("pas2 solution"), pas2.solution);
+  EXPECT_FALSE(pas2.isNull());
+}
+
+
 // Test PointAndSolution's methods. (most are shortcuts to Point's methods)
 TEST_F(PointAndSolutionTest, PointAndSolutionMethodsWork)
 {

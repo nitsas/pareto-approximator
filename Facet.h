@@ -664,6 +664,14 @@ class Facet
      */
     std::vector<double> normal_;
 
+    //! The offset of the hyperplane on which the facet lies..
+    /*!
+     *  For point on the underlying hyperplane, the dot product of its 
+     *  coordinates and the hyperplane/facet normal vector will be equal 
+     *  to b_.
+     */
+    double b_;
+
     //! An upper bound to the current facet's approximation error.
     /*! 
      *  The distance from the facet to it's Lower Distal Point.

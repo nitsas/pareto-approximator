@@ -24,6 +24,10 @@ CPPLIBS=-lgtest -larmadillo
 # Make all unit tests
 all: PointTest.out PointAndSolutionTest.out NonDominatedSetTest.out FacetTest.out BaseProblemTest.out
 
+# Run all unit tests
+run: 
+	PointTest.out; PointAndSolutionTest.out; NonDominatedSetTest.out; FacetTest.out; BaseProblemTest.out
+
 # Make PointTest.out
 PointTest.out: PointTest.cpp ../Point.h Point.o ../NullObjectException.h ../DifferentDimensionsException.h ../NegativeApproximationRatioException.h ../NotPositivePointException.h ../NotStrictlyPositivePointException.h ../NonExistentCoordinateException.h
 	$(CC) $(CPPFLAGS) $(CPPLIBS) Point.o PointTest.cpp -o $@

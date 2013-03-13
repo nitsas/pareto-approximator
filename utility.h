@@ -33,16 +33,50 @@ namespace pareto_approximator {
 namespace utility {
 
 
-//! Compute the convex hull of the given set of points.
+//! Compute the facets of the convex hull of the given set of points.
 /*!
  *  \param points A (const reference to a) std::vector of points. 
  *                (PointAndSolution<S> instances)
  *  \param spaceDimension The dimension of the space that the points live in.
+ *  \return A list containing all the facets (Facet<S> instances) of the 
+ *          convex hull.
+ *  
+ *  This function requires that the external program/tool qconvex, 
+ *  distributed with qhull (see www.qhull.org) be installed on the system 
+ *  (and be on the PATH).
+ *  
+ *  This function currently only works for Unix-like systems, it won't 
+ *  work on Windows. It has only been tested on Mac OS X Mountain Lion 
+ *  but should work on other Unix-like systems as well.
  *  
  *  \sa BaseProblem::doCraft()
  */
 template <class S> 
 typename std::list< Facet<S> > 
+computeConvexHullFacets(const std::vector< PointAndSolution<S> > & points, 
+                        unsigned int spaceDimension);
+
+
+//! Compute the convex hull of the given set of points.
+/*!
+ *  \param points A (const reference to a) std::vector of points. 
+ *                (PointAndSolution<S> instances)
+ *  \param spaceDimension The dimension of the space that the points live in.
+ *  \return A vector containing all the extreme points (PointAndSolution<S> 
+ *          instances) of the convex hull.
+ *  
+ *  This function requires that the external program/tool qconvex, 
+ *  distributed with qhull (see www.qhull.org) be installed on the system 
+ *  (and be on the PATH).
+ *  
+ *  This function currently only works for Unix-like systems, it won't 
+ *  work on Windows. It has only been tested on Mac OS X Mountain Lion 
+ *  but should work on other Unix-like systems as well.
+ *  
+ *  \sa BaseProblem::doCraft()
+ */
+template <class S> 
+typename std::list< PointAndSolution<S> > 
 computeConvexHull(const std::vector< PointAndSolution<S> > & points, 
                   unsigned int spaceDimension);
 

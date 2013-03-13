@@ -569,17 +569,17 @@ TEST_F(PointTest, PointStrWorks)
 {
   Point p1(1, 1000);
   EXPECT_EQ(p1.str(), "(1, 1000)");
-  EXPECT_EQ(p1.str(true), "1 1000");
+  EXPECT_EQ(p1.str(true), "1.0000000000000e+00 1.0000000000000e+03");
   Point p2(49.75, 5000000.2);
   EXPECT_EQ(p2.str(), "(49.75, 5e+06)");
-  EXPECT_EQ(p2.str(true), "49.75 5e+06");
+  EXPECT_EQ(p2.str(true), "4.9750000000000e+01 5.0000002000000e+06");
   Point p3(-4.9, 0.0);
   EXPECT_EQ(p3.str(), "(-4.9, 0)");
-  EXPECT_EQ(p3.str(true), "-4.9 0");
+  EXPECT_EQ(p3.str(true), "-4.9000000000000e+00 0.0000000000000e+00");
   double coordinates[4] = {2.2, 4.2, 8.2, 16.2};
   Point p4(coordinates, coordinates + 4);
   EXPECT_EQ(p4.str(), "(2.2, 4.2, 8.2, 16.2)");
-  EXPECT_EQ(p4.str(true), "2.2 4.2 8.2 16.2");
+  EXPECT_EQ(p4.str(true), "2.2000000000000e+00 4.2000000000000e+00 8.2000000000000e+00 1.6200000000000e+01");
 
   EXPECT_EQ(nullPoint.str(), "()");
   EXPECT_EQ(nullPoint.str(true), "");

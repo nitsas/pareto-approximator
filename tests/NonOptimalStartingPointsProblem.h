@@ -34,7 +34,7 @@ class NonOptimalStartingPointsProblem : public BaseProblem<string>
 
     PointAndSolution<string> comb(
                         std::vector<double>::const_iterator first, 
-                        std::vector<double>::const_iterator last) const;
+                        std::vector<double>::const_iterator last);
 
   private:
     std::vector< PointAndSolution<string> > optimalPoints_;

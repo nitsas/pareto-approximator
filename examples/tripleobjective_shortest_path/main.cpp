@@ -194,10 +194,10 @@ main(int argc, char * argv[])
   if (not withoutExactParetoSet) {
     // Exact Pareto set
     // =========================================
-    cout << endl << "(computing exact Pareto set... please wait a few seconds)" << endl << endl;
+    cout << "\n(computing exact Pareto set... please wait a few seconds)\n" << endl;
     NonDominatedSet<Point> exactParetoSet = rgp.computeExactParetoSet();
     cout << "C. exact Pareto set size: " << exactParetoSet.size() << endl;
-    cout << endl << "D. exact Pareto set points: " << endl;
+    cout << "\nD. exact Pareto set points: " << endl;
     NonDominatedSet<Point>::iterator epsi;
     for (epsi = exactParetoSet.begin(); epsi != exactParetoSet.end(); ++epsi)
       cout << *epsi << endl;

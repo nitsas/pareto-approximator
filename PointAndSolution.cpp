@@ -55,6 +55,27 @@ template <class S>
 PointAndSolution<S>::~PointAndSolution() { }
 
 
+//! \brief Sets the object's "point" attribute. (also makes it non-null)
+template <class S> 
+void 
+PointAndSolution<S>::setPoint(const Point & p)
+{
+  point = p;
+  _isNull = false;
+}
+
+
+//! \brief Sets the object's attributes. (also makes it non-null)
+template <class S> 
+void 
+PointAndSolution<S>::setAttributes(const Point & p, const S & s)
+{
+  point    = p;
+  solution = s;
+  _isNull  = false;
+}
+
+
 //! Is the instance null?
 /*!
  *  \return true if the instance is a null instance; false otherwise.
@@ -137,8 +158,9 @@ template <class S>
 bool 
 PointAndSolution<S>::operator< (const PointAndSolution<S> & pas) const 
 { 
-  if (isNull() or pas.isNull())
+  if (isNull() or pas.isNull()) 
     throw exception_classes::NullObjectException();
+  // else 
 
   return (this->point < pas.point); 
 }

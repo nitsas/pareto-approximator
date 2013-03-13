@@ -101,7 +101,7 @@ class BaseProblem
      */
     virtual PointAndSolution<S> 
     comb(std::vector<double>::const_iterator first, 
-         std::vector<double>::const_iterator last) const = 0;
+         std::vector<double>::const_iterator last) = 0;
 
     //! Compute an (1+eps)-approximate convex Pareto set of the problem.
     /*! 
@@ -138,17 +138,15 @@ class BaseProblem
 
   private:
     /*! \brief A function called by computeConvexParetoSet() to do most of 
-     *         the work.
+     *         the work. (for biobjective optimization problems)
      * 
-     *  \param numObjectives The number of objectives to minimize. 
-     *                       Note: The user's comb() routine should be able to 
-     *                       handle a std::vector<double> of \#numObjectives 
-     *                       weights.
      *  \param anchors The Facet defined by the anchor points.
      *  \param eps The degree of approximation. 
      *  \return A vector of Pareto optimal points (PointAndSolution instances).
      *          BaseProblem::computeConvexParetoSet() will filter them to make 
      *          the (1+eps)-approximate convex Pareto set.
+     *  
+     *  Note: doChord() is only called for problems with exactly 2 criteria.
      *  
      *  Users don't need to use doChord() - that is why it's declared private. 
      *  It's just a routine that BaseProblem::computeConvexParetoSet() uses 
@@ -167,7 +165,7 @@ class BaseProblem
      *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
      */
     std::vector< PointAndSolution<S> > 
-    doChord(unsigned int numObjectives, Facet<S> anchors, double eps);
+    doChord(Facet<S> anchors, double eps);
 
     /*! \brief A function that uses Craft's (et al.) algorithm to 
      *         approximate the Pareto set.

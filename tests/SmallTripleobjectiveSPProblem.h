@@ -69,7 +69,7 @@ class SmallTripleobjectiveSPProblem : public BaseProblem<PredecessorMap>
 
     PointAndSolution<PredecessorMap> comb(
                               std::vector<double>::const_iterator first, 
-                              std::vector<double>::const_iterator last) const;
+                              std::vector<double>::const_iterator last);
 
     void makeGraph();
 

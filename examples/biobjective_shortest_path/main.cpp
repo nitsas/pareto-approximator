@@ -84,7 +84,7 @@ main(int argc, char * argv[])
   char * arg = NULL;
   if (commandLineOptionExists(argv, argv + argc, "-h") or
       commandLineOptionExists(argv, argv + argc, "--help")) {
-    cout << "Usage: tosp_example [-s seed] [-W] [--without-exact-pareto-set]" 
+    cout << "Usage: bosp_example [-s seed] [-W] [--without-exact-pareto-set]" 
          << endl;
     return 0;
   }

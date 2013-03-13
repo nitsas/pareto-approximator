@@ -211,7 +211,7 @@ RandomGraphProblem::makeGraph(int numVertices, int numEdges,
  */
 PointAndSolution<PredecessorMap> 
 RandomGraphProblem::comb(std::vector<double>::const_iterator first, 
-                         std::vector<double>::const_iterator last) const
+                         std::vector<double>::const_iterator last) 
 {
   assert(std::distance(first, last) == 3);
 

@@ -90,7 +90,7 @@ SmallBiobjectiveSPProblem::makeGraph()
 PointAndSolution<PredecessorMap> 
 SmallBiobjectiveSPProblem::comb(
                           std::vector<double>::const_iterator first, 
-                          std::vector<double>::const_iterator last) const
+                          std::vector<double>::const_iterator last) 
 {
   assert(last == first + 2);
 

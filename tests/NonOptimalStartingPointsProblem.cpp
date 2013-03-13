@@ -96,7 +96,7 @@ NonOptimalStartingPointsProblem::~NonOptimalStartingPointsProblem() { }
 PointAndSolution<string> 
 NonOptimalStartingPointsProblem::comb(
                           std::vector<double>::const_iterator first,
-                          std::vector<double>::const_iterator last) const
+                          std::vector<double>::const_iterator last) 
 {
   PointAndSolution<string> result;
 

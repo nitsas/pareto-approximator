@@ -163,11 +163,11 @@ class RandomGraphProblem : public BaseProblem<PredecessorMap>
      *  \$f w_{0} * Black(P) + w_{1} * Red(P) \$f,
      *  where P is an s-t path.
      *  
-     *  \sa RandomGraphProblem and RandomGraphProblem::RandomGraphProblem().
+     *  \sa RandomGraphProblem and RandomGraphProblem::RandomGraphProblem()
      */
     PointAndSolution<PredecessorMap> comb(
                           std::vector<double>::const_iterator first, 
-                          std::vector<double>::const_iterator last) const;
+                          std::vector<double>::const_iterator last);
 
     //! Check if the target (t) is reachable.
     /*!

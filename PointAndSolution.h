@@ -120,8 +120,14 @@ class PointAndSolution
                      std::vector<double>::const_iterator first,
                      std::vector<double>::const_iterator last);
 
-    //! PointAndSolution's default destructor. (empty)
+    //! \brief PointAndSolution's default destructor. (empty)
     ~PointAndSolution();
+
+    //! \brief Sets the object's "point" attribute. (also makes it non-null)
+    void setPoint(const Point & p);
+
+    //! \brief Sets the object's attributes. (also makes it non-null)
+    void setAttributes(const Point & p, const S & s);
 
     //! Is the instance null?
     /*!

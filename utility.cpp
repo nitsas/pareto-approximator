@@ -40,7 +40,8 @@ using pareto_approximator::Facet;
  *  \param filename The name of the file we will create. (qconvex's input file)
  *  \param spaceDimension The dimension of the space that the points live in.
  *  
- *  \sa pareto_approximator::computeConvexHull()
+ *  \sa pareto_approximator::computeConvexHull() and 
+ *      pareto_approximator::computeConvexHullFacets()
  */
 template <class S> 
 void 
@@ -49,21 +50,44 @@ writePointsToQconvexInputFile(
                   std::string filename, unsigned int spaceDimension);
 
 
-//! Parse qconvex's output file. Return a list of the convex hull's facets.
 /*!
+ *  \brief Parse qconvex's output file and return a list of the convex 
+ *         hull's facets.
+ *  
  *  \param filename The name of the file we will parse. (qconvex's output file)
  *  \param points The points whose convex hull we asked qconvex to compute
  *                for us. Their order counts - it must be the same as their 
  *                order in qconvex's input file.
  *  \param spaceDimension The dimension of the space that the points live in.
+ *  \return A list of the convex hull's facets.
  *  
- *  \sa pareto_approximator::computeConvexHull()
+ *  \sa pareto_approximator::computeConvexHullFacets()
  */
 template <class S> 
 std::list< Facet<S> > 
 readFacetsFromQconvexOutputFile(std::string filename, 
                     std::vector< PointAndSolution<S> > points, 
                     unsigned int spaceDimension);
+
+
+/*!
+ *  \brief Parse qconvex's output file and return a vector of the convex 
+ *         hull's extreme points..
+ *  
+ *  \param filename The name of the file we will parse. (qconvex's output file)
+ *  \param points The points (PointAndSolution<S> objects) whose convex hull 
+ *                we asked qconvex to compute for us. Their order counts - it 
+ *                must be the same as their order in qconvex's input file.
+ *  \return A vector of the convex hull's extreme points (PointAndSolution<S> 
+ *          objects).
+ *  
+ *  \sa pareto_approximator::computeConvexHull()
+ */
+template <class S> 
+std::list< PointAndSolution<S> > 
+readExtremePointsFromQconvexOutputFile(
+                            std::string filename, 
+                            std::vector< PointAndSolution<S> > points);
 
 
 //! Normalizes a vector of double. (in place)
@@ -91,18 +115,28 @@ namespace pareto_approximator {
 namespace utility {
 
 
-//! Compute the convex hull of the given set of points.
+//! Compute the facets of the convex hull of the given set of points.
 /*!
  *  \param points A (const reference to a) std::vector of points. 
  *                (PointAndSolution<S> instances)
  *  \param spaceDimension The dimension of the space that the points live in.
+ *  \return A list containing all the facets (Facet<S> instances) of the 
+ *          convex hull.
+ *  
+ *  This function requires that the external program/tool qconvex, 
+ *  distributed with qhull (see www.qhull.org) be installed on the system 
+ *  (and be on the PATH).
+ *  
+ *  This function currently only works for Unix-like systems, it won't 
+ *  work on Windows. It has only been tested on Mac OS X Mountain Lion 
+ *  but should work on other Unix-like systems as well.
  *  
  *  \sa BaseProblem::doCraft()
  */
 template <class S> 
 std::list< Facet<S> > 
-computeConvexHull(const std::vector< PointAndSolution<S> > & points, 
-                  unsigned int spaceDimension)
+computeConvexHullFacets(const std::vector< PointAndSolution<S> > & points, 
+                        unsigned int spaceDimension)
 {
   // The files we'll use to interface with qconvex.
   std::string qconvexInputFilename = "qconvex-input.txt";
@@ -118,7 +152,7 @@ computeConvexHull(const std::vector< PointAndSolution<S> > & points,
   pid_t pid = fork();
   if (pid < 0) {
     // could not fork()
-    std::cout << "Failed to fork... Exiting" << std::endl;
+    std::cerr << "Failed to fork... Exiting" << std::endl;
     exit(-1);
   }
   else if (pid == 0) {
@@ -138,7 +172,7 @@ computeConvexHull(const std::vector< PointAndSolution<S> > & points,
     //   of the original non simplicial facet)
 
     if (rv == -1) {
-      std::cout << "An error occured while trying to call qconvex... Exiting" 
+      std::cerr << "An error occured while trying to call qconvex... Exiting" 
                 << std::endl;
       exit(-1);
     }
@@ -154,18 +188,18 @@ computeConvexHull(const std::vector< PointAndSolution<S> > & points,
     waitpid(pid, &childStatus, 0);
     if ( not WIFEXITED(childStatus) ) {
       if ( WIFSIGNALED(childStatus) ) {
-        std::cout << "ERROR: qconvex got a signal that caused it to exit (" 
+        std::cerr << "ERROR: qconvex got a signal that caused it to exit (" 
                   << WTERMSIG(childStatus) << "). Exiting" << std::endl;
         exit(-1);
       }
       else {
-        std::cout << "ERROR: qconvex did not exit normally. Exiting"
+        std::cerr << "ERROR: qconvex did not exit normally. Exiting"
                   << std::endl;
         exit(-1);
       }
     }
     else if ( WEXITSTATUS(childStatus) != 0 ) {
-      std::cout << "ERROR: qconvex exited with errorcode: " 
+      std::cerr << "ERROR: qconvex exited with errorcode: " 
                 << WEXITSTATUS(childStatus) << std::endl
                 << "Exiting" << std::endl;
       exit(-1);
@@ -184,6 +218,105 @@ computeConvexHull(const std::vector< PointAndSolution<S> > & points,
   // the facets from qconvex's output file. (qconvex will have exited 
   // without error as well)
   return facets;
+}
+
+
+//! Compute the convex hull of the given set of points.
+/*!
+ *  \param points A (const reference to a) std::vector of points. 
+ *                (PointAndSolution<S> instances)
+ *  \param spaceDimension The dimension of the space that the points live in.
+ *  \return A vector containing all the extreme points (PointAndSolution<S> 
+ *          instances) of the convex hull.
+ *  
+ *  This function requires that the external program/tool qconvex, 
+ *  distributed with qhull (see www.qhull.org) be installed on the system 
+ *  (and be on the PATH).
+ *  
+ *  This function currently only works for Unix-like systems, it won't 
+ *  work on Windows. It has only been tested on Mac OS X Mountain Lion 
+ *  but should work on other Unix-like systems as well.
+ *  
+ *  \sa BaseProblem::doCraft()
+ */
+template <class S> 
+std::list< PointAndSolution<S> > 
+computeConvexHull(const std::vector< PointAndSolution<S> > & points, 
+                  unsigned int spaceDimension)
+{
+  // The files we'll use to interface with qconvex.
+  std::string qconvexInputFilename = "qconvex-input.txt";
+  std::string qconvexOutputFilename = "qconvex-output.txt";
+
+  // First make qconvex's input file:
+  writePointsToQconvexInputFile(points, qconvexInputFilename, spaceDimension);
+
+  std::list< PointAndSolution<S> > extremePoints;
+
+  // Make a subprocess (child) that will exec qconvex to compute 
+  // the convex hull:
+  pid_t pid = fork();
+  if (pid < 0) {
+    // could not fork()
+    std::cerr << "Failed to fork... Exiting" << std::endl;
+    exit(-1);
+  }
+  else if (pid == 0) {
+    // child process 
+    // run qconvex (input: qconvex-input.txt, output: qconvex-output.txt)
+    int rv = execlp("qconvex", "qconvex", "Fx", "TI", "qconvex-input.txt", 
+                    "TO", "qconvex-output.txt", NULL);
+    // Used option "Fx" which only prints the (indices of the) extreme 
+    // points of the convex hull.
+
+    if (rv == -1) {
+      std::cerr << "An error occured while trying to call qconvex... Exiting" 
+                << std::endl;
+      exit(-1);
+    }
+
+    // Code will have ended by here. 
+    // - Either via qconvex exiting without error or the exit(-1) in case a 
+    //   qconvex error occurs. 
+    // - Won't reach the return statement.
+  }
+  else {
+    // parent process
+    int childStatus;
+    waitpid(pid, &childStatus, 0);
+    if ( not WIFEXITED(childStatus) ) {
+      if ( WIFSIGNALED(childStatus) ) {
+        std::cerr << "ERROR: qconvex got a signal that caused it to exit (" 
+                  << WTERMSIG(childStatus) << "). Exiting" << std::endl;
+        exit(-1);
+      }
+      else {
+        std::cerr << "ERROR: qconvex did not exit normally. Exiting"
+                  << std::endl;
+        exit(-1);
+      }
+    }
+    else if ( WEXITSTATUS(childStatus) != 0 ) {
+      std::cerr << "ERROR: qconvex exited with errorcode: " 
+                << WEXITSTATUS(childStatus) << std::endl
+                << "Exiting" << std::endl;
+      exit(-1);
+    }
+    else {
+      // parse qconvex's output file (qconvex-output.txt) and 
+      // get the convex hull's extreme points
+      extremePoints = readExtremePointsFromQconvexOutputFile(
+                                               qconvexOutputFilename, 
+                                               points);
+      // return the extreme points outside the ifs (to avoid compiler 
+      // warnings // about reaching the end of non-void function)
+    }
+  }
+
+  // Only the parent will get here and only after succesfully reading 
+  // the extreme points from qconvex's output file. (qconvex will have 
+  // exited without error as well)
+  return extremePoints;
 }
 
 
@@ -267,15 +400,17 @@ chooseFacetWithLargestLocalApproximationErrorUpperBound(
 
   for (it = first; it != last; ++it) {
     // Is it a non-boundary facet?
-    if (not it->isBoundaryFacet()) 
+    if (not it->isBoundaryFacet()) {
       // Is it the first non-boundary facet?
       // or 
       // Does it have a larger local approximation error upper bound 
       // than the one max has?
       if ( max == last or it->getLocalApproximationErrorUpperBound() > 
-                          max->getLocalApproximationErrorUpperBound() ) 
+                          max->getLocalApproximationErrorUpperBound() ) {
         max = it;
+      }
       // else ignore it
+    }
     // else ignore it
   }
 
@@ -291,9 +426,10 @@ chooseFacetWithLargestLocalApproximationErrorUpperBound(
  *  \return A std::vector of objective weights (for BaseProblem::comb()).
  *  
  *  The resulting weights will be:
- *  - Either the facet's normal vector. 
+ *  - Either the facet's normal vector. (normalized)
  *    (if it has no negative elements)
- *  - Or the mean of the weights used to obtain the facet's vertices.
+ *  - Or the mean of the weights used to obtain the facet's vertices. 
+ *    (normalized)
  *  
  *  \sa BaseProblem, BaseProblem::comb() and 
  *      BaseProblem::generateNewParetoPoint()
@@ -340,7 +476,8 @@ namespace {
  *  \param filename The name of the file we will create. (qconvex's input file)
  *  \param spaceDimension The dimension of the space that the points live in.
  *  
- *  \sa pareto_approximator::computeConvexHull()
+ *  \sa pareto_approximator::computeConvexHull() and 
+ *      pareto_approximator::computeConvexHullFacets()
  */
 template <class S> 
 void 
@@ -352,32 +489,35 @@ writePointsToQconvexInputFile(
   std::ofstream qcif(filename.c_str(), std::ios::out | std::ios::trunc);
 
   if (not qcif.is_open()) {
-    std::cout << "An error occured while opening file \"" << filename 
+    std::cerr << "An error occured while opening file \"" << filename 
               << "\" for output... Exiting" << std::endl;
     exit(-1);
   }
   // else 
 
   // make qconvex's input file
-  qcif << spaceDimension << std::endl;
-  qcif << points.size() << std::endl;
+  qcif << spaceDimension << "\n";
+  qcif << points.size() << "\n";
   typename std::vector< PointAndSolution<S> >::iterator pit;
   for (pit = points.begin(); pit != points.end(); ++pit)
-    qcif << pit->point << std::endl;
+    qcif << pit->point << "\n";
 
   qcif.close();
 }
 
 
-//! Parse qconvex's output file. Return a list of the convex hull's facets.
 /*!
+ *  \brief Parse qconvex's output file and return a list of the convex 
+ *         hull's facets.
+ *  
  *  \param filename The name of the file we will parse. (qconvex's output file)
  *  \param points The points whose convex hull we asked qconvex to compute
  *                for us. Their order counts - it must be the same as their 
  *                order in qconvex's input file.
  *  \param spaceDimension The dimension of the space that the points live in.
+ *  \return A list of the convex hull's facets.
  *  
- *  \sa pareto_approximator::computeConvexHull()
+ *  \sa pareto_approximator::computeConvexHullFacets()
  */
 template <class S> 
 std::list< Facet<S> > 
@@ -391,7 +531,7 @@ readFacetsFromQconvexOutputFile(std::string filename,
   std::ifstream qcof(filename.c_str());
 
   if (not qcof.is_open()) {
-    std::cout << "An error occured while opening file \"" << filename
+    std::cerr << "An error occured while opening file \"" << filename
               << "\" for input... Exiting" << std::endl;
     exit(-1);
   }
@@ -470,6 +610,65 @@ readFacetsFromQconvexOutputFile(std::string filename,
   qcof.close();
 
   return facets;
+}
+
+
+/*!
+ *  \brief Parse qconvex's output file and return a vector of the convex 
+ *         hull's extreme points..
+ *  
+ *  \param filename The name of the file we will parse. (qconvex's output file)
+ *  \param points The points (PointAndSolution<S> objects) whose convex hull 
+ *                we asked qconvex to compute for us. Their order counts - it 
+ *                must be the same as their order in qconvex's input file.
+ *  \return A vector of the convex hull's extreme points (PointAndSolution<S> 
+ *          objects).
+ *  
+ *  \sa pareto_approximator::computeConvexHull()
+ */
+template <class S> 
+std::list< PointAndSolution<S> > 
+readExtremePointsFromQconvexOutputFile(
+                            std::string filename, 
+                            std::vector< PointAndSolution<S> > points)
+{
+  std::list< PointAndSolution<S> > extremePoints;
+
+  // qcof stands for "QConvex's Output File"
+  std::ifstream qcof(filename.c_str());
+
+  if (not qcof.is_open()) {
+    std::cerr << "An error occured while opening file \"" << filename
+              << "\" for input... Exiting" << std::endl;
+    exit(-1);
+  }
+  // else
+
+  // start parsing qconvex's output file
+  unsigned int numExtremePoints, i, vertexIndex;
+  qcof >> numExtremePoints;
+
+  if (numExtremePoints == 0)
+    // nothing else to read
+    return extremePoints;
+  // else 
+
+  // read the (indices of the) extreme points
+  for (i = 0; i != numExtremePoints; ++i) {
+    qcof >> vertexIndex;
+    assert(vertexIndex < points.size());
+    extremePoints.push_back(points[vertexIndex]);
+  }
+
+  // We should be at the end of the file. Make sure:
+  double consume = 0.0;
+  qcof >> consume;
+  assert(qcof.eof());
+
+  // Close the file and return the list of facets:
+  qcof.close();
+
+  return extremePoints;
 }
 
 
