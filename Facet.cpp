@@ -914,7 +914,7 @@ Facet<S>::computeAndSetLocalApproximationErrorUpperBoundAndIsBoundaryFacet()
   if (not lowerDistalPoint.isNull()) {
     isBoundaryFacet_ = false;
     if (lowerDistalPoint.isStrictlyPositive()) 
-      localApproximationErrorUpperBound_ = distance(lowerDistalPoint);
+      localApproximationErrorUpperBound_ = euclideanDistance(lowerDistalPoint);
     else {
       // The LDP is not strictly positive.
       // - mark the facet as a boundary facet
