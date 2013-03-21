@@ -135,6 +135,7 @@ main(int argc, char * argv[])
     timer.stop();
     std::list< pa::PointAndSolution<evns::Path> > rcdlce = evns::computeLowerConvexEnvelopeOfPoints(rcd, numObjectives);
     rcd.assign(rcdlce.begin(), rcdlce.end());
+    std::cout << "  (Shortest) distance between nodes: " << rcd[0].point[0] << "\n";
     std::cout << "  Elapsed time: " << timer.getElapsedTime() << " sec, " << problem.getTimeSpentInComb() << " of them spent in comb(), " << problem.getNumCallsToComb() << " calls to comb()\n";
     std::cout << "  # Pareto points found: " << rcd.size() << "\n";
     // write points to file
@@ -173,7 +174,7 @@ main(int argc, char * argv[])
     timer.stop();
     std::list< pa::PointAndSolution<evns::Path> > rcalce = evns::computeLowerConvexEnvelopeOfPoints(rca, numObjectives);
     rca.assign(rcalce.begin(), rcalce.end());
-    std::cout << "  Elapsed time: " << timer.getElapsedTime() << "\n";
+    std::cout << "  Elapsed time: " << timer.getElapsedTime() << " sec, " << problem.getTimeSpentInComb() << " of them spent in comb(), " << problem.getNumCallsToComb() << " calls to comb()\n";
     std::cout << "  # Pareto points found: " << rca.size() << "\n";
     
     // Compare Chord-with-our-A*'s results to Chord-with-PGL-Dijkstra's results.
