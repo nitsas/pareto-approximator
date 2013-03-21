@@ -6,7 +6,8 @@
 
 
 CC=g++
-WARNINGS=-Wall -Wextra 
+#WARNINGS=-Wall -Wextra 
+WARNINGS=-Wall 
 CPPLIBS=-larmadillo
 INCLUDEDIR=$(PGLROOT)
 

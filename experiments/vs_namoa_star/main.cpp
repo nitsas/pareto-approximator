@@ -126,6 +126,7 @@ main(int argc, char * argv[])
   for (qi = queries.begin(); qi != queries.end(); ++qi) {
     std::cout << "FROM NODE " << qi->first << " TO NODE " << qi->second << "\n";
 
+    // CHANGE--HERE
     // Use the Chord algorithm with PGL's Dijkstra implementation.
     std::cout << "- Computing shortest path from node " << qi->first << " to node " 
               << qi->second << " using the Chord algorithm (& PGL's Dijkstra) ..." << std::endl;
@@ -165,6 +166,7 @@ main(int argc, char * argv[])
     // clean node attributes
     problem.cleanNodeAttributes();
 
+    // CHANGE--HERE
     // Use the Chord algorithm with our A* implementation.
     std::cout << "- Computing shortest path from node " << qi->first << " to node " 
               << qi->second << " using the Chord algorithm (& our A*) ..." << std::endl;
@@ -174,6 +176,7 @@ main(int argc, char * argv[])
     timer.stop();
     std::list< pa::PointAndSolution<evns::Path> > rcalce = evns::computeLowerConvexEnvelopeOfPoints(rca, numObjectives);
     rca.assign(rcalce.begin(), rcalce.end());
+    std::cout << "  (Shortest) distance between nodes: " << rcd[0].point[0] << "\n";
     std::cout << "  Elapsed time: " << timer.getElapsedTime() << " sec, " << problem.getTimeSpentInComb() << " of them spent in comb(), " << problem.getNumCallsToComb() << " calls to comb()\n";
     std::cout << "  # Pareto points found: " << rca.size() << "\n";
     
@@ -197,6 +200,8 @@ main(int argc, char * argv[])
     // Compute the lower envelope of PGL's NAMOA*'s results and compare with Chord-with-PGL-Dijkstra's results.
     std::cout << "- Computing lower (convex) envelope of the set NAMOA* found ..." << std::endl;
     std::list< pa::PointAndSolution<evns::Path> > envelope = evns::computeLowerConvexEnvelopeOfPoints(rn, numObjectives);
+//    std::cout << "  Has " << envelope.size() << " points.\n";
+    // CHANGE--HERE
     if (envelope.size() == rcd.size()) 
       std::cout << "  Has SAME number of points as Chord found." << "\n";
     else

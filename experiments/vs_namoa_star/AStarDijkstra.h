@@ -286,124 +286,6 @@ class GreatCircleDistanceHeuristic
 };
 
 
-/*
-//! \brief A simple heuristic that combines the heuristic values for two 
-//!        different criteria (Great Circle distance and travel time) in one.
-//!
-//! Combines two heuristics, Great Circle distance and travel time, in one 
-//! by computing their weighted sum using user-supplied weights.
-//!
-//! It uses the nodes' x and y attributes (as node latitude and longitude 
-//! respectively) and the edges' weight attribute (as the edge's travel time).
-//!
-template <class GraphType>
-class CombinedHeuristic
-{
-  public:
-    //! \brief Iterator to the underlying graph's nodes.
-    typedef typename GraphType::NodeIterator NodeIterator;
-
-    //! \brief Iterator to the underlying graph's edges.
-    typedef typename GraphType::EdgeIterator EdgeIterator;
-
-    //! \brief Constructor. (empty)
-    //!
-    //! \param graph The graph whose nodes we will be asked to estimate 
-    //!        distances for.
-    //! \param parameters A pair of weights for each of the two heuristics 
-    //!        we will combine. The first weight is the weight of the Great 
-    //!        Circle distance heuristic and the second the weight of the 
-    //!        travel time heuristic, in the weighted sum we will compute.
-    //!
-    //! The costructor computes the max speed over any edge on the graph, 
-    //! using the nodes' x and y attributes and the edges' criteriaList 
-    //! attribute. We will use the max speed to compute lower bounds on the 
-    //! travel time, for the travel time heuristic.
-    //!
-    //! \sa CombinedHeuristic and CombinedHeuristic::getHeuristicValue()
-    //!
-    CombinedHeuristic(GraphType & graph, 
-                      std::pair<double, double> & parameters) 
-                : graph_(graph), weight1_(parameters.first), 
-                  weight2_(parameters.second), maxSpeed_(0)
-    {
-      NodeIterator u, v, lastNode;
-      EdgeIterator e, lastEdge;
-
-      for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
-           u != lastNode; ++u)
-      {
-        for (e = graph_.beginEdges(u), lastEdge = graph_.endEdges(u); 
-             e != lastEdge; ++e)
-        {
-          v = graph_.target(e);
-
-          double speed = e->criteriaList[0] / e->criteriaList[1];
-          if (speed > maxSpeed_)
-            maxSpeed_ = speed;
-        }
-      }
-    }
-
-    //! \brief Initialize the heuristic lists for all nodes in the graph.
-    //!
-    //! This computes heuristics for the different objectives and stores 
-    //! them inside the nodes' "heuristicList" attributes. Those are then 
-    //! used inside MultiobjectiveSpOnPmgProblem::comb() to make the nodes' 
-    //! "heuristic" attributes.
-    //!
-    void 
-    initHeuristicLists()
-    {
-      assert(false);
-    }
-
-    //! \brief Compute an estimate of the distance between the given nodes. 
-    //!
-    //! \param u A start node.
-    //! \param t A target node.
-    //! \return An estimate of the "distance" between the given nodes.
-    //!
-    //! The "distance" between nodes u and t is, in this case:
-    //! \f[ distance = min_{P} \left( w_1 GC(P) + w_2 TT(P) \right) \f]
-    //! where P is a path from u to t, GC(P) is the sum of Great 
-    //! Circle distances between successive nodes in P (i.e. the "cumulative 
-    //! Great Circle distance" of the path), TT(P) is the sum of travel 
-    //! times over all the edges in the path (i.e. the "cumulative travel 
-    //! time" of the path) and w_1 and w_2 are weights for the weighted sum.
-    //!
-    //! We assume that the pair of weights given to this class's constructor 
-    //! are w_1 and w_2 (in this order).
-    //!
-    double 
-    getHeuristicValue(const NodeIterator & u, const NodeIterator & t) const
-    {
-      double distance = greatCircleUnderestimate(double(u->x)/100000, double(u->y)/100000, 
-                                                 double(t->x)/100000, double(t->y)/100000);
-      return weight1_ * distance + 
-             weight2_ * (distance / maxSpeed_);
-    }
-
-  private:
-    //! The graph whose nodes we will be asked to estimate distances for.
-    GraphType & graph_;
-
-    //! \brief The first weight for the weighted sum of heuristics. (for 
-    //!        the "cumulative Great Circle distance" of paths)
-    //!
-    double weight1_;
-    
-    //! \brief The second weight for the weighted sum of heuristics. (for 
-    //!        the "cumulative travel time" of paths)
-    //!
-    double weight2_;
-
-    //! The maximum travel speed over any edge in the graph.
-    double maxSpeed_;
-};
-*/
-
-
 //! \brief A class containing a simple implementation of the A\* algorithm.
 //!
 template <class GraphType> 
@@ -480,7 +362,7 @@ class AStarDijkstra
       // compute the source node's fScore and insert it in the OPEN "list"
       source->fScore = source->dist + source->heuristicValue;
       openNodesQueue.insert(source->fScore, source, &(source->pqitem));
-      source->inWhichList = OPEN_LIST;
+      source->closed = false;
 
       // while there are nodes in the OPEN "list"
       while (not openNodesQueue.empty()) {
@@ -489,7 +371,7 @@ class AStarDijkstra
         // OPEN "list" and put it in the CLOSED "list"
         u = openNodesQueue.minItem();
         openNodesQueue.popMin();
-        u->inWhichList = CLOSED_LIST;
+        u->closed = true;
 
         if (u == target) 
           // since the heuristic is admissible (we assumed that), no other 
@@ -506,7 +388,7 @@ class AStarDijkstra
 
           assert(v->timestamp <= *timestamp_);
           if (v->timestamp < *timestamp_) {
-            // we consider the node uninitialized, we ignore its inWhichList 
+            // we consider the node uninitialized, we ignore its "closed"
             // attribute (it is not valid); we know that the node is in 
             // neither the OPEN or the CLOSED "list"
             
@@ -518,12 +400,13 @@ class AStarDijkstra
 
             // insert the node in the OPEN "list"
             openNodesQueue.insert(v->fScore, v, &(v->pqitem));
-            v->inWhichList = OPEN_LIST;
+            v->closed = false;
           }
-          else if (v->inWhichList == OPEN_LIST && tempFScore < v->fScore) {
+          else if (openNodesQueue.contains(&v->pqitem) && tempFScore < v->fScore) {
             // we have encountered the node before (it has been initialized) 
-            // so its inWhichList attribute is valid; the node is already in 
-            // the OPEN "list"; we have found a better path to the node
+            // so we checked if it is in the OPEN "list" (openNodesQueue); 
+            // the node is already in the OPEN "list"; we have found a 
+            // better path to the node
 
             // update the node's (relevant) attributes
             v->pred = u->getDescriptor();
@@ -533,9 +416,9 @@ class AStarDijkstra
             // update (decrease) the node's fScore in the OPEN "list"
             openNodesQueue.decrease(v->fScore, &(v->pqitem));
           }
-          else if (v->inWhichList == CLOSED_LIST && tempFScore < v->fScore) {
+          else if (v->closed && tempFScore < v->fScore) {
             // we have encountered the node before (it has been initialized) 
-            // so its inWhichList attribute is valid; the node is in the 
+            // so its "closed" attribute is valid; the node is in the 
             // CLOSED "list"; we have found a better path to the node
 
             // update the node's (relevant) attributes
@@ -545,7 +428,7 @@ class AStarDijkstra
 
             // reinsert the node in the OPEN "list" (it is removed from CLOSED)
             openNodesQueue.insert(v->fScore, v, &(v->pqitem));
-            v->inWhichList = OPEN_LIST;
+            v->closed = false;
           }
           // else we have already found a better path to the node; 
           // we ignore the current path
@@ -562,7 +445,7 @@ class AStarDijkstra
     //! \brief Set every node's relevant attributes to default/initial values.
     //!
     //! Relevant attributes are Node::timestamp, Node::pred, Node::dist, 
-    //! Node::fScore, Node::inWhichList and Node::pqitem.
+    //! Node::fScore, Node::closed and Node::pqitem.
     //!
     //! The algorithm also uses the nodes' Node::x and Node::y attributes 
     //! but they are the node's coordinates, we won't change them.
@@ -582,8 +465,8 @@ class AStarDijkstra
         ni->dist = std::numeric_limits<double>::infinity();
         // maximum fScore
         ni->fScore = std::numeric_limits<double>::infinity();
-        // in neither the OPEN or the CLOSED "list"
-        ni->inWhichList = NO_LIST;
+        // not in the CLOSED "list"
+        ni->closed = false;
         // invalid value for the "pointer" to node's position in the OPEN "list"
         ni->pqitem = std::numeric_limits<unsigned int>::max();
       }

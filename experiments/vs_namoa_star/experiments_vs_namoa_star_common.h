@@ -36,21 +36,6 @@ namespace pa = pareto_approximator;
 namespace experiments_vs_namoa_star {
 
 
-//! \brief Used inside the Node class (by our A* implementation). 
-//!
-//! \sa Node, AStarDijkstra and AStarDijkstra::runQuery()
-//!
-enum InWhichList 
-{ 
-  //! The Node is inside no list.
-  NO_LIST, 
-  //! The Node is inside the list of CLOSED Nodes.
-  OPEN_LIST, 
-  //! The Node is inside the list of OPEN Nodes.
-  CLOSED_LIST 
-};
-
-
 //! \brief A class representing the data that will be associated with each 
 //!        graph node. 
 //! 
@@ -62,25 +47,37 @@ class Node : DefaultGraphItem
 {
   public:
     //! Constructor. (initializes the node's attributes)
-    Node() : inWhichList(NO_LIST), pred(NULL), 
+    Node() : 
+             // CHANGE--HERE
+             pred(NULL), // Dijkstra and A*
+             closed(false), // A*
+             heuristicValue(0.0), // A*
+             fScore(std::numeric_limits<double>::infinity()), // A*
+             heuristicList(2), // NAMOA* and A*, CHANGE-HERE
+             succ(NULL), // NAMOA*
+             marked(false), // NAMOA* (BoundedTCHeuristic only)
+             secondary_pqitem(std::numeric_limits<unsigned int>::max()), // NAMOA*
+             timestamp(0), 
              dist(std::numeric_limits<double>::infinity()), 
-             fScore(std::numeric_limits<double>::infinity()), 
-             succ(NULL), marked(false), heuristicList(2), // CHANGE-HERE
-             secondary_pqitem(std::numeric_limits<unsigned int>::max()), 
              pqitem(std::numeric_limits<unsigned int>::max()), 
-             timestamp(0), x(0), y(0), 
-             heuristicValue(0.0) // temporary
+             x(0), y(0)
     { }
 
-    // Things needed for (the modified) PGL's A* implementation: 
+    // CHANGE--HERE
+    // Dijkstra and A*
+    //! \brief The node's predecessor in the shortest path tree. 
+    //!        (for PGL Dijkstra and our A\*)
+    //!
+    //! Only valid after our A\* implementation has been used.
+    //!
+    void * pred;
 
-    //! \brief Which list is the node in (open, closed or none). (for A\*)
+    // A*
+    //! \brief Is the node in the closed list? (for A\*)
     //!
     //! Used by our simple A* implementation for performance reasons. 
     //! Specifically:
-    //! - so that we won't need to actually use a CLOSED list and
-    //! - so that we won't have to exhaustively search the OPEN list's 
-    //!   contents every time we want to know if it contains a specific node
+    //! - so that we won't need to actually use a CLOSED list 
     //! 
     //! This attribute's value is valid only if the node's timestamp 
     //! matches A*'s timestamp, i.e. A* has encountered this Node at 
@@ -88,30 +85,22 @@ class Node : DefaultGraphItem
     //! A* does not need to initialize every node's attributes before 
     //! each query).
     //! 
-    //! Note: We refer to OPEN and CLOSED as lists above, but CLOSED does 
-    //!       not really exist and OPEN is actually a priority queue.
+    //! Note: We refer to CLOSED as a list above, but CLOSED does not 
+    //!       really exist.
     //! 
-    //! \sa InWhichList, AStarSearch and AStarSearch::runQuery()
+    //! \sa AStarSearch and AStarSearch::runQuery()
     //!
-    InWhichList inWhichList;
+    bool closed;
 
-    //! \brief The node's predecessor in the shortest path tree. (for A\*)
+    // A*
+    //! \brief The heuristic value of the node. (for our A\*)
     //!
-    //! Only valid after our A\* implementation has been used.
+    //! Computed in MultiobjectiveSpOnPmgProblem::comb() for each specific 
+    //! query and graph edge weights (they change as comb's weights change).
     //!
-    void * pred;
+    double heuristicValue;
 
-    //! \brief The node's distance from the source node. (for A\*)
-    //!
-    //! Only valid after our A\* implementation has been used.
-    //!
-    //! The edge weights (of the DIMACS graphs we will use) are all 
-    //! unsigned ints but this is declared double because comb will 
-    //! be changing edge weights to a weighted sum of edge costs which 
-    //! could (and will, more often than not) NOT be an integer.
-    //!
-    double dist; 
-
+    // A*
     //! \brief The node's f score. (for A\*)
     //! 
     //! The sum of the node's distance from the source node (through 
@@ -127,26 +116,7 @@ class Node : DefaultGraphItem
     //!
     double fScore; 
 
-    // Things needed for PGL's NAMOA\* implementation:
-
-    //! \brief The node's successor. (for PGL's Bounded TC Heuristic, 
-    //!        used in NAMOA\*)
-    //!
-    //! We will not need to use this in our experiment. NAMOA\* 
-    //! (specifically the Bounded TC Heuristic we use with it) needs it 
-    //! though.
-    //!
-    void * succ;
-    
-    //! \brief Is the node marked? (for PGL's Bounded TC Heuristic, 
-    //!        used in NAMOA\*)
-    //!
-    //! We will not need to use this in our experiment. NAMOA\* 
-    //! (specifically the Bounded TC Heuristic we use with it) needs it 
-    //! though.
-    //!
-    bool marked;
-
+    // NAMOA* and A*
     //! \brief The node's list of heuristic values - one for each objective.
     //!        (for PGL's NAMOA\*)
     //! 
@@ -154,6 +124,7 @@ class Node : DefaultGraphItem
     //!
     CriteriaList heuristicList;
 
+    // NAMOA*
     //! \brief The node's list of labels. (for PGL's NAMOA\*)
     //!
     //! Only valid after PGL's NAMOA\* implementation has been used and then 
@@ -166,7 +137,28 @@ class Node : DefaultGraphItem
     //!
     std::vector<Label> labels;
 
-    //! \brief Needed by the Bounded TC Heuristic.
+    // NAMOA*
+    //! \brief The node's successor. (for PGL's Bounded TC Heuristic, 
+    //!        used in NAMOA\*)
+    //!
+    //! We will not need to use this in our experiment. NAMOA\* 
+    //! (specifically the TCHeuristic and BoundedTCHeuristic we use with it) 
+    //! needs it though.
+    //!
+    void * succ;
+    
+    // NAMOA* (BoundedTCHeuristic only)
+    //! \brief Is the node marked? (for PGL's Bounded TC Heuristic, 
+    //!        used in NAMOA\*)
+    //!
+    //! We will not need to use this in our experiment. NAMOA\* 
+    //! (specifically the Bounded TC Heuristic we use with it) needs it 
+    //! though.
+    //!
+    bool marked;
+
+    // NAMOA* (BoundedTCHeuristic only)
+    //! \brief Needed by the Bounded TC Heuristic. (for NAMOA\*)
     //!
     //! We will not need to use this in our experiment. NAMOA\* 
     //! (specifically the Bounded TC Heuristic we use with it) needs it 
@@ -174,13 +166,8 @@ class Node : DefaultGraphItem
     //!
     unsigned int secondary_pqitem;
 
-    // Things needed for both PGL's single objective Dijkstra and PGL's 
+    // Things needed for PGL's single objective Dijkstra, our A* and PGL's 
     // NAMOA\* implementation:
-
-    //! \brief Needed (by PGL's algorithms) in order to track the element 
-    //!        in a priority queue.
-    //!
-    unsigned int pqitem;
 
     //! \brief A timestamp. 
     //!
@@ -188,6 +175,22 @@ class Node : DefaultGraphItem
     //! it is needed in order to check if a node is visited or not.
     //!
     unsigned int timestamp;
+
+    //! \brief The node's distance from the source node. (for A\*)
+    //!
+    //! Only valid after our A\* implementation has been used.
+    //!
+    //! The edge weights (of the DIMACS graphs we will use) are all 
+    //! unsigned ints but this is declared double because comb will 
+    //! be changing edge weights to a weighted sum of edge costs which 
+    //! could (and will, more often than not) NOT be an integer.
+    //!
+    double dist; 
+
+    //! \brief Needed (by PGL's algorithms) in order to track the element 
+    //!        in a priority queue.
+    //!
+    unsigned int pqitem;
 
     //! \brief The node's latitude.
     //!
@@ -202,14 +205,6 @@ class Node : DefaultGraphItem
     //! coordinates file.
     //!
     unsigned int y;
-
-    // temporary
-    //! \brief The heuristic value of the node.
-    //!
-    //! Computed in MultiobjectiveSpOnPmgProblem::comb() for each specific 
-    //! query and graph edge weights (they change as comb's weights change).
-    //!
-    double heuristicValue;
 };
 
 

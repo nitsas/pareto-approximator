@@ -437,8 +437,9 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       if (computeExactParetoSetUsingNamoaStar) {
         // Compute the exact Pareto set using PGL's NAMOA* implementation.
         NamoaStarDijkstra<PmaGraph, 
+//                          BoundedTCHeuristic> namoaStar(graph_, 
                           TCHeuristic> namoaStar(graph_, 
-        //                  GreatCircleHeuristic> namoaStar(graph_, 
+//                          GreatCircleHeuristic> namoaStar(graph_, 
                                                  numObjectives, 
                                                  &timestamp_);
 
@@ -495,17 +496,20 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
     {
       PmaGraph::NodeIterator ni, lastNode;
       for (ni = graph_.beginNodes(), lastNode = graph_.endNodes(); 
-           ni != lastNode; ++ni) {
-        ni->timestamp = timestamp_;
-        ni->pred = graph_.nilNodeDescriptor();
-        ni->dist = std::numeric_limits<double>::infinity();
-        ni->fScore = std::numeric_limits<double>::infinity();
-        ni->inWhichList = NO_LIST;
-        ni->succ = graph_.nilNodeDescriptor();
-        ni->marked = false;
-        ni->heuristicList.clear();
-        ni->secondary_pqitem = std::numeric_limits<unsigned int>::max();
-        ni->pqitem = std::numeric_limits<unsigned int>::max();
+           ni != lastNode; ++ni) 
+      {
+        // CHANGE--HERE
+        ni->pred = graph_.nilNodeDescriptor(); // Dijkstra and A*
+        ni->closed = false; // A*
+        ni->heuristicValue = 0.0; // A*
+        ni->fScore = std::numeric_limits<double>::infinity(); // A*
+        ni->heuristicList.clear(); // NAMOA* and A*
+        ni->succ = graph_.nilNodeDescriptor(); // NAMOA*
+        ni->marked = false; // NAMOA*
+        ni->secondary_pqitem = std::numeric_limits<unsigned int>::max(); // NAMOA*
+        ni->timestamp = timestamp_; // all
+        ni->dist = std::numeric_limits<double>::infinity(); // all
+        ni->pqitem = std::numeric_limits<unsigned int>::max(); // all
       }
     }
 
@@ -586,6 +590,9 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       Timer timer;
       timer.start();
 
+      pa::PointAndSolution<Path> result;
+
+      // CHANGE--HERE
       unsigned int numObjectives = std::distance(weight, lastWeight);
       assert( (numObjectives == 2) || (numObjectives == 3) );
 
@@ -684,7 +691,6 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       // increment the counter of comb() calls
       ++numCallsToComb_;
 
-      pa::PointAndSolution<Path> result;
       result = computePathAndCriteriaValuesUpToThisNode(
                                          graph_.getNodeDescriptor(target_), 
                                          numObjectives);
@@ -801,6 +807,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
 
       pa::PointAndSolution<Path> result;
 
+      // CHANGE--HERE
       // Reminder: result.point will hold a pareto_approximator::Point 
       //           instance containing the path's (multiple) criteria costs
       //           and result.solution will hold the actual path
