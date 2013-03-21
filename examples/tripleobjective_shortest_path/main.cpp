@@ -18,7 +18,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <algorithm>
-#include <time.h>
+#include <ctime>
 #include <list>
 #include <boost/graph/adjacency_list.hpp>
 
@@ -102,7 +102,7 @@ main(int argc, char * argv[])
     seed = atoi(arg);
   else 
     // Use the current time as a seed.
-    seed = std::time(0);
+    seed = time(0);
 
   // Initializations
   // =========================================
