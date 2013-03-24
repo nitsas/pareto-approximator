@@ -328,7 +328,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       unsigned int maxSpeed = 90;
       NodeIterator ui, vi, lastNode;
       EdgeIterator ei, lastEdge;
-      //InEdgeIterator ki;
+      InEdgeIterator ki;
       std::stringstream sstr;
       sstr << "Calculating weights of " << graph_.getNumEdges() << " edges";
       ProgressBar edgeProgress(graph_.getNumEdges(), sstr.str());
@@ -340,11 +340,11 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
              ei != lastEdge; ++ei) 
         {
           vi = graph_.target(ei);
-          //ki = graph_.getInEdgeIterator(ei);
+          ki = graph_.getInEdgeIterator(ei);
 
           // set the first weight, "distance", of each edge:
           ei->criteriaList[0] = euclideanDistance(ui->x, ui->y, vi->x, vi->y);
-          //ki->criteriaList[0] = ei->criteriaList[0];
+          ki->criteriaList[0] = ei->criteriaList[0];
 
           // set the second weight, "travel time", of each edge:
           unsigned int speed =
@@ -353,7 +353,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           ei->criteriaList[1] = 
                        (unsigned int) ceil( 
                              (double(3.6) * ei->criteriaList[0]) / speed );
-          //ki->criteriaList[1] = ei->criteriaList[1];
+          ki->criteriaList[1] = ei->criteriaList[1];
 
           // CHANGE-HERE
           /*
@@ -364,7 +364,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           //   of edges (or hops) in the path
           ei->criteriaList[2] = 1;
           // set the incoming edge's cost as well
-          //ki->criteriaList[2] = 1;
+          ki->criteriaList[2] = 1;
           */
 
           ++edgeProgress;
