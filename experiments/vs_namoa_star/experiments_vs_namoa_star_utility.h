@@ -255,6 +255,36 @@ printPointsToFile(InputIterator first, InputIterator last, std::string filename)
 }
 
 
+//! \brief Read a sequence of points from a file.
+//!
+//! \param filename The file's name.
+//! \return A std::vector of PointAndSolution<Path> instances containing 
+//!         the points read from the file.
+//!
+std::vector< pa::PointAndSolution<Path> > 
+readPointsFromFile(std::string filename)
+{
+  std::vector< pa::PointAndSolution<Path> > results;
+
+  std::ifstream input(filename.c_str());
+
+  if (not input.is_open()) {
+    std::cerr << "An error occured while opening file \"" << filename
+              << "\" for input... Exiting\n";
+    exit(-1);
+  }
+
+  pa::Point point;
+  input >> point;
+  while (not input.eof()) {
+    results.push_back(pa::PointAndSolution<Path>(point, Path()));
+    input >> point;
+  }
+
+  return results;
+}
+
+
 //! \brief The euclidean distance between two points.
 //!
 double euclideanDistance(int x1, int y1, int x2, int y2)
@@ -387,7 +417,7 @@ greatCircleUnderestimate(double latitude1, double longitude1,
                          double latitude2, double longitude2)
 {
   return greatCircleDistance(latitude1, longitude1, 
-                             latitude2, longitude2, 4500000);
+                             latitude2, longitude2, 4000000);
 }
 
 

@@ -6,8 +6,7 @@
 
 
 CC=g++
-#WARNINGS=-Wall -Wextra 
-WARNINGS=-Wall 
+CPPFLAGS=-Wall -L/home/nitsas/usr/lib -I/home/nitsas/usr/include -Wno-deprecated -Wno-unused-but-set-variable
 CPPLIBS=-larmadillo
 INCLUDEDIR=$(PGLROOT)
 
@@ -15,14 +14,14 @@ INCLUDEDIR=$(PGLROOT)
 all: compile
 
 compile: Point.o main.cpp AStarDijkstra.h MultiobjectiveSpOnPmgProblem.h Hyperplane.h experiments_vs_namoa_star_common.h experiments_vs_namoa_star_utility.h
-	g++ main.cpp Point.o -o vns_experiment.out -O2 $(WARNINGS) -I$(INCLUDEDIR) $(CPPLIBS)
-#	g++ main.cpp Point.o -o vns_experiment.out -O2 $(WARNINGS) -I$(INCLUDEDIR) $(CPPLIBS)
+	g++ main.cpp Point.o -o vns_experiment.out -O2 $(CPPFLAGS) -I$(INCLUDEDIR) $(CPPLIBS)
+#	g++ main.cpp Point.o -o vns_experiment.out -O2 $(CPPFLAGS) -I$(INCLUDEDIR) $(CPPLIBS)
 
 debug: Point.o main.cpp AStarDijkstra.h MultiobjectiveSpOnPmgProblem.h Hyperplane.h experiments_vs_namoa_star_common.h experiments_vs_namoa_star_utility.h
-	g++ main.cpp Point.o -o vns_experiment.out -O0 -g $(WARNINGS) -I$(INCLUDEDIR) $(CPPLIBS)
+	g++ main.cpp Point.o -o vns_experiment.out -O0 -g $(CPPFLAGS) -I$(INCLUDEDIR) $(CPPLIBS)
 
 Point.o: ../../Point.h ../../Point.cpp ../../DifferentDimensionsException.h ../../NegativeApproximationRatioException.h ../../NotPositivePointException.h ../../NotStrictlyPositivePointException.h
-	$(CC) $(WARNINGS) -c ../../Point.cpp -o $@
+	$(CC) $(CPPFLAGS) -c ../../Point.cpp -o $@
 
 clean:
 	rm Point.o vns_experiment.out

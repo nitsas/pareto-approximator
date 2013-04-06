@@ -39,10 +39,10 @@ namespace evns = experiments_vs_namoa_star;
 int 
 main(int argc, char * argv[])
 {
-  std::string mapPath = "/Users/chrisn/Programming/workspace/diplomatiki/dimacs-challenge-graphs/DIMACS9/";
+  std::string mapPath = "/home/nitsas/Programming/workspace/diplomatiki/dimacs-challenge-graphs/DIMACS9/";
   std::string mapName = "NY";
   std::string coordinatesFilename, graphFilename, distanceFilename, travelTimeFilename;
-  std::string queriesFilePath = "/Users/chrisn/Programming/workspace/diplomatiki/pareto-approximator/experiments/vs_namoa_star/";
+  std::string queriesFilePath = "/home/nitsas/Programming/workspace/diplomatiki/pareto-approximator/experiments/vs_namoa_star/";
   std::string queriesFileName = "queries.txt";
   bool usingDimacs10Graph = false;
 
@@ -57,7 +57,7 @@ main(int argc, char * argv[])
        (mapName == "netherlands") ) 
   {
     usingDimacs10Graph = true;
-    mapPath = "/Users/chrisn/Programming/workspace/diplomatiki/dimacs-challenge-graphs/DIMACS10/";
+    mapPath = "/home/nitsas/Programming/workspace/diplomatiki/dimacs-challenge-graphs/DIMACS10/";
   }
 
   if (usingDimacs10Graph) {
@@ -123,6 +123,8 @@ main(int argc, char * argv[])
   std::stringstream filename;
   std::cout << "\nRunning queries (" << mapName << " map, " << numObjectives << " objectives):\n";
   std::cout << "-----------------------------" << std::endl;
+
+  /*
   for (qi = queries.begin(); qi != queries.end(); ++qi) {
     std::cout << "FROM NODE " << qi->first << " TO NODE " << qi->second << "\n";
 
@@ -201,6 +203,58 @@ main(int argc, char * argv[])
     std::cout << "- Computing lower (convex) envelope of the set NAMOA* found ..." << std::endl;
     std::list< pa::PointAndSolution<evns::Path> > envelope = evns::computeLowerConvexEnvelopeOfPoints(rn, numObjectives);
 //    std::cout << "  Has " << envelope.size() << " points.\n";
+    // CHANGE--HERE
+    if (envelope.size() == rcd.size()) 
+      std::cout << "  Has SAME number of points as Chord found." << "\n";
+    else
+      std::cout << "  Has " << envelope.size() << " points, i.e. " 
+                << (envelope.size() > rcd.size() ? "MORE" : "LESS") << " than Chord found.\n";
+    std::cout << "  Checking if the envelope contains all the points Chord found:\n";
+    if ( std::includes(envelope.begin(), envelope.end(), rcd.begin(), rcd.end()) )
+      std::cout << "  true\n";
+    else
+      std::cout << "  false\n";
+    // write points to file
+    filename.str(std::string());
+    filename << "results/query-" << qi->first << "-" << qi->second << "-Envelope.txt";
+    std::cout << "  Printing points to file " << filename.str() << " ..." << std::endl;
+    evns::printPointsToFile(envelope.begin(), envelope.end(), filename.str());
+
+    std::cout << "\n";
+  }
+  */
+
+  std::cout << "\nWill now run the same queries using PGL's NAMOA*.\n";
+  std::cout << "-----------------------------------------------------" << std::endl;
+  for (qi = queries.begin(); qi != queries.end(); ++qi) {
+    std::cout << "FROM NODE " << qi->first << " TO NODE " << qi->second << "\n";
+
+    // Use PGL's NAMOA*.
+    std::cout << "- Computing shortest path from node " << qi->first << " to node "
+              << qi->second << " using PGL's NAMOA* ..." << std::endl;
+    useNamoaStar = true;
+    timer.start();
+    std::vector< pa::PointAndSolution<evns::Path> > rn = problem.runQuery(qi->first, qi->second, numObjectives, useNamoaStar);
+    timer.stop();
+    std::cout << "  Elapsed time: " << timer.getElapsedTime() << "\n";
+    std::cout << "  # Pareto points found: " << rn.size() << "\n";
+    // write points to file
+    filename.str(std::string());
+    filename << "results/query-" << qi->first << "-" << qi->second << "-NamoaStar.txt";
+    std::cout << "  Printing points to file " << filename.str() << " ..." << std::endl;
+    evns::printPointsToFile(rn.begin(), rn.end(), filename.str());
+
+    // clean node attributes
+    problem.cleanNodeAttributes();
+
+    // Compute the lower envelope of PGL's NAMOA*'s results and compare with Chord-with-PGL-Dijkstra's results.
+    std::cout << "- Computing lower (convex) envelope of the set NAMOA* found ..." << std::endl;
+    std::list< pa::PointAndSolution<evns::Path> > envelope = evns::computeLowerConvexEnvelopeOfPoints(rn, numObjectives);
+//    std::cout << "  Has " << envelope.size() << " points.\n";
+    // read the points Chord found (from the output file)
+    filename.str(std::string());
+    filename << "results/query-" << qi->first << "-" << qi->second << "-Chord.txt";
+    std::vector< pa::PointAndSolution<evns::Path> > rcd = evns::readPointsFromFile(filename.str());
     // CHANGE--HERE
     if (envelope.size() == rcd.size()) 
       std::cout << "  Has SAME number of points as Chord found." << "\n";

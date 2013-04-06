@@ -14,6 +14,7 @@
 #include <sys/wait.h>
 #include <string>
 #include <assert.h>
+#include <unistd.h>
 
 #include "NonDominatedSet.h"
 
@@ -256,12 +257,21 @@ computeConvexHull(const std::vector< PointAndSolution<S> > & points,
   // Make a subprocess (child) that will exec qconvex to compute 
   // the convex hull:
   pid_t pid = fork();
-  if (pid < 0) {
+  unsigned int retries = 10;
+  while ( (pid < 0) && (retries > 0) ) {
     // could not fork()
+    --retries;
+    std::cerr << "Failed to fork (probably due to low memory)... Will retry in 30 seconds. " << retries << " retries left." << std::endl;
+    sleep(30);
+    pid = fork();
+  }
+
+  if (retries == 0) {
     std::cerr << "Failed to fork... Exiting" << std::endl;
     exit(-1);
   }
-  else if (pid == 0) {
+
+  if (pid == 0) {
     // child process 
     // run qconvex (input: qconvex-input.txt, output: qconvex-output.txt)
     int rv = execlp("qconvex", "qconvex", "Fx", "TI", "qconvex-input.txt", 

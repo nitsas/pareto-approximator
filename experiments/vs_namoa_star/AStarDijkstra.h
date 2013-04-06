@@ -259,8 +259,11 @@ class GreatCircleDistanceHeuristic
            u != lastNode; ++u)
       {
         // first, the heuristic for the "Distance" objective:
-        u->heuristicList[0] = floor(greatCircleUnderestimate(double(u->x)/100000, double(u->y)/100000, 
-                                                       double(target->x)/100000, double(target->y)/100000));
+        u->heuristicList[0] = 
+                floor(greatCircleUnderestimate(double(u->x)/100000, 
+                                               double(u->y)/100000, 
+                                               double(target->x)/100000, 
+                                               double(target->y)/100000));
         // next, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = u->heuristicList[0] / maxSpeed_;
         // CHANGE-HERE
