@@ -260,9 +260,8 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       }
 
       // CHANGE-HERE
-      /*
       // add a third weight ("hop") on each graph edge:
-      //InEdgeIterator k;
+      InEdgeIterator k;
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
            u != lastNode; ++u) 
       {
@@ -275,11 +274,10 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           // edges (or hops) in the path
           e->criteriaList[2] = 1;
           // set the incoming edge's cost as well
-          //k = graph_.getInEdgeIterator(e);
-          //k->criteriaList[2] = 1;
+          k = graph_.getInEdgeIterator(e);
+          k->criteriaList[2] = e->criteriaList[2];
         }
       }
-      */
 
       // read the node-ids-to-node-descriptors mapping vector
       nodeIdsToDescriptors_ = reader.getIds();
@@ -356,7 +354,6 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           ki->criteriaList[1] = ei->criteriaList[1];
 
           // CHANGE-HERE
-          /*
           // set the third weight, "hop", of each edge:
           // - the "hop" cost will be equal to 1 for every edge; this way 
           //   the "NumberOfHops(P)" objective, which will be the sum of "hop" 
@@ -364,8 +361,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           //   of edges (or hops) in the path
           ei->criteriaList[2] = 1;
           // set the incoming edge's cost as well
-          ki->criteriaList[2] = 1;
-          */
+          ki->criteriaList[2] = ei->criteriaList[2];
 
           ++edgeProgress;
         }
@@ -453,10 +449,12 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
         useAStar_ = useAStar;
         if (useAStar) {
           if (usingDimacs9Graph_) {
+            // CHANGE---HERE
             GreatCircleDistanceHeuristic<PmaGraph> heuristicEngine(graph_);
             heuristicEngine.initHeuristicLists(target_);
           }
           else {
+            // CHANGE---HERE
             EuclideanHeuristic<PmaGraph> heuristicEngine(graph_);
             heuristicEngine.initHeuristicLists(target_);
           }
@@ -824,7 +822,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       // We make a new (temporary) CriteriaList named pathCriteriaCosts, 
       // the same size as edge criteriaList attributes so that we can easily 
       // sum the edges' criteria lists. 
-      CriteriaList pathCriteriaCosts(2); // CHANGE-HERE
+      CriteriaList pathCriteriaCosts(3); // CHANGE-HERE
 
       // make the current vertex (v) the end of the path
       // - the path is currently empty

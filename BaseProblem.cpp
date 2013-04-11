@@ -324,24 +324,27 @@ BaseProblem<S>::doCraft(unsigned int numObjectives, Facet<S> anchorFacet,
   PointAndSolution<S> interiorPoint = 
                       generateNewParetoPointUsingFacet(anchorFacet);
 
-  // Is interiorPoint an existing point?
-  if ( std::find(approximationPoints.begin(), 
+  // Is interiorPoint either an existing point or coplanar with the facet?
+  if ( anchorFacet.isCoplanarWith(interiorPoint.point) || 
+       (std::find(approximationPoints.begin(), 
                  approximationPoints.end(), 
-                 interiorPoint) != approximationPoints.end() ) {
-    // InteriorPoint is an existing point - no new Pareto points found.
+                 interiorPoint) != approximationPoints.end()) ) {
+    // InteriorPoint is either an existing point (no new Pareto points 
+    // found) or is coplanar with the anchor facet (no new Pareto points 
+    // found beneath the anchor facet).
     // - No facets to make except for anchorFacet, which we already tried.
     //   We cannot generate any new points.
     // - Return approximation points found so far.
     // - If anchorFacet did not have an all-positive normal vector there 
-    //   might be other Pareto optimal points (on the convex hull of the 
-    //   Pareto set of course; can't find Pareto points inside the convex 
-    //   hull). The facet's normal vector not being all-positive  would 
-    //   make us use the mean of its vertices' weightsUsed attributes as 
-    //   weights (which is kind of an arbitrary choice) and apparently 
-    //   they did not produce a new Pareto point. Is is not completely 
-    //   unlikely that some other weight vector might produce one but we 
-    //   have no systematic way to try every one of the infinite possible 
-    //   weight vectors.
+    //   might be other Pareto optimal points we couldn't find (on the convex 
+    //   hull of the Pareto set of course; we can't find Pareto points 
+    //   inside the convex hull either way). The facet's normal vector not 
+    //   being all-positive  would make us use the mean of its vertices' 
+    //   weightsUsed attributes as weights (which is kind of an arbitrary 
+    //   choice) and apparently they did not produce a new Pareto point. Is 
+    //   is not completely unlikely that some other weight vector might 
+    //   produce one but we have no systematic way to try every one of the 
+    //   infinite possible weight vectors.
     return approximationPoints;
   }
   // else 
@@ -357,7 +360,6 @@ BaseProblem<S>::doCraft(unsigned int numObjectives, Facet<S> anchorFacet,
   facets = pareto_approximator::utility::
                        computeConvexHullFacets<S>(approximationPoints, 
                                                   spaceDimension);
-
   // Discard facets with all-negative normal vectors.
   pareto_approximator::utility::discardUselessFacets<S>(facets);
 

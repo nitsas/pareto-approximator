@@ -593,6 +593,24 @@ class Facet
      */
     std::vector<double> getNormalVector() const;
 
+    //! \brief Check if the facet is coplanar with the given point.
+    //!
+    //! \param p A point with the same dimensions as the facet.
+    //! \return true if the facet and the point are coplanar; false otherwise.
+    //!
+    //! A point and a facet are coplanar if the point is on the facet's 
+    //! supporting hyperplane.
+    //!
+    //! Possible exceptions:
+    //! - May throw a NullObjectException exception if the given Point 
+    //!   instance is a null Point instance.
+    //! - May throw a DifferentDimensionsException exception if the given 
+    //!   point and the hyperplane belong in spaces of different dimensions.
+    //! 
+    //! \sa Facet and Point
+    //!
+    bool isCoplanarWith(const Point & p) const;
+
   private: 
 
     //! Compute (and set) the facet's normal vector using the facet's vertices.

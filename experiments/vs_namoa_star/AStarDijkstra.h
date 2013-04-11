@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <limits>
 #include <cmath>
+#include <algorithm>
 
 #include <Structs/Trees/priorityQueue.h>
 //#include <Utilities/geographic.h>
@@ -32,14 +33,13 @@
 namespace experiments_vs_namoa_star {
 
 
-/*
 //! \brief Always returns 0 for every node.
 //!
 //! Use of this heuristic makes A* equivalent to the simple Dijkstra 
 //! algorithm.
 //!
 template <class GraphType> 
-class BlindHeuristic
+class AllZeroHeuristic
 {
   public:
     //! \brief Iterator to the underlying graph's nodes.
@@ -53,25 +53,40 @@ class BlindHeuristic
     //! \param graph The graph whose nodes we will be asked to estimate 
     //!        distances for.
     //!
-    BlindHeuristic(GraphType & graph) : graph_(graph)
+    AllZeroHeuristic(GraphType & graph) : graph_(graph)
     {
     }
 
-    //! \brief Compute an estimate of the distance between the given nodes. 
+    //! \brief Initialize every node's Node::heuristicList attribute.
+    //!        (one heuristic value for every objective)
     //!
-    //! Always returns zero.
+    //! \param target The target node. Every node u's heuristic values are 
+    //!        estimates for the cost of the shortest path between u and t.
     //!
-    double 
-    getHeuristicValue(const NodeIterator &, const NodeIterator &) const 
+    //! This just initializes every heuristic value to 0.
+    //!
+    void 
+    initHeuristicLists(NodeIterator &)
     {
-      return 0;
+      NodeIterator u, lastNode;
+
+      for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
+           u != lastNode; ++u)
+      {
+        // first, the heuristic for the "Distance" objective:
+        u->heuristicList[0] = 0;
+        // then, the heuristic for the "Travel Time" objective:
+        u->heuristicList[1] = 0;
+        // CHANGE-HERE
+        // last, the heuristic for the "Number Of Hops" objective:
+        u->heuristicList[2] = 0;
+      }
     }
 
   private:
     //! The graph whose nodes we will be asked to estimate distances for.
     GraphType & graph_;
 };
-*/
 
 
 //! \brief A simple heuristic using the Euclidean distance between nodes.
@@ -99,7 +114,7 @@ class EuclideanHeuristic
     //!
     EuclideanHeuristic(GraphType & graph) : graph_(graph), 
                                             maxSpeed_(0.0)
-//                                            , maxEdgeDistance_(0) // CHANGE-HERE
+                                            , maxEdgeDistance_(0) // CHANGE-HERE
     {
       NodeIterator u, v, lastNode;
       EdgeIterator e, lastEdge;
@@ -125,11 +140,9 @@ class EuclideanHeuristic
             maxSpeed_ = speed;
 
           // CHANGE-HERE
-          /*
           if (e->criteriaList[0] > maxEdgeDistance_) {
             maxEdgeDistance_ = e->criteriaList[0];
           }
-          */
         }
       }
     }
@@ -153,10 +166,25 @@ class EuclideanHeuristic
         // next, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = u->heuristicList[0] / maxSpeed_;
         // CHANGE-HERE
-        /*
         // next, the heuristic for the "Number of Hops" objective:
         u->heuristicList[2] = u->heuristicList[0] / maxEdgeDistance_;
-        */
+      }
+
+      // CHANGE-HERE
+      NodeIterator v;
+      EdgeIterator e, lastEdge;
+      for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
+           u != lastNode; ++u)
+      {
+        for (e = graph_.beginEdges(u), lastEdge = graph_.endEdges(u); 
+             e != lastEdge; ++e)
+        {
+          v = graph_.target(e);
+          v->heuristicList[2] = std::max(v->heuristicList[2], 
+                                         u->heuristicList[2] - 1);
+          // the 1 above is the edge weight (same for every edge) in 
+          // the number-of-hops case
+        }
       }
     }
 
@@ -168,10 +196,8 @@ class EuclideanHeuristic
     double maxSpeed_;
 
     // CHANGE-HERE
-    /*
     //! The max edge distance.
     double maxEdgeDistance_;
-    */
 };
 
 
@@ -209,7 +235,7 @@ class GreatCircleDistanceHeuristic
     //!
     GreatCircleDistanceHeuristic(GraphType & graph) : graph_(graph), 
                                                       maxSpeed_(0.0)
-//                                                      , maxEdgeDistance_(0) // CHANGE-HERE
+                                                      , maxEdgeDistance_(0) // CHANGE-HERE
     {
       NodeIterator u, v, lastNode;
       EdgeIterator e, lastEdge;
@@ -235,11 +261,9 @@ class GreatCircleDistanceHeuristic
             maxSpeed_ = speed;
 
           // CHANGE-HERE
-          /*
           if (e->criteriaList[0] > maxEdgeDistance_) {
             maxEdgeDistance_ = e->criteriaList[0];
           }
-          */
         }
       }
     }
@@ -267,10 +291,25 @@ class GreatCircleDistanceHeuristic
         // next, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = u->heuristicList[0] / maxSpeed_;
         // CHANGE-HERE
-        /*
         // next, the heuristic for the "Number of Hops" objective:
         u->heuristicList[2] = u->heuristicList[0] / maxEdgeDistance_;
-        */
+      }
+
+      // CHANGE-HERE
+      NodeIterator v;
+      EdgeIterator e, lastEdge;
+      for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
+           u != lastNode; ++u)
+      {
+        for (e = graph_.beginEdges(u), lastEdge = graph_.endEdges(u); 
+             e != lastEdge; ++e)
+        {
+          v = graph_.target(e);
+          v->heuristicList[2] = std::max(v->heuristicList[2], 
+                                         u->heuristicList[2] - 1);
+          // the 1 above is the edge weight (same for every edge) in 
+          // the number-of-hops case
+        }
       }
     }
 
@@ -282,10 +321,8 @@ class GreatCircleDistanceHeuristic
     double maxSpeed_;
 
     // CHANGE-HERE
-    /*
     //! The max edge distance.
     unsigned int maxEdgeDistance_;
-    */
 };
 
 
@@ -443,6 +480,44 @@ class AStarDijkstra
       // (when it was inserted in the OPEN "list")
 
       return target->dist;
+    }
+
+    //! \brief Check if the nodes' heuristicValue attibutes form a 
+    //!        consistent heuristic.
+    //!
+    //! \return true if the heuristic stored in the nodes' heuristicValue 
+    //!         attributes is consistent; false otherwise.
+    //!
+    //! A heuristic is consistent if: 
+    //! h(u) <= c(u, v) + h(v)
+    //! for every edge (u, v), where h(x) is the heuristic value of node x 
+    //! and c(u, v) is the cost of edge (u, v).
+    //! 
+    bool hasConsistentHeuristic()
+    {
+      NodeIterator u, v, lastNode;
+      EdgeIterator e, lastEdge;
+
+      for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
+           u != lastNode; ++u) 
+      {
+        for (e = graph_.beginEdges(u), lastEdge = graph_.endEdges(u); 
+             e != lastEdge; ++e) 
+        {
+          v = graph_.target(e);
+
+          if (u->heuristicValue > e->weight + v->heuristicValue) {
+            /*
+            std::cout << "h(u)  = " << u->heuristicValue << "\n";
+            std::cout << "h(v)  = " << v->heuristicValue << "\n";
+            std::cout << "wt(e) = " << e->weight << "\n";
+            */
+            return false;
+          }
+        }
+      }
+
+      return true;
     }
 
     //! \brief Set every node's relevant attributes to default/initial values.
