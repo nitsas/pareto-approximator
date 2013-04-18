@@ -230,6 +230,11 @@ computeConvexHullFacets(const std::vector< PointAndSolution<S> > & points,
  *  \return A vector containing all the extreme points (PointAndSolution<S> 
  *          instances) of the convex hull.
  *  
+ *  We need at least #(spaceDimension+1) points to compute a convex hull.
+ *  If "points" contains less than #(spaceDimension+1) points we will 
+ *  this function will just return the given set of points ("points") as 
+ *  the result.
+ *
  *  This function requires that the external program/tool qconvex, 
  *  distributed with qhull (see www.qhull.org) be installed on the system 
  *  (and be on the PATH).
@@ -249,10 +254,19 @@ computeConvexHull(const std::vector< PointAndSolution<S> > & points,
   std::string qconvexInputFilename = "qconvex-input.txt";
   std::string qconvexOutputFilename = "qconvex-output.txt";
 
+  std::list< PointAndSolution<S> > extremePoints;
+
+  // we need at least #(spaceDimension+1) points to compute a convex hull
+  if (points.size() <= spaceDimension) {
+    // no need to continue, all points in "points" are on the lower envelope
+    extremePoints.assign(points.begin(), points.end());
+    extremePoints.sort();
+    return extremePoints;
+  }
+  // else
+
   // First make qconvex's input file:
   writePointsToQconvexInputFile(points, qconvexInputFilename, spaceDimension);
-
-  std::list< PointAndSolution<S> > extremePoints;
 
   // Make a subprocess (child) that will exec qconvex to compute 
   // the convex hull:
@@ -326,6 +340,7 @@ computeConvexHull(const std::vector< PointAndSolution<S> > & points,
   // Only the parent will get here and only after succesfully reading 
   // the extreme points from qconvex's output file. (qconvex will have 
   // exited without error as well)
+  extremePoints.sort();
   return extremePoints;
 }
 

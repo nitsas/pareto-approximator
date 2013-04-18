@@ -1,3 +1,4 @@
+
 //! \file experiments/vs_namoa_star/experiments_vs_namoa_star_utility.h
 //! \brief Helpful functions for the experiment vs the NAMOA\* algorithm.
 //! \author Christos Nitsas
@@ -147,9 +148,9 @@ computeLowerConvexEnvelopeOfPoints(
 {
   std::list< pa::PointAndSolution<Path> > results;
 
+  // we need at least #(spaceDimension+1) points to compute a convex hull
   if (points.size() <= spaceDimension) {
-    // no need to continue, all points in "points" 
-    // are on the lower envelope
+    // no need to continue, all points in "points" are on the lower envelope
     results.assign(points.begin(), points.end());
     return results;
   }
@@ -192,7 +193,9 @@ computeLowerConvexEnvelopeOfPoints(
       results.push_back(*it);
   }
   results.sort();
+
   /*
+  // the same for 2 objectives, without using a Hyperplane
   pa::PointAndSolution<Path> & A = results.front();
   pa::PointAndSolution<Path> & B = results.back();
 

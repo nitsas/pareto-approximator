@@ -647,7 +647,7 @@ Point::str(bool rawCoordinates) const
 
     if (rawCoordinates) {
       // coordinates in scientific notation, with 13 digits after the dot
-      ss.precision(13);
+      ss.precision(20);
       ss << std::scientific;
     }
 

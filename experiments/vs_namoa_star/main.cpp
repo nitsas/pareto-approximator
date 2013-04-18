@@ -70,6 +70,7 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
   }
   else if (pid == 0) {
     // child process
+
     if (useNamoaStar) {
       // Flags: useNamoaStar is true, useAStar is irrelevant
       // Use PGL's NAMOA*.
@@ -86,30 +87,35 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
       std::cout << "  Printing points to file " << filename.str() << " ..." << std::endl;
       evns::printPointsToFile(rn.begin(), rn.end(), filename.str());
 
-      // Compute the lower envelope of PGL's NAMOA*'s results and compare with Chord-with-PGL-Dijkstra's results.
-      std::cout << "- Computing lower (convex) envelope of the set NAMOA* found ..." << std::endl;
-      std::list< pa::PointAndSolution<evns::Path> > envelope = evns::computeLowerConvexEnvelopeOfPoints(rn, numObjectives);
-//      std::cout << "  Has " << envelope.size() << " points.\n";
+      // Compute the convex hull of PGL's NAMOA*'s results and compare with Chord-with-PGL-Dijkstra's results.
+      std::cout << "- Computing the convex hull of the set NAMOA* found ..." << std::endl;
+      std::list< pa::PointAndSolution<evns::Path> > hull = pa::utility::computeConvexHull(rn, numObjectives);
       // read the points Chord found (from the output file)
       filename.str(std::string());
       filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord.txt";
       std::vector< pa::PointAndSolution<evns::Path> > rcd = evns::readPointsFromFile(filename.str());
       // CHANGE--HERE
-      if (envelope.size() == rcd.size()) 
+      if (hull.size() == rcd.size()) 
         std::cout << "  Has SAME number of points as Chord found." << "\n";
-      else
-        std::cout << "  Has " << envelope.size() << " points, i.e. " 
-                  << (envelope.size() > rcd.size() ? "MORE" : "LESS") << " than Chord found.\n";
-      std::cout << "  Checking if the envelope contains all the points Chord found:\n";
-      if ( std::includes(envelope.begin(), envelope.end(), rcd.begin(), rcd.end()) )
+      else {
+        std::cout << "  Has " << hull.size() << " points, i.e. " << (hull.size() > rcd.size() ? "MORE" : "LESS") 
+                  << " than Chord found. (Chord found " << rcd.size() << ")\n";
+      }
+      std::cout << "  Checking if the convex hull contains all the points Chord found:\n";
+      if ( std::includes(hull.begin(), hull.end(), rcd.begin(), rcd.end()) )
         std::cout << "  true\n";
-      else
-        std::cout << "  false\n";
-      // write points to file
+      else {
+        std::cout << "  false";
+        if ( std::includes(rn.begin(), rn.end(), rcd.begin(), rcd.end()) )
+          std::cout << " (the complete Pareto set does though)\n";
+        else
+          std::cout << " (neither does the complete Pareto set)\n";
+      }
+      // write the convex hull's points too
       filename.str(std::string());
-      filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Envelope.txt";
+      filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-ConvexHull.txt";
       std::cout << "  Printing points to file " << filename.str() << " ..." << std::endl;
-      evns::printPointsToFile(envelope.begin(), envelope.end(), filename.str());
+      evns::printPointsToFile(hull.begin(), hull.end(), filename.str());
     }
     else if (not useAStar) {
       // Flags: useNamoaStar is false, useAStar is false
@@ -121,13 +127,13 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
       timer.stop();
       std::cout << "  (Shortest) distance between nodes: " << rcd[0].point[0] << "\n";
       std::cout << "  Elapsed time: " << timer.getElapsedTime() << " sec, " << problem.getTimeSpentInComb() << " of them spent in comb(), " << problem.getNumCallsToComb() << " calls to comb()\n";
-      std::list< pa::PointAndSolution<evns::Path> > rcdlce = evns::computeLowerConvexEnvelopeOfPoints(rcd, numObjectives);
-      std::cout << "  # Pareto points found: " << rcdlce.size() << "\n";
+      std::list< pa::PointAndSolution<evns::Path> > rcdch = pa::utility::computeConvexHull(rcd, numObjectives);
+      std::cout << "  # Pareto points found: " << rcdch.size() << "\n";
       // write points to file
       filename.str(std::string());
       filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord.txt";
       std::cout << "  Printing points to file " << filename.str() << " ..." << std::endl;
-      evns::printPointsToFile(rcdlce.begin(), rcdlce.end(), filename.str());
+      evns::printPointsToFile(rcdch.begin(), rcdch.end(), filename.str());
     }
     else {
       // Flags: useNamoaStar is false, useAStar is true
@@ -139,8 +145,8 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
       timer.stop();
       std::cout << "  (Shortest) distance between nodes: " << rca[0].point[0] << "\n";
       std::cout << "  Elapsed time: " << timer.getElapsedTime() << " sec, " << problem.getTimeSpentInComb() << " of them spent in comb(), " << problem.getNumCallsToComb() << " calls to comb()\n";
-      std::list< pa::PointAndSolution<evns::Path> > rcalce = evns::computeLowerConvexEnvelopeOfPoints(rca, numObjectives);
-      std::cout << "  # Pareto points found: " << rcalce.size() << "\n";
+      std::list< pa::PointAndSolution<evns::Path> > rcach = pa::utility::computeConvexHull(rca, numObjectives);
+      std::cout << "  # Pareto points found: " << rcach.size() << "\n";
       
       // Compare Chord-with-our-A*'s results to Chord-with-PGL-Dijkstra's results.
       std::cout << "- Checking if Chord-with-our-A* found the same points as Chord-with-PGL-Dijkstra:\n";
@@ -148,7 +154,7 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
       filename.str(std::string());
       filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord.txt";
       std::vector< pa::PointAndSolution<evns::Path> > rcd = evns::readPointsFromFile(filename.str());
-      if ( (rcalce.size() == rcd.size()) && std::equal(rcalce.begin(), rcalce.end(), rcd.begin()) ) {
+      if ( (rcach.size() == rcd.size()) && std::equal(rcach.begin(), rcach.end(), rcd.begin()) ) {
         std::cout << "  true\n";
       }
       else {
@@ -157,7 +163,7 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
         filename.str(std::string());
         filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord-AStar.txt";
         std::cout << "  Printing points to file " << filename.str() << " ..." << std::endl;
-        evns::printPointsToFile(rcalce.begin(), rcalce.end(), filename.str());
+        evns::printPointsToFile(rcach.begin(), rcach.end(), filename.str());
       }
     }
 
@@ -212,7 +218,7 @@ main(int argc, char * argv[])
   std::string mapName = "NY";
   std::string coordinatesFilename, graphFilename, distanceFilename, travelTimeFilename;
   std::string queriesFilePath = "/home/nitsas/Programming/workspace/diplomatiki/pareto-approximator/experiments/vs_namoa_star/";
-  std::string queriesFileName = "queries.txt";
+  std::string queriesFilename = "queries.txt";
   bool usingDimacs10Graph = false;
 
   // ----- Get the map name plus create the full path strings and print them -----
@@ -259,11 +265,11 @@ main(int argc, char * argv[])
   // ----- Parse the queries file -----
 
   // print the name of the file containing the queries
-  std::cout << "Queries file: \n" << (queriesFilePath + queriesFileName) << std::endl;
+  std::cout << "Queries file: \n" << (queriesFilePath + queriesFilename) << std::endl;
 
   // read (parse) the queries file
   std::list< std::pair<unsigned int, unsigned int> > queries;
-  queries = evns::parseQueriesFile(queriesFilePath + queriesFileName);
+  queries = evns::parseQueriesFile(queriesFilePath + queriesFilename);
 
   // print the queries we just read
   std::cout << "Read " << queries.size() 
@@ -319,14 +325,14 @@ main(int argc, char * argv[])
 
   // ----- Run queries using Chord ----- 
 
-  unsigned int numObjectives = 3;        // CHANGE-HERE
+  unsigned int numObjectives = 2;        // CHANGE-HERE
   bool useNamoaStar = false, useAStar = false;
 
   std::cout << "\nRunning queries (" << mapName << " map, " << numObjectives << " objectives):\n";
-  std::cout << "-----------------------------" << std::endl;
+  std::cout << "----------------------------------------------------" << std::endl;
 
   for (qi = queries.begin(); qi != queries.end(); ++qi) {
-    std::cout << "FROM NODE " << qi->first << " TO NODE " << qi->second << "\n";
+    std::cout << "FROM NODE " << qi->first << " TO NODE " << qi->second << std::endl;
 
     // CHANGE--HERE
     // Run a query using the Chord algorithm with PGL's Dijkstra implementation.
@@ -337,7 +343,6 @@ main(int argc, char * argv[])
     // clean node attributes
     problem.cleanNodeAttributes();
 
-    /*
     // CHANGE--HERE
     // Run a query using the Chord algorithm with PGL's Dijkstra implementation.
     useNamoaStar = false;
@@ -346,7 +351,6 @@ main(int argc, char * argv[])
 
     // clean node attributes
     problem.cleanNodeAttributes();
-    */
 
     std::cout << std::endl;
   }
@@ -354,7 +358,7 @@ main(int argc, char * argv[])
   // ----- Run the same queries using NAMOA* ----- 
 
   std::cout << "\nWill now run the same queries using PGL's NAMOA*.\n";
-  std::cout << "-----------------------------------------------------" << std::endl;
+  std::cout << "----------------------------------------------------" << std::endl;
 
   for (qi = queries.begin(); qi != queries.end(); ++qi) {
     std::cout << "FROM NODE " << qi->first << " TO NODE " << qi->second << std::endl;

@@ -78,8 +78,10 @@ class AllZeroHeuristic
         // then, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = 0;
         // CHANGE-HERE
+        /*
         // last, the heuristic for the "Number Of Hops" objective:
         u->heuristicList[2] = 0;
+        */
       }
     }
 
@@ -114,7 +116,7 @@ class EuclideanHeuristic
     //!
     EuclideanHeuristic(GraphType & graph) : graph_(graph), 
                                             maxSpeed_(0.0)
-                                            , maxEdgeDistance_(0) // CHANGE-HERE
+//                                            , maxEdgeDistance_(0) // CHANGE-HERE
     {
       NodeIterator u, v, lastNode;
       EdgeIterator e, lastEdge;
@@ -140,9 +142,11 @@ class EuclideanHeuristic
             maxSpeed_ = speed;
 
           // CHANGE-HERE
+          /*
           if (e->criteriaList[0] > maxEdgeDistance_) {
             maxEdgeDistance_ = e->criteriaList[0];
           }
+          */
         }
       }
     }
@@ -166,11 +170,13 @@ class EuclideanHeuristic
         // next, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = u->heuristicList[0] / maxSpeed_;
         // CHANGE-HERE
+        /*
         // next, the heuristic for the "Number of Hops" objective:
         u->heuristicList[2] = u->heuristicList[0] / maxEdgeDistance_;
+        */
       }
 
-      // CHANGE-HERE
+      // Make the heuristics consistent.
       NodeIterator v;
       EdgeIterator e, lastEdge;
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
@@ -180,10 +186,17 @@ class EuclideanHeuristic
              e != lastEdge; ++e)
         {
           v = graph_.target(e);
+          v->heuristicList[0] = std::max(v->heuristicList[0], 
+                                         u->heuristicList[0] - e->criteriaList[0]);
+          v->heuristicList[1] = std::max(v->heuristicList[1], 
+                                         u->heuristicList[1] - e->criteriaList[1]);
+          // CHANGE-HERE
+          /*
           v->heuristicList[2] = std::max(v->heuristicList[2], 
                                          u->heuristicList[2] - 1);
           // the 1 above is the edge weight (same for every edge) in 
           // the number-of-hops case
+          */
         }
       }
     }
@@ -196,8 +209,10 @@ class EuclideanHeuristic
     double maxSpeed_;
 
     // CHANGE-HERE
+    /*
     //! The max edge distance.
     double maxEdgeDistance_;
+    */
 };
 
 
@@ -235,7 +250,7 @@ class GreatCircleDistanceHeuristic
     //!
     GreatCircleDistanceHeuristic(GraphType & graph) : graph_(graph), 
                                                       maxSpeed_(0.0)
-                                                      , maxEdgeDistance_(0) // CHANGE-HERE
+//                                                      , maxEdgeDistance_(0) // CHANGE-HERE
     {
       NodeIterator u, v, lastNode;
       EdgeIterator e, lastEdge;
@@ -256,14 +271,16 @@ class GreatCircleDistanceHeuristic
           // temporary?
           assert(e->criteriaList[1] != 0);
 
-          speed = double(e->criteriaList[0]) / e->criteriaList[1];
+          speed = double(e->criteriaList[0]) / double(e->criteriaList[1]);
           if (speed > maxSpeed_)
             maxSpeed_ = speed;
 
           // CHANGE-HERE
+          /*
           if (e->criteriaList[0] > maxEdgeDistance_) {
             maxEdgeDistance_ = e->criteriaList[0];
           }
+          */
         }
       }
     }
@@ -279,6 +296,8 @@ class GreatCircleDistanceHeuristic
     {
       NodeIterator u, lastNode;
 
+      std::cout << "GreatCircleDistanceHeuristic::maxSpeed_ = " << maxSpeed_ << std::endl;
+
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
            u != lastNode; ++u)
       {
@@ -291,11 +310,15 @@ class GreatCircleDistanceHeuristic
         // next, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = u->heuristicList[0] / maxSpeed_;
         // CHANGE-HERE
+        /*
         // next, the heuristic for the "Number of Hops" objective:
         u->heuristicList[2] = u->heuristicList[0] / maxEdgeDistance_;
+        */
       }
 
       // CHANGE-HERE
+      /*
+      // Make the heuristic for the "Number of Hops" objective consistent.
       NodeIterator v;
       EdgeIterator e, lastEdge;
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
@@ -311,6 +334,7 @@ class GreatCircleDistanceHeuristic
           // the number-of-hops case
         }
       }
+      */
     }
 
   private:
@@ -321,11 +345,179 @@ class GreatCircleDistanceHeuristic
     double maxSpeed_;
 
     // CHANGE-HERE
+    /*
     //! The max edge distance.
-    unsigned int maxEdgeDistance_;
+    double maxEdgeDistance_;
+    */
 };
 
 
+//! \brief A simple backwards Dijkstra implementation.
+//!
+//! It uses the graph's In Edges.
+//!
+template<class GraphType>
+class BackwardDijkstra
+{
+  public:
+    typedef typename GraphType::NodeIterator                        NodeIterator;
+    typedef typename GraphType::NodeDescriptor                      NodeDescriptor;
+    typedef typename GraphType::EdgeIterator                        EdgeIterator;
+    typedef typename GraphType::InEdgeIterator                      InEdgeIterator;
+    typedef typename GraphType::SizeType                            SizeType;
+    typedef unsigned int                                            WeightType;
+    typedef PriorityQueue< WeightType, NodeIterator, HeapStorage>   PriorityQueueType;
+    
+    /**
+     * @brief Constructor
+     *
+     * @param graph The graph to run the algorithm on
+     * @param timestamp An address containing a timestamp. A timestamp must be given in order to check whether a node is visited or not
+     */
+    BackwardDijkstra( GraphType& graph, unsigned int* timestamp):G(graph),m_timestamp(timestamp)
+    {
+    }
+    
+    /**
+     * @brief Builds a backwards shortest path tree routed on a target node
+     *
+     * @param t The target node
+     */
+    void buildTree( const typename GraphType::NodeIterator & t, 
+                    unsigned int whichObjective)
+    {
+      NodeIterator u,v,lastNode;
+      InEdgeIterator k,lastInEdge;
+      
+      pqBack.clear();
+      ++(*m_timestamp);
+      t->dist = 0;
+      t->timestamp = (*m_timestamp);
+      t->succ = G.nilNodeDescriptor();;
+
+      pqBack.insert( t->dist, t, &(t->pqitem));
+
+      while( !pqBack.empty())
+      {
+        u = pqBack.minItem();
+        pqBack.popMin();
+        for( k = G.beginInEdges(u), lastInEdge = G.endInEdges(u); k != lastInEdge; ++k)
+        {
+          v = G.source(k);
+
+          if( v->timestamp < (*m_timestamp))
+          {
+            v->succ = u->getDescriptor();
+            v->dist = u->dist + k->criteriaList[whichObjective];
+            v->timestamp = (*m_timestamp);
+            pqBack.insert( v->dist, v, &(v->pqitem));
+          }
+          else if( v->dist > u->dist + k->criteriaList[whichObjective] )
+          {
+            v->succ = u->getDescriptor();
+            v->dist = u->dist + k->criteriaList[whichObjective];
+            pqBack.decrease( v->dist, &(v->pqitem));
+          }
+        }
+      }
+    }
+    
+  private:
+    //! The graph that the algorithm will run on.
+    GraphType & G;
+
+    //! \brief A timestamp. 
+    //!
+    //! The algorithm will increment it at the start of each query. Nodes 
+    //! with timestamps lower than the algorithm's timestamp are considered 
+    //! uninitialized.
+    //!
+    unsigned int * m_timestamp;
+
+    //! A priority queue.
+    PriorityQueueType pqBack;
+};
+
+
+//! \brief A simple function that checks if a heuristic (from those stored 
+//!        inside the graph nodes, i.e. in each node's heuristicList 
+//!        attribute) is consitent.
+//!
+//! \param graph The graph.
+//! \param whichObjective 0 for the first objective, 1 for the second e.t.c.
+//! \return true if the heuristic for the whichObjective'th objective is 
+//!         consistent; false otherwise.
+//!
+template <class GraphType> 
+bool 
+hasConsistentHeuristic(const GraphType & graph, unsigned int whichObjective)
+{
+  typename GraphType::NodeIterator u, v, lastNode;
+  typename GraphType::EdgeIterator e, lastEdge;
+
+  for (u = graph.beginNodes(), lastNode = graph.endNodes(); 
+       u != lastNode; ++u)
+  {
+    for (e = graph.beginEdges(u), lastEdge = graph.endEdges(u); 
+         e != lastEdge; ++e)
+    {
+      v = graph.target(e);
+      if (u->heuristicList[whichObjective] > e->criteriaList[whichObjective] + 
+                                             v->heuristicList[whichObjective])
+      {
+        std::cout << "edge: (" << graph.getRelativePosition(u) << ", " 
+                  << graph.getRelativePosition(v) << ")" << std::endl;
+        std::cout << "f(u) = " << u->heuristicList[whichObjective] << std::endl;
+        std::cout << "f(v) = " << v->heuristicList[whichObjective] << std::endl;
+        std::cout << "wt(e) = " << e->criteriaList[whichObjective] << std::endl;
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+
+//! \brief A simple function that checks if a heuristic (from those stored 
+//!        inside the graph nodes, i.e. in each node's heuristicList 
+//!        attribute) is admissible.
+//!
+//! \param graph The graph.
+//! \param timestamp A timestamp.
+//! \param target The target node.
+//! \param whichObjective 0 for the first objective, 1 for the second e.t.c.
+//! \return true if the heuristic for the whichObjective'th objective is 
+//!         admissible; false otherwise.
+//!
+template <class GraphType> 
+bool 
+hasAdmissibleHeuristic(GraphType & graph, unsigned int * timestamp, 
+                       typename GraphType::NodeIterator & target, 
+                       unsigned int whichObjective)
+{
+  typename GraphType::NodeIterator u, lastNode;
+
+  BackwardDijkstra<GraphType> backwardDijkstra(graph, timestamp);
+  backwardDijkstra.buildTree(target, whichObjective);
+
+  for (u = graph.beginNodes(), lastNode = graph.endNodes(); 
+       u != lastNode; ++u)
+  {
+    if (u->heuristicList[whichObjective] > u->dist) {
+      std::cout << "node: " << graph.getRelativePosition(u) << ", x coord = " 
+                << u->x << ", y coord = " << u->y << "\n";
+      std::cout << "f(u) = " << u->heuristicList[whichObjective] << std::endl;
+      std::cout << "dist(u,target) = " << u->dist << std::endl;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+/*
 //! \brief A class containing a simple implementation of the A\* algorithm.
 //!
 template <class GraphType> 
@@ -507,11 +699,9 @@ class AStarDijkstra
           v = graph_.target(e);
 
           if (u->heuristicValue > e->weight + v->heuristicValue) {
-            /*
-            std::cout << "h(u)  = " << u->heuristicValue << "\n";
-            std::cout << "h(v)  = " << v->heuristicValue << "\n";
-            std::cout << "wt(e) = " << e->weight << "\n";
-            */
+            //std::cout << "h(u)  = " << u->heuristicValue << "\n";
+            //std::cout << "h(v)  = " << v->heuristicValue << "\n";
+            //std::cout << "wt(e) = " << e->weight << "\n";
             return false;
           }
         }
@@ -551,7 +741,7 @@ class AStarDijkstra
     }
 
   private:
-    //! The graph the algorithm will run on.
+    //! The graph that the algorithm will run on.
     GraphType & graph_;
 
     //! \brief A timestamp. 
@@ -562,6 +752,7 @@ class AStarDijkstra
     //!
     unsigned int * timestamp_;
 };
+*/
 
 
 }  // namespace experiments_vs_namoa_star
