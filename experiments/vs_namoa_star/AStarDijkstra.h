@@ -78,10 +78,8 @@ class AllZeroHeuristic
         // then, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = 0;
         // CHANGE-HERE
-        /*
         // last, the heuristic for the "Number Of Hops" objective:
         u->heuristicList[2] = 0;
-        */
       }
     }
 
@@ -116,7 +114,7 @@ class EuclideanHeuristic
     //!
     EuclideanHeuristic(GraphType & graph) : graph_(graph), 
                                             maxSpeed_(0.0)
-//                                            , maxEdgeDistance_(0) // CHANGE-HERE
+                                            , maxEdgeDistance_(0) // CHANGE-HERE
     {
       NodeIterator u, v, lastNode;
       EdgeIterator e, lastEdge;
@@ -142,11 +140,9 @@ class EuclideanHeuristic
             maxSpeed_ = speed;
 
           // CHANGE-HERE
-          /*
           if (e->criteriaList[0] > maxEdgeDistance_) {
             maxEdgeDistance_ = e->criteriaList[0];
           }
-          */
         }
       }
     }
@@ -166,16 +162,15 @@ class EuclideanHeuristic
            u != lastNode; ++u)
       {
         // first, the heuristic for the "Distance" objective:
-        u->heuristicList[0] = euclideanDistance(u->x, u->y, target->x, target->y);
+        u->heuristicList[0] = floor(euclideanDistance(u->x, u->y, target->x, target->y));
         // next, the heuristic for the "Travel Time" objective:
-        u->heuristicList[1] = u->heuristicList[0] / maxSpeed_;
+        u->heuristicList[1] = double(u->heuristicList[0]) / maxSpeed_;
         // CHANGE-HERE
-        /*
         // next, the heuristic for the "Number of Hops" objective:
-        u->heuristicList[2] = u->heuristicList[0] / maxEdgeDistance_;
-        */
+        u->heuristicList[2] = double(u->heuristicList[0]) / maxEdgeDistance_;
       }
 
+      // CHANGE-HERE
       // Make the heuristics consistent.
       NodeIterator v;
       EdgeIterator e, lastEdge;
@@ -186,17 +181,14 @@ class EuclideanHeuristic
              e != lastEdge; ++e)
         {
           v = graph_.target(e);
-          v->heuristicList[0] = std::max(v->heuristicList[0], 
-                                         u->heuristicList[0] - e->criteriaList[0]);
-          v->heuristicList[1] = std::max(v->heuristicList[1], 
-                                         u->heuristicList[1] - e->criteriaList[1]);
-          // CHANGE-HERE
-          /*
-          v->heuristicList[2] = std::max(v->heuristicList[2], 
-                                         u->heuristicList[2] - 1);
+//          v->heuristicList[0] = std::max(long(v->heuristicList[0]), 
+//                                         long(u->heuristicList[0]) - long(e->criteriaList[0]));
+//          v->heuristicList[1] = std::max(long(v->heuristicList[1]), 
+//                                         long(u->heuristicList[1]) - long(e->criteriaList[1]));
+          v->heuristicList[2] = std::max(long(v->heuristicList[2]), 
+                                         long(u->heuristicList[2]) - long(1));
           // the 1 above is the edge weight (same for every edge) in 
           // the number-of-hops case
-          */
         }
       }
     }
@@ -209,10 +201,8 @@ class EuclideanHeuristic
     double maxSpeed_;
 
     // CHANGE-HERE
-    /*
     //! The max edge distance.
     double maxEdgeDistance_;
-    */
 };
 
 
@@ -250,7 +240,7 @@ class GreatCircleDistanceHeuristic
     //!
     GreatCircleDistanceHeuristic(GraphType & graph) : graph_(graph), 
                                                       maxSpeed_(0.0)
-//                                                      , maxEdgeDistance_(0) // CHANGE-HERE
+                                                      , maxEdgeDistance_(0) // CHANGE-HERE
     {
       NodeIterator u, v, lastNode;
       EdgeIterator e, lastEdge;
@@ -276,11 +266,9 @@ class GreatCircleDistanceHeuristic
             maxSpeed_ = speed;
 
           // CHANGE-HERE
-          /*
           if (e->criteriaList[0] > maxEdgeDistance_) {
             maxEdgeDistance_ = e->criteriaList[0];
           }
-          */
         }
       }
     }
@@ -296,8 +284,6 @@ class GreatCircleDistanceHeuristic
     {
       NodeIterator u, lastNode;
 
-      std::cout << "GreatCircleDistanceHeuristic::maxSpeed_ = " << maxSpeed_ << std::endl;
-
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
            u != lastNode; ++u)
       {
@@ -308,16 +294,13 @@ class GreatCircleDistanceHeuristic
                                                double(target->x)/100000, 
                                                double(target->y)/100000));
         // next, the heuristic for the "Travel Time" objective:
-        u->heuristicList[1] = u->heuristicList[0] / maxSpeed_;
+        u->heuristicList[1] = double(u->heuristicList[0]) / maxSpeed_;
         // CHANGE-HERE
-        /*
         // next, the heuristic for the "Number of Hops" objective:
-        u->heuristicList[2] = u->heuristicList[0] / maxEdgeDistance_;
-        */
+        u->heuristicList[2] = double(u->heuristicList[0]) / maxEdgeDistance_;
       }
 
       // CHANGE-HERE
-      /*
       // Make the heuristic for the "Number of Hops" objective consistent.
       NodeIterator v;
       EdgeIterator e, lastEdge;
@@ -328,13 +311,12 @@ class GreatCircleDistanceHeuristic
              e != lastEdge; ++e)
         {
           v = graph_.target(e);
-          v->heuristicList[2] = std::max(v->heuristicList[2], 
-                                         u->heuristicList[2] - 1);
+          v->heuristicList[2] = std::max(long(v->heuristicList[2]), 
+                                         long(u->heuristicList[2]) - long(1));
           // the 1 above is the edge weight (same for every edge) in 
           // the number-of-hops case
         }
       }
-      */
     }
 
   private:
@@ -345,10 +327,8 @@ class GreatCircleDistanceHeuristic
     double maxSpeed_;
 
     // CHANGE-HERE
-    /*
     //! The max edge distance.
     double maxEdgeDistance_;
-    */
 };
 
 
@@ -505,10 +485,11 @@ hasAdmissibleHeuristic(GraphType & graph, unsigned int * timestamp,
        u != lastNode; ++u)
   {
     if (u->heuristicList[whichObjective] > u->dist) {
-      std::cout << "node: " << graph.getRelativePosition(u) << ", x coord = " 
-                << u->x << ", y coord = " << u->y << "\n";
-      std::cout << "f(u) = " << u->heuristicList[whichObjective] << std::endl;
-      std::cout << "dist(u,target) = " << u->dist << std::endl;
+      std::cout << "Not an admissible heuristic! (heuristic " << whichObjective 
+                << ")\nnode: " << graph.getRelativePosition(u) 
+                << ", x coord = " << u->x << ", y coord = " << u->y 
+                << "\nf(u) = " << u->heuristicList[whichObjective] 
+                << "\ndist(u,target) = " << u->dist << std::endl;
       return false;
     }
   }
@@ -517,7 +498,7 @@ hasAdmissibleHeuristic(GraphType & graph, unsigned int * timestamp,
 }
 
 
-/*
+/* We'll use PGL's A* implementation.
 //! \brief A class containing a simple implementation of the A\* algorithm.
 //!
 template <class GraphType> 
@@ -612,7 +593,8 @@ class AStarDijkstra
 
         // for each successor of u:
         for (e = graph_.beginEdges(u), lastEdge = graph_.endEdges(u); 
-             e != lastEdge; ++e) {
+             e != lastEdge; ++e) 
+        {
           v = graph_.target(e);
 
           // compute the node's fScore if we were to pass through u

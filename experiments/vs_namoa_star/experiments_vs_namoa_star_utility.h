@@ -290,9 +290,9 @@ readPointsFromFile(std::string filename)
 
 //! \brief The euclidean distance between two points.
 //!
-double euclideanDistance(int x1, int y1, int x2, int y2)
+double euclideanDistance(long x1, long y1, long x2, long y2)
 {
-  return sqrt( pow(x1 - x2, 2) + pow(y1 - y2, 2) );
+  return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
 
 

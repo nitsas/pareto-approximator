@@ -167,7 +167,7 @@ class BaseProblem
     std::vector< PointAndSolution<S> > 
     doChord(Facet<S> anchors, double eps);
 
-    /*! \brief A function that uses Craft's (et al.) algorithm to 
+    /*! \brief A function that uses the PGEN algorithm (Craft et al.) to 
      *         approximate the Pareto set.
      *  
      *  \param numObjectives The number of objectives to minimize. 
@@ -187,7 +187,7 @@ class BaseProblem
      *  \sa computeConvexParetoSet(), BaseProblem, PointAndSolution and Point
      */
     std::vector< PointAndSolution<S> > 
-    doCraft(unsigned int numObjectives, Facet<S> anchors, double eps);
+    doPgen(unsigned int numObjectives, Facet<S> anchors, double eps);
 
     /*! 
      *  \brief Generate a new Pareto optimal point using the given Facet 

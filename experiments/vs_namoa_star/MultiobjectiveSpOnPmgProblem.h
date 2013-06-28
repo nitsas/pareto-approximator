@@ -32,6 +32,7 @@
 #include "../../BaseProblem.h"
 
 #include "experiments_vs_namoa_star_common.h"
+#include "experiments_vs_namoa_star_utility.h"
 #include "AStarDijkstra.h"
 
 
@@ -261,7 +262,6 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       }
 
       // CHANGE-HERE
-      /*
       // add a third weight ("hop") on each graph edge:
       InEdgeIterator k;
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
@@ -280,7 +280,6 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           k->criteriaList[2] = e->criteriaList[2];
         }
       }
-      */
 
       // read the node-ids-to-node-descriptors mapping vector
       nodeIdsToDescriptors_ = reader.getIds();
@@ -344,7 +343,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           ki = graph_.getInEdgeIterator(ei);
 
           // set the first weight, "distance", of each edge:
-          ei->criteriaList[0] = euclideanDistance(ui->x, ui->y, vi->x, vi->y);
+          ei->criteriaList[0] = ceil(euclideanDistance(ui->x, ui->y, vi->x, vi->y));
           ki->criteriaList[0] = ei->criteriaList[0];
 
           // set the second weight, "travel time", of each edge:
@@ -357,7 +356,6 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           ki->criteriaList[1] = ei->criteriaList[1];
 
           // CHANGE-HERE
-          /*
           // set the third weight, "hop", of each edge:
           // - the "hop" cost will be equal to 1 for every edge; this way 
           //   the "NumberOfHops(P)" objective, which will be the sum of "hop" 
@@ -366,7 +364,6 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           ei->criteriaList[2] = 1;
           // set the incoming edge's cost as well
           ki->criteriaList[2] = ei->criteriaList[2];
-          */
 
           ++edgeProgress;
         }
@@ -428,7 +425,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
 
       if (noGraph_) {
         std::cerr << "No graph has been read! Cannot execute query!" << std::endl;
-        return result;
+        exit(1);
       }
 
       // set the source and target nodes
@@ -457,41 +454,37 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
             // CHANGE---HERE
             GreatCircleDistanceHeuristic<PmaGraph> heuristicEngine(graph_);
             heuristicEngine.initHeuristicLists(target_);
-            std::cout << "Checking whether or not the 1st objective's heuristic is admissible..." << std::endl;
-            hasAdmissibleHeuristic(graph_, &timestamp_, target_, 0);
-            std::cout << "Checking whether or not the 1st objective's heuristic is consistent..." << std::endl;
-            hasConsistentHeuristic(graph_, 0);
-            std::cout << "Checking whether or not the 2nd objective's heuristic is admissible..." << std::endl;
-            hasAdmissibleHeuristic(graph_, &timestamp_, target_, 1);
-            std::cout << "Checking whether or not the 2nd objective's heuristic is consistent..." << std::endl;
-            hasConsistentHeuristic(graph_, 1);
+            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 0))
+              std::cout << "Careful, the 1st objective's heuristic is non-admissible! (please check it)\n";
+            if (not hasConsistentHeuristic(graph_, 0))
+              std::cout << "Careful, the 1st objective's heuristic is non-consistent! (please check it)\n";
+            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 1))
+              std::cout << "Careful, the 2nd objective's heuristic is non-admissible! (please check it)\n";
+            if (not hasConsistentHeuristic(graph_, 1))
+              std::cout << "Careful, the 2nd objective's heuristic is non-consistent! (please check it)\n";
             // CHANGE-HERE
-            /*
-            std::cout << "Checking whether or not the 3rd objective's heuristic is admissible..." << std::endl;
-            hasAdmissibleHeuristic(graph_, &timestamp_, target_, 2);
-            std::cout << "Checking whether or not the 3rd objective's heuristic is consistent...\n";
-            hasConsistentHeuristic(graph_, 2);
-            */
+            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 2))
+              std::cout << "Careful, the 3rd objective's heuristic is non-admissible! (please check it)\n";
+            if (not hasConsistentHeuristic(graph_, 2))
+              std::cout << "Careful, the 3rd objective's heuristic is non-consistent! (please check it)\n";
           }
           else {
             // CHANGE---HERE
             EuclideanHeuristic<PmaGraph> heuristicEngine(graph_);
             heuristicEngine.initHeuristicLists(target_);
-            std::cout << "Checking whether or not the 1st objective's heuristic is admissible..." << std::endl;
-            hasAdmissibleHeuristic(graph_, &timestamp_, target_, 0);
-            std::cout << "Checking whether or not the 1st objective's heuristic is consistent..." << std::endl;
-            hasConsistentHeuristic(graph_, 0);
-            std::cout << "Checking whether or not the 2nd objective's heuristic is admissible..." << std::endl;
-            hasAdmissibleHeuristic(graph_, &timestamp_, target_, 1);
-            std::cout << "Checking whether or not the 2nd objective's heuristic is consistent..." << std::endl;
-            hasConsistentHeuristic(graph_, 1);
+            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 0))
+              std::cout << "Careful, the 1st objective's heuristic is non-admissible! (please check it)\n";
+            if (not hasConsistentHeuristic(graph_, 0))
+              std::cout << "Careful, the 1st objective's heuristic is non-consistent! (please check it)\n";
+            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 1))
+              std::cout << "Careful, the 2nd objective's heuristic is non-admissible! (please check it)\n";
+            if (not hasConsistentHeuristic(graph_, 1))
+              std::cout << "Careful, the 2nd objective's heuristic is non-consistent! (please check it)\n";
             // CHANGE-HERE
-            /*
-            std::cout << "Checking whether or not the 3rd objective's heuristic is admissible..." << std::endl;
-            hasAdmissibleHeuristic(graph_, &timestamp_, target_, 2);
-            std::cout << "Checking whether or not the 3rd objective's heuristic is consistent...\n";
-            hasConsistentHeuristic(graph_, 2);
-            */
+            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 2))
+              std::cout << "Careful, the 3rd objective's heuristic is non-admissible! (please check it)\n";
+            if (not hasConsistentHeuristic(graph_, 2))
+              std::cout << "Careful, the 3rd objective's heuristic is non-consistent! (please check it)\n";
           }
         }
 
@@ -641,14 +634,24 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
 
       // temporary (the if clause is the temporary one)
       if (useAStar_) {
+        // temporary
+        std::vector<double> reducedWeight(3);
+        reducedWeight[0] = std::max(weight[0] - 1e-9, 0.0);
+        reducedWeight[1] = std::max(weight[1] - 1e-9, 0.0);
+        reducedWeight[2] = std::max(weight[2] - 1e-9, 0.0);
+        // end-temporary
         // first, set edge weights and node heuristics
         if (numObjectives == 2) {
           for (u = graph_.beginNodes(), 
                lastNode = graph_.endNodes(); u != lastNode; ++u) 
           {
             // set the node's heuristic value
-            u->heuristicValue = weight[0] * u->heuristicList[0] + 
-                                weight[1] * u->heuristicList[1];
+//            u->heuristicValue = weight[0] * u->heuristicList[0] + 
+//                                weight[1] * u->heuristicList[1];
+            // temporary
+            u->heuristicValue = reducedWeight[0] * u->heuristicList[0] + 
+                                reducedWeight[1] * u->heuristicList[1];
+            // end-temporary
             // for all outgoing and incoming edges
             for (e = graph_.beginEdges(u), 
                  lastEdge = graph_.endEdges(u); e != lastEdge; ++e) 
@@ -664,9 +667,14 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
                lastNode = graph_.endNodes(); u != lastNode; ++u) 
           {
             // set the node's heuristic value
-            u->heuristicValue = weight[0] * u->heuristicList[0] + 
-                                weight[1] * u->heuristicList[1] + 
-                                weight[2] * u->heuristicList[2];
+//            u->heuristicValue = weight[0] * u->heuristicList[0] + 
+//                                weight[1] * u->heuristicList[1] + 
+//                                weight[2] * u->heuristicList[2];
+            // temporary
+            u->heuristicValue = reducedWeight[0] * u->heuristicList[0] + 
+                                reducedWeight[1] * u->heuristicList[1] + 
+                                reducedWeight[2] * u->heuristicList[2];
+            // end-temporary
             // for all outgoing and incoming edges
             for (e = graph_.beginEdges(u), 
                  lastEdge = graph_.endEdges(u); e != lastEdge; ++e) 
@@ -679,37 +687,9 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           }
         }
 
-        // next, call our simple A* implementation 
-        // (use each node's "heuristicValue" attribute as a heuristic)
+        // next, call PGL's A* implementation (we modified it so that it 
+        // uses each node's "heuristicValue" attribute as a heuristic)
         AStarDijkstra<PmaGraph> aStarDijkstra(graph_, &timestamp_);
-        /*
-        NodeIterator u, v;
-        std::cout.precision(20);
-        std::cout << std::scientific;
-        if (not aStarDijkstra.hasFeasiblePotentials(target_, u, v)) {
-          std::cout << "w1 = " << weight[0] << ", w2 = " << weight[1] << std::endl;
-          EdgeIterator e;
-          std::cout << "was the previous u correct? " << (u == graph_.getNodeIterator(nodeIdsToDescriptors_[47489]) ? "Yes" : "No") << "\n";
-          std::cout << "was the previous v correct? " << (v == graph_.getNodeIterator(nodeIdsToDescriptors_[46862]) ? "Yes" : "No") << "\n";
-          e = graph_.getEdgeIterator(u, v);
-          std::cout << "u->heuristicList[0] = " << u->heuristicList[0] 
-                    << ", u->heuristicList[1] = " << u->heuristicList[1] << "\n";
-          std::cout << "weight[0] * u->heuristicList[0] = " << weight[0] * u->heuristicList[0] 
-                    << ", weight[1] * u->heuristicList[1] = " << weight[1] * u->heuristicList[1] 
-                    << ", weight[0] * u->heuristicList[0] + weight[1] * u->heuristicList[1] = " 
-                    << weight[0] * u->heuristicList[0] + weight[1] * u->heuristicList[1] << "\n";
-          std::cout << "u->heuristicValue = " << u->heuristicValue << "\n";
-          std::cout << "v->heuristicList[0] = " << v->heuristicList[0] 
-                    << ", v->heuristicList[1] = " << v->heuristicList[1] << "\n";
-          std::cout << "weight[0] * v->heuristicList[0] = " << weight[0] * v->heuristicList[0] 
-                    << ", weight[1] * v->heuristicList[1] = " << weight[1] * v->heuristicList[1] 
-                    << ", weight[0] * v->heuristicList[0] + weight[1] * u->heuristicList[1] = " 
-                    << weight[0] * v->heuristicList[0] + weight[1] * v->heuristicList[1] << "\n";
-          std::cout << "v->heuristicValue = " << v->heuristicValue << "\n";
-          std::cout << "e->criteriaList[0] = " << e->criteriaList[0] 
-                    << ", e->criteriaList[1] = " << e->criteriaList[1] << std::endl;
-        }
-        */
         aStarDijkstra.runQuery(source_, target_);
       }
       else {
@@ -885,7 +865,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       // We make a new (temporary) CriteriaList named pathCriteriaCosts, 
       // the same size as edge criteriaList attributes so that we can easily 
       // sum the edges' criteria lists. 
-      CriteriaList pathCriteriaCosts(2); // CHANGE-HERE
+      CriteriaList pathCriteriaCosts(3); // CHANGE-HERE
 
       // make the current vertex (v) the end of the path
       // - the path is currently empty

@@ -88,8 +88,8 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
       evns::printPointsToFile(rn.begin(), rn.end(), filename.str());
 
       // Compute the convex hull of PGL's NAMOA*'s results and compare with Chord-with-PGL-Dijkstra's results.
-      std::cout << "- Computing the convex hull of the set NAMOA* found ..." << std::endl;
       std::list< pa::PointAndSolution<evns::Path> > hull = pa::utility::computeConvexHull(rn, numObjectives);
+      std::cout << "- Comparing the convex hull of the set NAMOA* found with the set Chord found ..." << std::endl;
       // read the points Chord found (from the output file)
       filename.str(std::string());
       filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord.txt";
@@ -111,11 +111,35 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
         else
           std::cout << " (neither does the complete Pareto set)\n";
       }
-      // write the convex hull's points too
+      // write the convex hull's points to the output
       filename.str(std::string());
       filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-ConvexHull.txt";
-      std::cout << "  Printing points to file " << filename.str() << " ..." << std::endl;
+      std::cout << "- Computing the convex hull of the set NAMOA* found ...\n"
+                << "  Printing points to file " << filename.str() << " ..." << std::endl;
       evns::printPointsToFile(hull.begin(), hull.end(), filename.str());
+      // Compare the convex hull of PGL's NAMOA*'s results with Chord-with-A*'s results.
+      std::cout << "- Comparing the convex hull of the set NAMOA* found with the set Chord-with-A* found ..." << std::endl;
+      // read the points Chord-with-A* found (from the output file)
+      filename.str(std::string());
+      filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord-AStar.txt";
+      std::vector< pa::PointAndSolution<evns::Path> > rca = evns::readPointsFromFile(filename.str());
+      // CHANGE--HERE
+      if (hull.size() == rca.size()) 
+        std::cout << "  Has SAME number of points as Chord-with-A* found.\n";
+      else {
+        std::cout << "  Has " << hull.size() << " points, i.e. " << (hull.size() > rca.size() ? "MORE" : "LESS") 
+                  << " than Chord-with-A* found. (Chord-with-A* found " << rca.size() << ")\n";
+      }
+      std::cout << "  Checking if the convex hull contains all the points Chord-with-A* found:\n";
+      if ( std::includes(hull.begin(), hull.end(), rca.begin(), rca.end()) )
+        std::cout << "  true" << std::endl;
+      else {
+        std::cout << "  false";
+        if ( std::includes(rn.begin(), rn.end(), rca.begin(), rca.end()) )
+          std::cout << " (the complete Pareto set does though)" << std::endl;
+        else
+          std::cout << " (neither does the complete Pareto set)" << std::endl;
+      }
     }
     else if (not useAStar) {
       // Flags: useNamoaStar is false, useAStar is false
@@ -137,9 +161,9 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
     }
     else {
       // Flags: useNamoaStar is false, useAStar is true
-      // Use Chord with our A* implementation
+      // Use Chord with PGL's A* implementation
       std::cout << "- Computing shortest path from node " << sourceNodeId << " to node " 
-                << targetNodeId << " using the Chord algorithm (& our A*) ..." << std::endl;
+                << targetNodeId << " using the Chord algorithm (& PGL's A*) ..." << std::endl;
       timer.start();
       std::vector< pa::PointAndSolution<evns::Path> > rca = problem.runQuery(sourceNodeId, targetNodeId, numObjectives, useNamoaStar, useAStar);
       timer.stop();
@@ -149,22 +173,20 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
       std::cout << "  # Pareto points found: " << rcach.size() << "\n";
       
       // Compare Chord-with-our-A*'s results to Chord-with-PGL-Dijkstra's results.
-      std::cout << "- Checking if Chord-with-our-A* found the same points as Chord-with-PGL-Dijkstra:\n";
+      std::cout << "- Checking if Chord-with-PGL-A* found the same points as Chord-with-PGL-Dijkstra:\n";
       // read the points Chord found (from the output file)
       filename.str(std::string());
       filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord.txt";
       std::vector< pa::PointAndSolution<evns::Path> > rcd = evns::readPointsFromFile(filename.str());
-      if ( (rcach.size() == rcd.size()) && std::equal(rcach.begin(), rcach.end(), rcd.begin()) ) {
+      if ( (rcach.size() == rcd.size()) && std::equal(rcach.begin(), rcach.end(), rcd.begin()) ) 
         std::cout << "  true\n";
-      }
-      else {
+      else 
         std::cout << "  false\n";
-        // write points to file
-        filename.str(std::string());
-        filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord-AStar.txt";
-        std::cout << "  Printing points to file " << filename.str() << " ..." << std::endl;
-        evns::printPointsToFile(rcach.begin(), rcach.end(), filename.str());
-      }
+      // write points to file
+      filename.str(std::string());
+      filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord-AStar.txt";
+      std::cout << "  Printing points to file " << filename.str() << " ..." << std::endl;
+      evns::printPointsToFile(rcach.begin(), rcach.end(), filename.str());
     }
 
     // The child will now exit. Another child will be made for the next query.
@@ -197,7 +219,7 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
       waitpid(pid, &childStatus, 0);
       
       // then print a message and continue to the next iteration
-      std::cout << "Killed it. Over 1.5 hours.\n" << std::endl;
+      std::cout << "Killed it. Over 1 hour.\n" << std::endl;
     }
     else {
       // we should never get here
@@ -314,18 +336,18 @@ main(int argc, char * argv[])
 
   // make an itimerval struct - will use it with setitimer()
   struct itimerval timeout;
-  // set the timeout to 1.5 hours, do not reset automatically after expiration
+  // set the timeout to 1 hour, do not reset automatically after expiration
   // - timeout.it_interval is the next interval to set the timer to, 
   //   after it expires the first time - we set it to 0 so that the timer 
   //   won't reset automatically
-  timeout.it_value.tv_sec = 5400;
+  timeout.it_value.tv_sec = 3600;
   timeout.it_value.tv_usec = 0;
   timeout.it_interval.tv_sec = 0;
   timeout.it_interval.tv_usec = 0;
 
   // ----- Run queries using Chord ----- 
 
-  unsigned int numObjectives = 2;        // CHANGE-HERE
+  unsigned int numObjectives = 3;        // CHANGE-HERE
   bool useNamoaStar = false, useAStar = false;
 
   std::cout << "\nRunning queries (" << mapName << " map, " << numObjectives << " objectives):\n";
@@ -344,7 +366,7 @@ main(int argc, char * argv[])
     problem.cleanNodeAttributes();
 
     // CHANGE--HERE
-    // Run a query using the Chord algorithm with PGL's Dijkstra implementation.
+    // Run a query using the Chord algorithm with PGL's A* implementation.
     useNamoaStar = false;
     useAStar = true;
     forkAndRunQuery(problem, qi->first, qi->second, timeout, numObjectives, useNamoaStar, useAStar);

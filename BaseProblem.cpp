@@ -93,7 +93,9 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives,
   //   solutions. 
   // - Let's call the corresponding points (in objective space) anchor 
   //   points and the PointAndSolution instances that contain them anchors.
-  std::vector<double> weights(numObjectives, 0.0);
+  // CHANGE temporary
+  std::vector<double> weights(numObjectives, eps/2);
+//  std::vector<double> weights(numObjectives, 0.0);
   std::vector< PointAndSolution<S> > anchors;
   for (unsigned int i = 0; i != numObjectives; ++i) {
     // make only the i'th element of the weight vector non-zero
@@ -103,7 +105,9 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives,
     assert(not anchor.isNull());
     anchors.push_back(anchor);
     // restore the weight vector's i'th element (all zero again)
-    weights[i] = 0.0;
+    // CHANGE temporary
+    weights[i] = eps/2;
+//    weights[i] = 0.0;
   }
 
   // Filter the anchor points (some might be weakly-dominated by others).
@@ -129,7 +133,7 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives,
     // make the convex hull of the anchor points (it is just a single facet)
     Facet<S> anchorFacet(anchors.begin(), anchors.end());
 
-    // Call doChord() for biobjective problems or doCraft() for 
+    // Call doChord() for biobjective problems or doPgen() for 
     // more than two objectives.
     std::vector< PointAndSolution<S> > unfilteredResults;
     if (numObjectives == 2) {
@@ -141,8 +145,8 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives,
     else {
       assert(numObjectives > 2);
 
-      // Let doCraft do all the work.
-      unfilteredResults = doCraft(numObjectives, anchorFacet, eps);
+      // Let doPgen do all the work.
+      unfilteredResults = doPgen(numObjectives, anchorFacet, eps);
     }
 
     // Filter the results.
@@ -282,7 +286,7 @@ BaseProblem<S>::doChord(Facet<S> anchorFacet, double eps)
 }
 
 
-/*! \brief A function that uses Craft's (et al.) algorithm to 
+/*! \brief A function that uses the PGEN algorithm (Craft et al.) to 
  *         approximate the Pareto set.
  *  
  *  \param numObjectives The number of objectives to minimize. 
@@ -303,7 +307,7 @@ BaseProblem<S>::doChord(Facet<S> anchorFacet, double eps)
  */
 template <class S> 
 std::vector< PointAndSolution<S> > 
-BaseProblem<S>::doCraft(unsigned int numObjectives, Facet<S> anchorFacet, 
+BaseProblem<S>::doPgen(unsigned int numObjectives, Facet<S> anchorFacet, 
                         double eps) 
 {
   // reminder: comb accepts a set of iterators to the objectives' weights
@@ -370,23 +374,66 @@ BaseProblem<S>::doCraft(unsigned int numObjectives, Facet<S> anchorFacet,
                     chooseFacetWithLargestLocalApproximationErrorUpperBound<S>(
                                           facets.begin(), facets.end());
 
-    // Were all the remaining facets boundary facets? (or no facets left)
-    if (generatingFacet == facets.end())
-      // Either all the remaining facets are boundary facets or there are 
-      // no more facets. Exit
-      // - We will not try to generate new points using boundary facets.
-      break;
-    // else
+    // Were there any facets (except boundary facets)? 
+    if (generatingFacet != facets.end()) {
+      // generatingFacet is not a boundary facet
 
-    // Have we reached the required approximation factor?
-    // - the facet is surely not a boundary facet, it surely has a 
-    //   local approximation error upper bound
-    // - if we have reached the required approximation factor stop 
-    //   the algorithm
-    if (generatingFacet->getLocalApproximationErrorUpperBound() <= eps) 
-      break;
-    // else 
-    
+      // Have we reached the required approximation factor?
+      // - the facet is surely not a boundary facet, it surely has a 
+      //   local approximation error upper bound
+      // - if we have reached the required approximation factor stop 
+      //   the algorithm
+      if (generatingFacet->getLocalApproximationErrorUpperBound() <= eps) 
+        break;
+      // else 
+    }
+    else {
+      // Choose the boundary facet with the smallest angle.
+      // The angle for a boundary facet is defined as the angle 
+      // between the facet normal vector n and the average of the 
+      // vertex weight vectors w.
+      generatingFacet = pareto_approximator::utility::
+                        chooseBoundaryFacetWithSmallestAngle<S>(
+                                           facets.begin(), facets.end());
+
+      if (generatingFacet == facets.end()) {
+        // There are no more facets. Exit
+        break;
+      }
+
+      assert(generatingFacet->isBoundaryFacet());
+
+      // CHANGE temporary
+      /*
+      std::cout << "\nEncountered a boundary facet!\nVertices:\n";
+      typename Facet<S>::ConstVertexIterator vi, lastVi;
+      for (vi = generatingFacet->beginVertex(), lastVi = generatingFacet->endVertex();
+           vi != lastVi; ++vi)
+      {
+        std::cout << vi->point << "\n";
+      }
+      std::cout << "Vertex Weight Vectors:\n";
+      for (vi = generatingFacet->beginVertex(), lastVi = generatingFacet->endVertex();
+           vi != lastVi; ++vi)
+      {
+        std::vector<double>::const_iterator wi, lastWi;
+        for (wi = vi->weightsUsed.begin(), lastWi = vi->weightsUsed.end(); 
+             wi != lastWi; ++wi)
+        {
+          std::cout << *wi << ", ";
+        }
+        std::cout << "\n";
+      }
+      std::cout << "Facet Normal Vector:\n";
+      typename Facet<S>::ConstFacetNormalIterator ni, lastNi;
+      for (ni = generatingFacet->beginFacetNormal(), lastNi = generatingFacet->endFacetNormal(); ni != lastNi; ++ni)
+      {
+        std::cout << *ni << ", ";
+      }
+      std::cout << std::endl;
+      */
+    }
+
     // Make a new Pareto point using generatingFacet as a generating facet.
     // Reminder: generatingFacet is actually an iterator pointing to 
     //           the actual facet - that is why we use the * operator

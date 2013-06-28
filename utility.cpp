@@ -132,7 +132,7 @@ namespace utility {
  *  work on Windows. It has only been tested on Mac OS X Mountain Lion 
  *  but should work on other Unix-like systems as well.
  *  
- *  \sa BaseProblem::doCraft()
+ *  \sa BaseProblem::doPgen()
  */
 template <class S> 
 std::list< Facet<S> > 
@@ -243,7 +243,7 @@ computeConvexHullFacets(const std::vector< PointAndSolution<S> > & points,
  *  work on Windows. It has only been tested on Mac OS X Mountain Lion 
  *  but should work on other Unix-like systems as well.
  *  
- *  \sa BaseProblem::doCraft()
+ *  \sa BaseProblem::doPgen()
  */
 template <class S> 
 std::list< PointAndSolution<S> > 
@@ -380,7 +380,7 @@ filterDominatedPoints(
  *  positive coefficients) normal vectors can be used to generate new 
  *  Pareto optimal points.
  *  
- *  \sa Facet, BaseProblem::doChord() and BaseProblem::doCraft()
+ *  \sa Facet, BaseProblem::doChord() and BaseProblem::doPgen()
  */
 template <class S> 
 void
@@ -440,6 +440,44 @@ chooseFacetWithLargestLocalApproximationErrorUpperBound(
   }
 
   return max;
+}
+
+
+/*! \brief Choose a boundary Facet instance with the smallest angle
+ *         from the given sequence of Facet instances.
+ *  
+ *  \param first A const_iterator to the first element in the sequence.
+ *  \param last A const_iterator to the past-the-end element in the sequence.
+ *  \return A const_iterator to the first element in the range that is a 
+ *          boundary facet and has the smallest angle. If there are no  
+ *          boundary facets the function returns "last".
+ *  
+ *  Non boundary facets (i.e. those with isBoundaryFacet() == false) are 
+ *  ignored.
+ *  
+ *  If all the facets in the sequence are non boundary facets the iterator 
+ *  "last" is returned.
+ *  
+ *  \sa Facet
+ */
+template <class S> 
+typename std::list< Facet<S> >::iterator 
+chooseBoundaryFacetWithSmallestAngle(
+                    typename std::list< Facet<S> >::iterator first, 
+                    typename std::list< Facet<S> >::iterator last)
+{
+  typename std::list< Facet<S> >::iterator it, min = last;
+
+  for (it = first; it != last; ++it) {
+    // Is it a boundary facet?
+    if (it->isBoundaryFacet()) {
+      // currently returns the first boundary facet
+      return it;
+    }
+    // else ignore it
+  }
+
+  return min;
 }
 
 
