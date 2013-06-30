@@ -48,12 +48,11 @@ class Node : DefaultGraphItem
   public:
     //! Constructor. (initializes the node's attributes)
     Node() : 
-             // CHANGE--HERE
              pred(NULL), // Dijkstra and A*
              closed(false), // A*
              heuristicValue(0.0), // A*
              fScore(std::numeric_limits<double>::infinity()), // A*
-             heuristicList(3), // NAMOA* and A*, CHANGE-HERE
+             heuristicList(2), // NAMOA* and A*, CHANGE-HERE
              succ(NULL), // NAMOA*
              marked(false), // NAMOA* (BoundedTCHeuristic only)
              secondary_pqitem(std::numeric_limits<unsigned int>::max()), // NAMOA*
@@ -63,7 +62,6 @@ class Node : DefaultGraphItem
              x(0), y(0)
     { }
 
-    // CHANGE--HERE
     // Dijkstra and A*
     //! \brief The node's predecessor in the shortest path tree. 
     //!        (for PGL Dijkstra and our A\*)
@@ -219,7 +217,7 @@ class Edge : DefaultGraphItem
 {
   public:
     //! Constructor. (initializes the Edge's attributes)
-    Edge() : weight(0), criteriaList(3) // CHANGE-HERE
+    Edge() : weight(0), criteriaList(2) // CHANGE-HERE
     { }
 
     // Things needed for PGL's single objective Dijkstra implementation:

@@ -78,8 +78,10 @@ class AllZeroHeuristic
         // then, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = 0;
         // CHANGE-HERE
+        /*
         // last, the heuristic for the "Number Of Hops" objective:
         u->heuristicList[2] = 0;
+        */
       }
     }
 
@@ -114,7 +116,7 @@ class EuclideanHeuristic
     //!
     EuclideanHeuristic(GraphType & graph) : graph_(graph), 
                                             maxSpeed_(0.0)
-                                            , maxEdgeDistance_(0) // CHANGE-HERE
+//                                            , maxEdgeDistance_(0) // CHANGE-HERE
     {
       NodeIterator u, v, lastNode;
       EdgeIterator e, lastEdge;
@@ -132,7 +134,6 @@ class EuclideanHeuristic
             continue;
           }
 
-          // temporary?
           assert(e->criteriaList[1] != 0);
 
           speed = double(e->criteriaList[0]) / e->criteriaList[1];
@@ -140,9 +141,11 @@ class EuclideanHeuristic
             maxSpeed_ = speed;
 
           // CHANGE-HERE
+          /*
           if (e->criteriaList[0] > maxEdgeDistance_) {
             maxEdgeDistance_ = e->criteriaList[0];
           }
+          */
         }
       }
     }
@@ -166,12 +169,15 @@ class EuclideanHeuristic
         // next, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = double(u->heuristicList[0]) / maxSpeed_;
         // CHANGE-HERE
+        /*
         // next, the heuristic for the "Number of Hops" objective:
         u->heuristicList[2] = double(u->heuristicList[0]) / maxEdgeDistance_;
+        */
       }
 
       // CHANGE-HERE
-      // Make the heuristics consistent.
+      /*
+      // Make the third objective's ("Number of Hops") heuristic consistent.
       NodeIterator v;
       EdgeIterator e, lastEdge;
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
@@ -181,16 +187,13 @@ class EuclideanHeuristic
              e != lastEdge; ++e)
         {
           v = graph_.target(e);
-//          v->heuristicList[0] = std::max(long(v->heuristicList[0]), 
-//                                         long(u->heuristicList[0]) - long(e->criteriaList[0]));
-//          v->heuristicList[1] = std::max(long(v->heuristicList[1]), 
-//                                         long(u->heuristicList[1]) - long(e->criteriaList[1]));
           v->heuristicList[2] = std::max(long(v->heuristicList[2]), 
                                          long(u->heuristicList[2]) - long(1));
           // the 1 above is the edge weight (same for every edge) in 
           // the number-of-hops case
         }
       }
+      */
     }
 
   private:
@@ -201,8 +204,10 @@ class EuclideanHeuristic
     double maxSpeed_;
 
     // CHANGE-HERE
+    /*
     //! The max edge distance.
     double maxEdgeDistance_;
+    */
 };
 
 
@@ -240,7 +245,7 @@ class GreatCircleDistanceHeuristic
     //!
     GreatCircleDistanceHeuristic(GraphType & graph) : graph_(graph), 
                                                       maxSpeed_(0.0)
-                                                      , maxEdgeDistance_(0) // CHANGE-HERE
+//                                                      , maxEdgeDistance_(0) // CHANGE-HERE
     {
       NodeIterator u, v, lastNode;
       EdgeIterator e, lastEdge;
@@ -258,7 +263,6 @@ class GreatCircleDistanceHeuristic
             continue;
           }
 
-          // temporary?
           assert(e->criteriaList[1] != 0);
 
           speed = double(e->criteriaList[0]) / double(e->criteriaList[1]);
@@ -266,9 +270,11 @@ class GreatCircleDistanceHeuristic
             maxSpeed_ = speed;
 
           // CHANGE-HERE
+          /*
           if (e->criteriaList[0] > maxEdgeDistance_) {
             maxEdgeDistance_ = e->criteriaList[0];
           }
+          */
         }
       }
     }
@@ -296,12 +302,15 @@ class GreatCircleDistanceHeuristic
         // next, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = double(u->heuristicList[0]) / maxSpeed_;
         // CHANGE-HERE
+        /*
         // next, the heuristic for the "Number of Hops" objective:
         u->heuristicList[2] = double(u->heuristicList[0]) / maxEdgeDistance_;
+        */
       }
 
       // CHANGE-HERE
-      // Make the heuristic for the "Number of Hops" objective consistent.
+      /*
+      // Make the third objective's ("Number of Hops") heuristic consistent.
       NodeIterator v;
       EdgeIterator e, lastEdge;
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
@@ -317,6 +326,7 @@ class GreatCircleDistanceHeuristic
           // the number-of-hops case
         }
       }
+      */
     }
 
   private:
@@ -327,8 +337,10 @@ class GreatCircleDistanceHeuristic
     double maxSpeed_;
 
     // CHANGE-HERE
+    /*
     //! The max edge distance.
     double maxEdgeDistance_;
+    */
 };
 
 

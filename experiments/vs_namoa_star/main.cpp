@@ -87,6 +87,27 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
       std::cout << "  Printing points to file " << filename.str() << " ..." << std::endl;
       evns::printPointsToFile(rn.begin(), rn.end(), filename.str());
 
+      /*
+      // Note: Below we compute the convex hull of the set of points NAMOA* 
+      //       found and compare it with the points Chord/PGEN found. The 
+      //       following are ok for 2 objectives but for 3+ objectives things 
+      //       get complicated. Examples of 3+ objective complications:
+      //       - There can be many (instead of one) points that are optimal 
+      //         for the 1st (similarly 2nd, 3rd etc) objective and do not 
+      //         dominate one another (e.g. points [1, 3, 5] and [1, 5, 3]).
+      //       - The lower and upper convex hull in 3+ dimensions are not 
+      //         clearly defined. In 2 dimensions we can simply discard all 
+      //         points that are "above" the line which connects the two 
+      //         anchor points (i.e. the best points in the 1st and 2nd 
+      //         objective). A first thought about the 3+ dimensions case was 
+      //         to discard every point that is "above" the hyperplane that 
+      //         connects the 3+ anchor points BUT as we said above there 
+      //         might be more than one suitable anchor points for each 
+      //         objective. How do we choose between them? What happens to 
+      //         the ones we didn't choose? Are they "above" the 
+      //         aforementioned hyperplane or not?
+      //         
+
       // Compute the convex hull of PGL's NAMOA*'s results and compare with Chord-with-PGL-Dijkstra's results.
       std::list< pa::PointAndSolution<evns::Path> > hull = pa::utility::computeConvexHull(rn, numObjectives);
       std::cout << "- Comparing the convex hull of the set NAMOA* found with the set Chord found ..." << std::endl;
@@ -94,7 +115,6 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
       filename.str(std::string());
       filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord.txt";
       std::vector< pa::PointAndSolution<evns::Path> > rcd = evns::readPointsFromFile(filename.str());
-      // CHANGE--HERE
       if (hull.size() == rcd.size()) 
         std::cout << "  Has SAME number of points as Chord found." << "\n";
       else {
@@ -123,7 +143,6 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
       filename.str(std::string());
       filename << "results/query-" << sourceNodeId << "-" << targetNodeId << "-Chord-AStar.txt";
       std::vector< pa::PointAndSolution<evns::Path> > rca = evns::readPointsFromFile(filename.str());
-      // CHANGE--HERE
       if (hull.size() == rca.size()) 
         std::cout << "  Has SAME number of points as Chord-with-A* found.\n";
       else {
@@ -140,6 +159,7 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
         else
           std::cout << " (neither does the complete Pareto set)" << std::endl;
       }
+      */
     }
     else if (not useAStar) {
       // Flags: useNamoaStar is false, useAStar is false
@@ -230,7 +250,28 @@ forkAndRunQuery(evns::MultiobjectiveSpOnPmgProblem & problem,
 }
 
 
-//! The experiments' main function.
+//! \brief The experiments' main function.
+//!
+//! Note: We used both Dijkstra and A* to make sure that A* (and the 
+//!       heuristics we used) works correctly.
+//!       - In 2 objectives (and for small enough epsilon) they will always 
+//!         find the same points.
+//!       - In 3+ objectives, facets with negative normal vector elements 
+//!         (and the way PGEN handles them) plus other idiosyncrasies of the 
+//!         3+ objectives case might lead to A* and Dijkstra returning 
+//!         different sets of points. Why? Because for any set of (COMB) 
+//!         weights w_{i} there might be multiple optimal (Pareto) solutions 
+//!         (let's call the set of them ops_{w_{i}}). A* and Dijkstra use 
+//!         different ways to arrive to an optimal solution (in ops_{w_{i}}), 
+//!         so each might arrive to a different solution. This leads to 
+//!         different subsequent weight vectors which again leads to different 
+//!         sets of points. This is not a problem in the 2 objective case 
+//!         because, for 2 objectives, there can be many weakly Pareto optimal 
+//!         solutions for each weight vector but there will be only one 
+//!         strongly Pareto optimal solution (and for small enough epsilon 
+//!         only the strongly Pareto optimal solutions will survive). In 3+ 
+//!         objectives there might be multiple strongly Pareto optimal 
+//!         solutions for each weight vector. (How can we choose between them?)
 //!
 int 
 main(int argc, char * argv[])
@@ -353,7 +394,7 @@ main(int argc, char * argv[])
 
   // ----- Run queries using Chord ----- 
 
-  unsigned int numObjectives = 3;        // CHANGE-HERE
+  unsigned int numObjectives = 2;        // CHANGE-HERE
   bool useNamoaStar = false, useAStar = false;
 
   std::cout << "\nRunning queries (" << mapName << " map, " << numObjectives << " objectives):\n";
@@ -362,7 +403,6 @@ main(int argc, char * argv[])
   for (qi = queries.begin(); qi != queries.end(); ++qi) {
     std::cout << "FROM NODE " << qi->first << " TO NODE " << qi->second << std::endl;
 
-    // CHANGE--HERE
     // Run a query using the Chord algorithm with PGL's Dijkstra implementation.
     useNamoaStar = false;
     useAStar = false;
@@ -371,7 +411,6 @@ main(int argc, char * argv[])
     // clean node attributes
     problem.cleanNodeAttributes();
 
-    // CHANGE--HERE
     // Run a query using the Chord algorithm with PGL's A* implementation.
     useNamoaStar = false;
     useAStar = true;

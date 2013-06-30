@@ -93,6 +93,11 @@ BaseProblem<S>::computeConvexParetoSet(unsigned int numObjectives,
   //   solutions. 
   // - Let's call the corresponding points (in objective space) anchor 
   //   points and the PointAndSolution instances that contain them anchors.
+  // - Using 0 as weights in the linear combination of objective functions 
+  //   may get us a weakly Pareto optimal point (i.e. a point that can be 
+  //   dominated but not strongly dominated). In case we do not want this, 
+  //   we can use a very small positive number (e.g. eps/2) where we would 
+  //   use 0.
   // CHANGE temporary
   std::vector<double> weights(numObjectives, eps/2);
 //  std::vector<double> weights(numObjectives, 0.0);
@@ -402,36 +407,6 @@ BaseProblem<S>::doPgen(unsigned int numObjectives, Facet<S> anchorFacet,
       }
 
       assert(generatingFacet->isBoundaryFacet());
-
-      // CHANGE temporary
-      /*
-      std::cout << "\nEncountered a boundary facet!\nVertices:\n";
-      typename Facet<S>::ConstVertexIterator vi, lastVi;
-      for (vi = generatingFacet->beginVertex(), lastVi = generatingFacet->endVertex();
-           vi != lastVi; ++vi)
-      {
-        std::cout << vi->point << "\n";
-      }
-      std::cout << "Vertex Weight Vectors:\n";
-      for (vi = generatingFacet->beginVertex(), lastVi = generatingFacet->endVertex();
-           vi != lastVi; ++vi)
-      {
-        std::vector<double>::const_iterator wi, lastWi;
-        for (wi = vi->weightsUsed.begin(), lastWi = vi->weightsUsed.end(); 
-             wi != lastWi; ++wi)
-        {
-          std::cout << *wi << ", ";
-        }
-        std::cout << "\n";
-      }
-      std::cout << "Facet Normal Vector:\n";
-      typename Facet<S>::ConstFacetNormalIterator ni, lastNi;
-      for (ni = generatingFacet->beginFacetNormal(), lastNi = generatingFacet->endFacetNormal(); ni != lastNi; ++ni)
-      {
-        std::cout << *ni << ", ";
-      }
-      std::cout << std::endl;
-      */
     }
 
     // Make a new Pareto point using generatingFacet as a generating facet.

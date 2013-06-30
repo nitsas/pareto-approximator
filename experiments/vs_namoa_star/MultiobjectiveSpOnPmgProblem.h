@@ -139,7 +139,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
                                      numCallsToComb_(0), 
                                      timeSpentInComb_(0.0), 
                                      usingDimacs9Graph_(true), 
-                                     useAStar_(false) // temporary
+                                     useAStar_(false)
     {
     }
 
@@ -168,7 +168,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
                                  const std::string & coordinatesFilename) 
                               : timestamp_(0), numCallsToComb_(0), 
                                 timeSpentInComb_(0.0), 
-                                useAStar_(false) // temporary
+                                useAStar_(false)
     {
       readDimacs9Graph(distanceFilename, travelTimeFilename, 
                        coordinatesFilename);
@@ -196,7 +196,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
                                  const std::string & coordinatesFilename) 
                               : timestamp_(0), numCallsToComb_(0), 
                                 timeSpentInComb_(0.0), 
-                                useAStar_(false) // temporary
+                                useAStar_(false)
     {
       readDimacs10Graph(graphFilename, coordinatesFilename);
     }
@@ -218,6 +218,23 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
     //! Finally, it adds a third weight "hop" on each edge, which will be 
     //! the same for every edge (equal to 1).
     //! 
+    //! Note: DIMACS 9 edge weights are given (we do not calculate them 
+    //!       ourselves) and are integers. The length of an edge (u, v) 
+    //!       (i.e. its cost in the first criterion "distance") is the (Great 
+    //!       circle) distance between nodes u and v (using their coordinates) 
+    //!       rounded down to the closest integer. This is not ok! Our 
+    //!       heuristics (e.g. great circle distance between nodes s and t, 
+    //!       in an s-t query) might overestimate the distance because of 
+    //!       this. The heuristics are theoretically correct but this rounding 
+    //!       down of edge weights might throw them off. To mitigate this 
+    //!       problem, we underestimated the (actual) Great circle distance 
+    //!       between nodes quite a bit when calculating our heuristics, plus 
+    //!       we added checks about whether or not the resulting heuristics 
+    //!       are admissible/consistent (elsewere), plus we added code below 
+    //!       (currently commented out) to point out cases where the Great 
+    //!       circle distance underestimation we did is still over the 
+    //!       rounded down edge distance.
+    //!
     //! Please see http://www.dis.uniroma1.it/challenge9/format.shtml 
     //! for more information on the DIMACS 9 graph files' format.
     //!
@@ -240,9 +257,14 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       // PGL examples do this, so we do too:
       graph_.compress();
 
-      // temporary
-      NodeIterator u, v, lastNode;
+      NodeIterator u, lastNode;
       EdgeIterator e, lastEdge;
+
+      // CLEANUP CHANGE
+      /*
+      // Point out cases where our Great circle distance underestimation for 
+      // a pair of adjacent nodes u, v is over the rounded down edge length.
+      NodeIterator v;
       double greatCircleUnderest;
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
            u != lastNode; ++u) 
@@ -260,8 +282,10 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           }
         }
       }
+      */
 
       // CHANGE-HERE
+      /*
       // add a third weight ("hop") on each graph edge:
       InEdgeIterator k;
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
@@ -280,6 +304,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           k->criteriaList[2] = e->criteriaList[2];
         }
       }
+      */
 
       // read the node-ids-to-node-descriptors mapping vector
       nodeIdsToDescriptors_ = reader.getIds();
@@ -356,6 +381,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           ki->criteriaList[1] = ei->criteriaList[1];
 
           // CHANGE-HERE
+          /*
           // set the third weight, "hop", of each edge:
           // - the "hop" cost will be equal to 1 for every edge; this way 
           //   the "NumberOfHops(P)" objective, which will be the sum of "hop" 
@@ -364,6 +390,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           ei->criteriaList[2] = 1;
           // set the incoming edge's cost as well
           ki->criteriaList[2] = ei->criteriaList[2];
+          */
 
           ++edgeProgress;
         }
@@ -412,10 +439,9 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
              bool computeExactParetoSetUsingNamoaStar=false, 
              bool useAStar=false) 
     {
-      // temporary
+      // We only do experiments for the 2 and 3 objectives cases.
       assert( (numObjectives == 2) || (numObjectives == 3) );
 
-      // temporary
       timeSpentInComb_ = 0.0;
 
       std::vector< pa::PointAndSolution<Path> > result;
@@ -447,45 +473,36 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
         result = transformLabelsToParetoPoints(target_->labels, numObjectives);
       }
       else {
-        // temporary
         useAStar_ = useAStar;
         if (useAStar) {
+          // Initialize the heuristics we'll use with A*.
           if (usingDimacs9Graph_) {
-            // CHANGE---HERE
+            // DIMACS 9 graph
             GreatCircleDistanceHeuristic<PmaGraph> heuristicEngine(graph_);
             heuristicEngine.initHeuristicLists(target_);
-            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 0))
-              std::cout << "Careful, the 1st objective's heuristic is non-admissible! (please check it)\n";
-            if (not hasConsistentHeuristic(graph_, 0))
-              std::cout << "Careful, the 1st objective's heuristic is non-consistent! (please check it)\n";
-            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 1))
-              std::cout << "Careful, the 2nd objective's heuristic is non-admissible! (please check it)\n";
-            if (not hasConsistentHeuristic(graph_, 1))
-              std::cout << "Careful, the 2nd objective's heuristic is non-consistent! (please check it)\n";
-            // CHANGE-HERE
-            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 2))
-              std::cout << "Careful, the 3rd objective's heuristic is non-admissible! (please check it)\n";
-            if (not hasConsistentHeuristic(graph_, 2))
-              std::cout << "Careful, the 3rd objective's heuristic is non-consistent! (please check it)\n";
           }
           else {
-            // CHANGE---HERE
+            // DIMACS 10 graph
             EuclideanHeuristic<PmaGraph> heuristicEngine(graph_);
             heuristicEngine.initHeuristicLists(target_);
-            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 0))
-              std::cout << "Careful, the 1st objective's heuristic is non-admissible! (please check it)\n";
-            if (not hasConsistentHeuristic(graph_, 0))
-              std::cout << "Careful, the 1st objective's heuristic is non-consistent! (please check it)\n";
-            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 1))
-              std::cout << "Careful, the 2nd objective's heuristic is non-admissible! (please check it)\n";
-            if (not hasConsistentHeuristic(graph_, 1))
-              std::cout << "Careful, the 2nd objective's heuristic is non-consistent! (please check it)\n";
-            // CHANGE-HERE
-            if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 2))
-              std::cout << "Careful, the 3rd objective's heuristic is non-admissible! (please check it)\n";
-            if (not hasConsistentHeuristic(graph_, 2))
-              std::cout << "Careful, the 3rd objective's heuristic is non-consistent! (please check it)\n";
           }
+          // Check if the heuristics (the ones we'll use with A*, not 
+          // NAMOA*'s heuristics) are admissible/consistent.
+          if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 0))
+            std::cout << "Careful, the 1st objective's heuristic is non-admissible! (please check it)\n";
+          if (not hasConsistentHeuristic(graph_, 0))
+            std::cout << "Careful, the 1st objective's heuristic is non-consistent! (please check it)\n";
+          if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 1))
+            std::cout << "Careful, the 2nd objective's heuristic is non-admissible! (please check it)\n";
+          if (not hasConsistentHeuristic(graph_, 1))
+            std::cout << "Careful, the 2nd objective's heuristic is non-consistent! (please check it)\n";
+          // CHANGE-HERE
+          /*
+          if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 2))
+            std::cout << "Careful, the 3rd objective's heuristic is non-admissible! (please check it)\n";
+          if (not hasConsistentHeuristic(graph_, 2))
+            std::cout << "Careful, the 3rd objective's heuristic is non-consistent! (please check it)\n";
+          */
         }
 
         // Compute a convex (approximate) Pareto set using 
@@ -524,7 +541,6 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       for (ni = graph_.beginNodes(), lastNode = graph_.endNodes(); 
            ni != lastNode; ++ni) 
       {
-        // CHANGE--HERE
         ni->pred = graph_.nilNodeDescriptor(); // Dijkstra and A*
         ni->closed = false; // A*
         ni->heuristicValue = 0.0; // A*
@@ -558,7 +574,6 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       return nodeIdsToDescriptors_;
     }
 
-    // temporary
     //! \brief Get the number of calls to comb(), during the last query.
     //!
     unsigned int 
@@ -567,7 +582,6 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       return numCallsToComb_;
     }
 
-    // temporary
     //! \brief Get the time (sec) spent inside comb(), during the last query.
     //!
     double 
@@ -612,13 +626,11 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
     comb(std::vector<double>::const_iterator weight, 
          std::vector<double>::const_iterator lastWeight) 
     {
-      // temporary
       Timer timer;
       timer.start();
 
       pa::PointAndSolution<Path> result;
 
-      // CHANGE--HERE
       unsigned int numObjectives = std::distance(weight, lastWeight);
       assert( (numObjectives == 2) || (numObjectives == 3) );
 
@@ -632,26 +644,31 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       PmaGraph::EdgeIterator e, lastEdge;
       PmaGraph::InEdgeIterator k;
 
-      // temporary (the if clause is the temporary one)
       if (useAStar_) {
-        // temporary
+        // Using the A* algorithm to compute an optimal solution for 
+        // the combined objective function.
+
+        // Make a vector of reduced weights, to use when calculating the 
+        // combined heuristic. We use reduced weights for the heuristics 
+        // to mitigate problems caused by floating point arithmetic etc.
         std::vector<double> reducedWeight(3);
-        reducedWeight[0] = std::max(weight[0] - 1e-9, 0.0);
-        reducedWeight[1] = std::max(weight[1] - 1e-9, 0.0);
-        reducedWeight[2] = std::max(weight[2] - 1e-9, 0.0);
-        // end-temporary
+        reducedWeight[0] = std::max(weight[0] - 1e-12, 0.0);
+        reducedWeight[1] = std::max(weight[1] - 1e-12, 0.0);
+        reducedWeight[2] = std::max(weight[2] - 1e-15, 0.0);
+
         // first, set edge weights and node heuristics
         if (numObjectives == 2) {
+          // 2 objectives
           for (u = graph_.beginNodes(), 
                lastNode = graph_.endNodes(); u != lastNode; ++u) 
           {
             // set the node's heuristic value
-//            u->heuristicValue = weight[0] * u->heuristicList[0] + 
-//                                weight[1] * u->heuristicList[1];
-            // temporary
             u->heuristicValue = reducedWeight[0] * u->heuristicList[0] + 
                                 reducedWeight[1] * u->heuristicList[1];
-            // end-temporary
+//            u->heuristicValue = weight[0] * u->heuristicList[0] + 
+//                                weight[1] * u->heuristicList[1];
+
+            // Set edge weights:
             // for all outgoing and incoming edges
             for (e = graph_.beginEdges(u), 
                  lastEdge = graph_.endEdges(u); e != lastEdge; ++e) 
@@ -663,18 +680,19 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           }
         }
         else if (numObjectives == 3) {
+          // 3 objectives
           for (u = graph_.beginNodes(), 
                lastNode = graph_.endNodes(); u != lastNode; ++u) 
           {
             // set the node's heuristic value
-//            u->heuristicValue = weight[0] * u->heuristicList[0] + 
-//                                weight[1] * u->heuristicList[1] + 
-//                                weight[2] * u->heuristicList[2];
-            // temporary
             u->heuristicValue = reducedWeight[0] * u->heuristicList[0] + 
                                 reducedWeight[1] * u->heuristicList[1] + 
                                 reducedWeight[2] * u->heuristicList[2];
-            // end-temporary
+//            u->heuristicValue = weight[0] * u->heuristicList[0] + 
+//                                weight[1] * u->heuristicList[1] + 
+//                                weight[2] * u->heuristicList[2];
+
+            // Set edge weights:
             // for all outgoing and incoming edges
             for (e = graph_.beginEdges(u), 
                  lastEdge = graph_.endEdges(u); e != lastEdge; ++e) 
@@ -693,8 +711,12 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
         aStarDijkstra.runQuery(source_, target_);
       }
       else {
-        // first, set edge weights 
+        // Using Dijkstra's algorithm to compute an optimal solution for 
+        // the combined objective function.
+
+        // First, set edge weights:
         if (numObjectives == 2) {
+          // 2 objectives
           for (u = graph_.beginNodes(), 
                lastNode = graph_.endNodes(); u != lastNode; ++u) 
           {
@@ -709,6 +731,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           }
         }
         else if (numObjectives == 3) {
+          // 3 objectives
           for (u = graph_.beginNodes(), 
                lastNode = graph_.endNodes(); u != lastNode; ++u) 
           {
@@ -732,10 +755,15 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       // increment the counter of comb() calls
       ++numCallsToComb_;
 
+      // make the PointAndSolution object holding the result
+      // - the result will contain a point in objective space (with 
+      //   coordinates the values of the d objective functions) plus the 
+      //   solution that corresponds to that point plus the weights that 
+      //   produced that point
       result = computePathAndCriteriaValuesUpToThisNode(
                                          graph_.getNodeDescriptor(target_), 
                                          numObjectives);
-      // temporary
+
       timer.stop();
       timeSpentInComb_ += timer.getElapsedTime();
 
@@ -848,7 +876,6 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
 
       pa::PointAndSolution<Path> result;
 
-      // CHANGE--HERE
       // Reminder: result.point will hold a pareto_approximator::Point 
       //           instance containing the path's (multiple) criteria costs
       //           and result.solution will hold the actual path
@@ -865,7 +892,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       // We make a new (temporary) CriteriaList named pathCriteriaCosts, 
       // the same size as edge criteriaList attributes so that we can easily 
       // sum the edges' criteria lists. 
-      CriteriaList pathCriteriaCosts(3); // CHANGE-HERE
+      CriteriaList pathCriteriaCosts(numObjectives);
 
       // make the current vertex (v) the end of the path
       // - the path is currently empty
@@ -968,7 +995,10 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
     //!
     bool usingDimacs9Graph_;
 
-    //! \brief temporary (used during testing/debugging)
+    //! \brief Flag, for choosing between A* and Dijkstra inside Comb.
+    //! 
+    //! True if we want to use A* inside Comb; false if we want to use 
+    //! Dijkstra.
     //!
     bool useAStar_;
 };
