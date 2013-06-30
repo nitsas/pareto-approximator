@@ -236,10 +236,14 @@ int
 main(int argc, char * argv[])
 {
   // ----- Defaults -----
-  std::string mapPath = "/home/nitsas/Programming/workspace/diplomatiki/dimacs-challenge-graphs/DIMACS9/";
+  // CLEANUP CHANGE
+  //std::string mapPath = "/home/nitsas/Programming/workspace/diplomatiki/dimacs-challenge-graphs/DIMACS9/";
+  std::string mapPath = "./data/graphs/";
   std::string mapName = "NY";
   std::string coordinatesFilename, graphFilename, distanceFilename, travelTimeFilename;
-  std::string queriesFilePath = "/home/nitsas/Programming/workspace/diplomatiki/pareto-approximator/experiments/vs_namoa_star/";
+  // CLEANUP CHANGE
+  //std::string queriesFilePath = "/home/nitsas/Programming/workspace/diplomatiki/pareto-approximator/experiments/vs_namoa_star/";
+  std::string queriesFilePath = "./";
   std::string queriesFilename = "queries.txt";
   bool usingDimacs10Graph = false;
 
@@ -253,10 +257,12 @@ main(int argc, char * argv[])
   // is the map file a DIMACS-10 graph file?
   if ( (mapName == "belgium") || (mapName == "germany") || 
        (mapName == "italy") || (mapName == "luxembourg") || 
-       (mapName == "netherlands") ) 
+       (mapName == "netherlands") || (mapName == "great-britain") || 
+       (mapName == "europe") || (mapName == "asia") ) 
   {
     usingDimacs10Graph = true;
-    mapPath = "/home/nitsas/Programming/workspace/diplomatiki/dimacs-challenge-graphs/DIMACS10/";
+    // CLEANUP CHANGE 
+    //mapPath = "/home/nitsas/Programming/workspace/diplomatiki/dimacs-challenge-graphs/DIMACS10/";
   }
 
   if (usingDimacs10Graph) {
