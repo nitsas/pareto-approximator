@@ -52,7 +52,7 @@ class Node : DefaultGraphItem
              closed(false), // A*
              heuristicValue(0.0), // A*
              fScore(std::numeric_limits<double>::infinity()), // A*
-             heuristicList(2), // NAMOA* and A*, CHANGE-HERE
+             heuristicList(OPTION_NUM_OBJECTIVES), // NAMOA* and A*, CHANGE-HERE
              succ(NULL), // NAMOA*
              marked(false), // NAMOA* (BoundedTCHeuristic only)
              secondary_pqitem(std::numeric_limits<unsigned int>::max()), // NAMOA*
@@ -217,7 +217,7 @@ class Edge : DefaultGraphItem
 {
   public:
     //! Constructor. (initializes the Edge's attributes)
-    Edge() : weight(0), criteriaList(2) // CHANGE-HERE
+    Edge() : weight(0), criteriaList(OPTION_NUM_OBJECTIVES) // CHANGE-HERE
     { }
 
     // Things needed for PGL's single objective Dijkstra implementation:

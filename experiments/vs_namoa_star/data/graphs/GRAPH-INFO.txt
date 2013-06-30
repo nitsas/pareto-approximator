@@ -55,3 +55,16 @@ luxembourg    luxembourg.osm.graph    luxembourg.osm.xyz
 belgium       belgium.osm.graph       belgium.osm.xyz
 netherlands   netherlands.osm.graph   netherlands.osm.xyz
 germany       germany.osm.graph       germany.osm.xyz
+#
+#
+#
+# 3) More graphs.
+#
+# You can also use other DIMACS 9 or DIMACS 10 graphs. To do so, just 
+# download the relevant files, put them in this folder and use their 
+# unique identifiers as a map-name. For example, for the Asia DIMACS 10 
+# graph (with files asia.osm.graph and asia.osm.xyz) you should use "asia"
+# as the map-name. As another example, for the Colorado DIMACS 9 graph 
+# (with files USA-road-d.COL.gr, USA-road-d-COL.co and USA-road-t-COL.gr) 
+# you should use "COL" as the map-name.
+#

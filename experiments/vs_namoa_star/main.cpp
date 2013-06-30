@@ -5,6 +5,20 @@
  */
 
 
+// Define the number of objectives.
+#define OPTION_NUM_OBJECTIVES 2
+// Define the queries file's name.
+#define OPTION_QUERIES_FILE_NAME "queries.txt"
+// Define the queries file's path.
+#define OPTION_QUERIES_FILE_PATH "./"
+// Define the graph files' path.
+#define OPTION_GRAPH_FILES_PATH "./data/graphs/"
+// Define the default graph (in case no arguments are given).
+#define OPTION_DEFAULT_GRAPH "NY"
+// Define the results folder name.
+#define OPTION_RESULTS_FOLDER_NAME "results"
+
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -279,20 +293,30 @@ main(int argc, char * argv[])
   // ----- Defaults -----
   // CLEANUP CHANGE
   //std::string mapPath = "/home/nitsas/Programming/workspace/diplomatiki/dimacs-challenge-graphs/DIMACS9/";
-  std::string mapPath = "./data/graphs/";
-  std::string mapName = "NY";
+  std::string mapPath = OPTION_GRAPH_FILES_PATH;
+  std::string mapName = OPTION_DEFAULT_GRAPH;
   std::string coordinatesFilename, graphFilename, distanceFilename, travelTimeFilename;
   // CLEANUP CHANGE
   //std::string queriesFilePath = "/home/nitsas/Programming/workspace/diplomatiki/pareto-approximator/experiments/vs_namoa_star/";
-  std::string queriesFilePath = "./";
-  std::string queriesFilename = "queries.txt";
+  std::string queriesFilePath = OPTION_QUERIES_FILE_PATH;
+  std::string queriesFilename = OPTION_QUERIES_FILE_NAME;
   bool usingDimacs10Graph = false;
 
   // ----- Get the map name plus create the full path strings and print them -----
 
-  // if there was a command line argument, assume it was the map name
+  // If there was a command line argument, assume it was the map name.
+  // If there were more than on command line arguments or the only 
+  // argument was "-h" or "--help" print a "Usage" message and exit.
   if (argc == 2) {
     mapName = std::string(argv[1]);
+    if (mapName == "-h" || mapName == "--help") {
+      std::cerr << "Usage: vns_experiment.out [map-name]" << std::endl;
+      exit(1);
+    }
+  }
+  else if (argc > 2) {
+    std::cerr << "Usage: vns_experiment.out [map-name]" << std::endl;
+    exit(1);
   }
 
   // is the map file a DIMACS-10 graph file?
@@ -365,7 +389,7 @@ main(int argc, char * argv[])
   // ----- Make a results directory (if one does not exist) -----
   // Make a directory where all the files containing points of Pareto 
   // and convex Pareto sets will be stored.
-  mkdir("results", S_IRWXU | S_IRGRP | S_IROTH | S_IXGRP | S_IXOTH);
+  mkdir(OPTION_RESULTS_FOLDER_NAME, S_IRWXU | S_IRGRP | S_IROTH | S_IXGRP | S_IXOTH);
 
   // ----- Stuff needed for the alarm and signal handling. -----
 
@@ -394,7 +418,7 @@ main(int argc, char * argv[])
 
   // ----- Run queries using Chord ----- 
 
-  unsigned int numObjectives = 2;        // CHANGE-HERE
+  unsigned int numObjectives = OPTION_NUM_OBJECTIVES;        // CHANGE-HERE
   bool useNamoaStar = false, useAStar = false;
 
   std::cout << "\nRunning queries (" << mapName << " map, " << numObjectives << " objectives):\n";

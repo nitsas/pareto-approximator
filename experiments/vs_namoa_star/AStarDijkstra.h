@@ -1,6 +1,7 @@
 //! \file experiments/vs_namoa_star/AStarDijkstra.h
-//! \brief The AStarDijkstra class. It is a simple implementation of the
-//!        A\* algorithm wrapped inside a class.
+//! \brief This file contains a simple A* implementation (currently 
+//!        commented out because we use PGL's A*), plus some heuristics 
+//!        for A*.
 //! \author Christos Nitsas
 //! \date 2013
 //!
@@ -77,11 +78,11 @@ class AllZeroHeuristic
         u->heuristicList[0] = 0;
         // then, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = 0;
+#if OPTION_NUM_OBJECTIVES == 3
         // CHANGE-HERE
-        /*
         // last, the heuristic for the "Number Of Hops" objective:
         u->heuristicList[2] = 0;
-        */
+#endif
       }
     }
 
@@ -116,7 +117,9 @@ class EuclideanHeuristic
     //!
     EuclideanHeuristic(GraphType & graph) : graph_(graph), 
                                             maxSpeed_(0.0)
-//                                            , maxEdgeDistance_(0) // CHANGE-HERE
+#if OPTION_NUM_OBJECTIVES == 3
+                                            , maxEdgeDistance_(0) // CHANGE-HERE
+#endif
     {
       NodeIterator u, v, lastNode;
       EdgeIterator e, lastEdge;
@@ -140,12 +143,12 @@ class EuclideanHeuristic
           if (speed > maxSpeed_)
             maxSpeed_ = speed;
 
+#if OPTION_NUM_OBJECTIVES == 3
           // CHANGE-HERE
-          /*
           if (e->criteriaList[0] > maxEdgeDistance_) {
             maxEdgeDistance_ = e->criteriaList[0];
           }
-          */
+#endif
         }
       }
     }
@@ -168,15 +171,15 @@ class EuclideanHeuristic
         u->heuristicList[0] = floor(euclideanDistance(u->x, u->y, target->x, target->y));
         // next, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = double(u->heuristicList[0]) / maxSpeed_;
+#if OPTION_NUM_OBJECTIVES == 3
         // CHANGE-HERE
-        /*
         // next, the heuristic for the "Number of Hops" objective:
         u->heuristicList[2] = double(u->heuristicList[0]) / maxEdgeDistance_;
-        */
+#endif
       }
 
+#if OPTION_NUM_OBJECTIVES == 3
       // CHANGE-HERE
-      /*
       // Make the third objective's ("Number of Hops") heuristic consistent.
       NodeIterator v;
       EdgeIterator e, lastEdge;
@@ -193,7 +196,7 @@ class EuclideanHeuristic
           // the number-of-hops case
         }
       }
-      */
+#endif
     }
 
   private:
@@ -203,11 +206,11 @@ class EuclideanHeuristic
     //! The max speed over any edge on the graph.
     double maxSpeed_;
 
+#if OPTION_NUM_OBJECTIVES == 3
     // CHANGE-HERE
-    /*
     //! The max edge distance.
     double maxEdgeDistance_;
-    */
+#endif
 };
 
 
@@ -245,7 +248,9 @@ class GreatCircleDistanceHeuristic
     //!
     GreatCircleDistanceHeuristic(GraphType & graph) : graph_(graph), 
                                                       maxSpeed_(0.0)
-//                                                      , maxEdgeDistance_(0) // CHANGE-HERE
+#if OPTION_NUM_OBJECTIVES == 3
+                                                      , maxEdgeDistance_(0) // CHANGE-HERE
+#endif
     {
       NodeIterator u, v, lastNode;
       EdgeIterator e, lastEdge;
@@ -269,12 +274,12 @@ class GreatCircleDistanceHeuristic
           if (speed > maxSpeed_)
             maxSpeed_ = speed;
 
+#if OPTION_NUM_OBJECTIVES == 3
           // CHANGE-HERE
-          /*
           if (e->criteriaList[0] > maxEdgeDistance_) {
             maxEdgeDistance_ = e->criteriaList[0];
           }
-          */
+#endif
         }
       }
     }
@@ -301,15 +306,15 @@ class GreatCircleDistanceHeuristic
                                                double(target->y)/100000));
         // next, the heuristic for the "Travel Time" objective:
         u->heuristicList[1] = double(u->heuristicList[0]) / maxSpeed_;
+#if OPTION_NUM_OBJECTIVES == 3
         // CHANGE-HERE
-        /*
         // next, the heuristic for the "Number of Hops" objective:
         u->heuristicList[2] = double(u->heuristicList[0]) / maxEdgeDistance_;
-        */
+#endif
       }
 
+#if OPTION_NUM_OBJECTIVES == 3
       // CHANGE-HERE
-      /*
       // Make the third objective's ("Number of Hops") heuristic consistent.
       NodeIterator v;
       EdgeIterator e, lastEdge;
@@ -326,7 +331,7 @@ class GreatCircleDistanceHeuristic
           // the number-of-hops case
         }
       }
-      */
+#endif
     }
 
   private:
@@ -336,11 +341,11 @@ class GreatCircleDistanceHeuristic
     //! The max speed over any edge on the graph.
     double maxSpeed_;
 
+#if OPTION_NUM_OBJECTIVES == 3
     // CHANGE-HERE
-    /*
     //! The max edge distance.
     double maxEdgeDistance_;
-    */
+#endif
 };
 
 

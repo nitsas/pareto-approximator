@@ -284,8 +284,8 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
       }
       */
 
+#if OPTION_NUM_OBJECTIVES == 3
       // CHANGE-HERE
-      /*
       // add a third weight ("hop") on each graph edge:
       InEdgeIterator k;
       for (u = graph_.beginNodes(), lastNode = graph_.endNodes(); 
@@ -304,7 +304,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           k->criteriaList[2] = e->criteriaList[2];
         }
       }
-      */
+#endif
 
       // read the node-ids-to-node-descriptors mapping vector
       nodeIdsToDescriptors_ = reader.getIds();
@@ -380,8 +380,8 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
                              (double(3.6) * ei->criteriaList[0]) / speed );
           ki->criteriaList[1] = ei->criteriaList[1];
 
+#if OPTION_NUM_OBJECTIVES == 3
           // CHANGE-HERE
-          /*
           // set the third weight, "hop", of each edge:
           // - the "hop" cost will be equal to 1 for every edge; this way 
           //   the "NumberOfHops(P)" objective, which will be the sum of "hop" 
@@ -390,7 +390,7 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
           ei->criteriaList[2] = 1;
           // set the incoming edge's cost as well
           ki->criteriaList[2] = ei->criteriaList[2];
-          */
+#endif
 
           ++edgeProgress;
         }
@@ -496,13 +496,13 @@ class MultiobjectiveSpOnPmgProblem : private pa::BaseProblem<Path>
             std::cout << "Careful, the 2nd objective's heuristic is non-admissible! (please check it)\n";
           if (not hasConsistentHeuristic(graph_, 1))
             std::cout << "Careful, the 2nd objective's heuristic is non-consistent! (please check it)\n";
+#if OPTION_NUM_OBJECTIVES == 3
           // CHANGE-HERE
-          /*
           if (not hasAdmissibleHeuristic(graph_, &timestamp_, target_, 2))
             std::cout << "Careful, the 3rd objective's heuristic is non-admissible! (please check it)\n";
           if (not hasConsistentHeuristic(graph_, 2))
             std::cout << "Careful, the 3rd objective's heuristic is non-consistent! (please check it)\n";
-          */
+#endif
         }
 
         // Compute a convex (approximate) Pareto set using 
