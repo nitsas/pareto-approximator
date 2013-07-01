@@ -11,6 +11,11 @@
 
 #include <boost/graph/adjacency_list.hpp>
 
+#include "../../Point.h"
+#include "../../PointAndSolution.h"
+#include "../../BaseProblem.h"
+#include "../../NonDominatedSet.h"
+
 
 /*!
  *  \defgroup BiobjectiveShortestPathExample An example biobjective shortest path problem.

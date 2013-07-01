@@ -648,4 +648,9 @@ class Point {
 /* @} */
 
 
+// We will #include the implementation here because we want to make a 
+// header-only code base.
+#include "Point.cpp"
+
+
 #endif  // SIMPLE_POINT_CLASS_H

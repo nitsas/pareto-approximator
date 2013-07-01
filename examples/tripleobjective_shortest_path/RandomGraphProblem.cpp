@@ -2,6 +2,9 @@
  *  \brief The implementation of the RandomGraphProblem class.
  *  \author Christos Nitsas
  *  \date 2012
+ *  
+ *  Won't `include` RandomGraphProblem.h. In fact RandomGraphProblem.h will `include` 
+ *  RandomGraphProblem.cpp because we want a header-only code base.
  */
 
 
@@ -23,7 +26,6 @@
 #include <boost/property_map/vector_property_map.hpp>
 #include <boost/graph/graphviz.hpp>
 
-#include "RandomGraphProblem.h"
 #include "FloodVisitor.h"
 
 

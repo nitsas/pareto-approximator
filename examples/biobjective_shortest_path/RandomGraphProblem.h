@@ -12,10 +12,6 @@
 #include <boost/graph/adjacency_list.hpp>
 
 #include "biobjective_shortest_path_example_common.h"
-#include "../../Point.h"
-#include "../../PointAndSolution.h"
-#include "../../BaseProblem.h"
-#include "../../NonDominatedSet.h"
 
 
 using pareto_approximator::Point;
@@ -220,6 +216,11 @@ class RandomGraphProblem : public BaseProblem<PredecessorMap>
 /*! 
  *  @}
  */
+
+
+// We will #include the implementation here because we want to make a 
+// header-only code base.
+#include "RandomGraphProblem.cpp"
 
 
 #endif  // EXAMPLE_CLASS_RANDOM_GRAPH_PROBLEM_H

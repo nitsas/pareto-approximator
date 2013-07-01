@@ -2,13 +2,15 @@
  *  \brief The implementation of the FloodVisitor class.
  *  \author Christos Nitsas
  *  \date 2012
+ *  
+ *  Won't `include` FloodVisitor.h. In fact FloodVisitor.h will `include` 
+ *  FloodVisitor.cpp because we want a header-only code base.
  */
 
 
 #include <limits>
 
 #include "biobjective_shortest_path_example_common.h"
-#include "FloodVisitor.h"
 
 
 using pareto_approximator::Point;

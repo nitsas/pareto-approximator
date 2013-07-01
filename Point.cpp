@@ -2,6 +2,9 @@
  *  \brief The implementation of Point. (a simple point class)
  *  \author Christos Nitsas
  *  \date 2012
+ *  
+ *  Won't `include` Point.h. In fact Point.h will `include` 
+ *  Point.cpp because we want a header-only code base.
  */
 
 
@@ -13,8 +16,6 @@
 #include <iomanip>
 #include <ios>
 #include <iostream>
-
-#include "Point.h"
 
 
 /*!

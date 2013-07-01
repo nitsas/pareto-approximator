@@ -10,8 +10,6 @@
 
 
 #include "biobjective_shortest_path_example_common.h"
-#include "../../Point.h"
-#include "../../NonDominatedSet.h"
 
 
 using pareto_approximator::Point;
@@ -104,6 +102,11 @@ class FloodVisitor
 /*! 
  *  @}
  */
+
+
+// We will #include the implementation here because we want to make a 
+// header-only code base.
+#include "FloodVisitor.cpp"
 
 
 #endif  // EXAMPLE_CLASS_FLOOD_VISITOR_H

@@ -6,7 +6,7 @@
 
 
 // Define the number of objectives.
-#define OPTION_NUM_OBJECTIVES 2
+#define OPTION_NUM_OBJECTIVES 3
 // Define the queries file's name.
 #define OPTION_QUERIES_FILE_NAME "queries.txt"
 // Define the queries file's path.

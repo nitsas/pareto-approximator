@@ -11,6 +11,11 @@
 
 #include <boost/graph/adjacency_list.hpp>
 
+#include "../../Point.h"
+#include "../../PointAndSolution.h"
+#include "../../BaseProblem.h"
+#include "../../NonDominatedSet.h"
+
 
 /*!
  *  \defgroup TripleobjectiveShortestPathExample An example tripleobjective shortest path problem.

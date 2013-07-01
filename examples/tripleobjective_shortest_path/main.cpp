@@ -22,9 +22,7 @@
 #include <list>
 #include <boost/graph/adjacency_list.hpp>
 
-#include "../../Point.h"
-#include "../../PointAndSolution.h"
-#include "../../NonDominatedSet.h"
+#include "tripleobjective_shortest_path_example_common.h"
 #include "RandomGraphProblem.h"
 
 

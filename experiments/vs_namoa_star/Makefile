@@ -16,14 +16,11 @@ CPPLIBS=-larmadillo
 
 all: compile
 
-compile: Point.o main.cpp AStarDijkstra.h MultiobjectiveSpOnPmgProblem.h Hyperplane.h experiments_vs_namoa_star_common.h experiments_vs_namoa_star_utility.h
-	g++ main.cpp Point.o -o vns_experiment.out -O2 $(CPPFLAGS) $(CPPLIBS)
+compile: main.cpp AStarDijkstra.h MultiobjectiveSpOnPmgProblem.h Hyperplane.h experiments_vs_namoa_star_common.h experiments_vs_namoa_star_utility.h ../../Point.h ../../Point.cpp
+	g++ main.cpp -o vns_experiment.out -O2 $(CPPFLAGS) $(CPPLIBS)
 
-debug: Point.o main.cpp AStarDijkstra.h MultiobjectiveSpOnPmgProblem.h Hyperplane.h experiments_vs_namoa_star_common.h experiments_vs_namoa_star_utility.h
-	g++ main.cpp Point.o -o vns_experiment.out -O0 -g $(CPPFLAGS) $(CPPLIBS)
-
-Point.o: ../../Point.h ../../Point.cpp ../../DifferentDimensionsException.h ../../NegativeApproximationRatioException.h ../../NotPositivePointException.h ../../NotStrictlyPositivePointException.h
-	$(CC) $(CPPFLAGS) -c ../../Point.cpp -o $@
+debug: main.cpp AStarDijkstra.h MultiobjectiveSpOnPmgProblem.h Hyperplane.h experiments_vs_namoa_star_common.h experiments_vs_namoa_star_utility.h ../../Point.h ../../Point.cpp 
+	g++ main.cpp -o vns_experiment.out -O0 -g $(CPPFLAGS) $(CPPLIBS)
 
 clean:
-	rm Point.o vns_experiment.out
+	rm vns_experiment.out
