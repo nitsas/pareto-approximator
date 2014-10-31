@@ -1,10 +1,19 @@
 # Graph sizes (and other info) for the DIMACS 9 and DIMACS 10 graphs we used.
 #
 # For the experiments we only used the FLA, LKS, E, W, belgium, 
-# netherlands and germany graphs. We have included the NY and luxembourg 
-# graphs because, due to their size, they are suitable for quick tests.
+# netherlands and germany graphs. 
 #
 # We refer to the graphs using their map-name abbreviations.
+#
+# We provide the graphs in compressed form due to space constraints on 
+# the CD. We omitted the germany graph due to the same space constraints.
+# You can download it from the DIMACS 10 Challenge website.
+#
+# DIMACS 9 graphs website:
+# http://www.dis.uniroma1.it/challenge9/download.shtml
+#
+# DIMACS 10 graphs website:
+# http://www.cc.gatech.edu/dimacs10/archive/streets.shtml
 #
 #
 #
@@ -16,7 +25,6 @@
 #
 # DIMACS 9:
 #
-NY            264346    733846      "New York City"
 FLA           1070376   2712798     "Florida"
 LKS           2758119   6885658     "Great Lakes"
 E             3598623   8778114     "Eastern USA"
@@ -24,7 +32,6 @@ W             6262104   15248146    "Western USA"
 #
 # DIMACS 10:
 #
-luxembourg    114599     119666     "Luxembourg"
 belgium       1441295    1549970    "Belgium"
 netherlands   2216688    2441238    "Netherlands"
 germany       11548845   12369181   "Germany"
@@ -40,7 +47,6 @@ germany       11548845   12369181   "Germany"
 # Lines are of the following form:
 # map-name distances-filename travel-times-filename coordinates-filename
 #
-NY            USA-road-d.NY.gr    USA-road-t.NY.gr    USA-road-d.NY.co
 FLA           USA-road-d.FLA.gr   USA-road-t.FLA.gr   USA-road-d.FLA.co
 LKS           USA-road-d.LKS.gr   USA-road-t.LKS.gr   USA-road-d.LKS.co
 E             USA-road-d.E.gr     USA-road-t.E.gr     USA-road-d.E.co
@@ -51,7 +57,6 @@ W             USA-road-d.W.gr     USA-road-t.W.gr     USA-road-d.W.co
 # Lines are of the following form:
 # map-name graph-filename coordinates-filename
 #
-luxembourg    luxembourg.osm.graph    luxembourg.osm.xyz
 belgium       belgium.osm.graph       belgium.osm.xyz
 netherlands   netherlands.osm.graph   netherlands.osm.xyz
 germany       germany.osm.graph       germany.osm.xyz
